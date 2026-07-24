@@ -1,11 +1,8 @@
 # Use Node.js LTS Alpine for a small footprint
-FROM node:20-alpine
+FROM node:22-alpine
 
 # Set the working directory
 WORKDIR /usr/src/app
-
-# Update npm to pull patched bundled dependencies
-RUN npm install -g npm@latest
 
 # Copy package files first to leverage Docker layer caching
 COPY package*.json ./
