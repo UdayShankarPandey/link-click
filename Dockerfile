@@ -1,8 +1,11 @@
 # Use Node.js LTS Alpine for a small footprint
-FROM node:20-alpine
+FROM node:22-alpine
 
 # Set the working directory
 WORKDIR /usr/src/app
+
+# Upgrade npm to a Node 22-compatible release with patched dependencies
+RUN npm install -g npm@11.18.0
 
 # Copy package files first to leverage Docker layer caching
 COPY package*.json ./
