@@ -6,20 +6,31 @@ export const createUser = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
 
-    // Validate request body basic check
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: 'Please provide name, email and password' });
+    // Validate required fields and types
+    if (
+      typeof name !== 'string' ||
+      typeof email !== 'string' ||
+      typeof password !== 'string' ||
+      !name.trim() ||
+      !email.trim() ||
+      !password
+    ) {
+      return res.status(400).json({
+        message: 'Please provide valid name, email and password'
+      });
     }
 
-    // Check if user already exists
-    const userExists = await User.findOne({ email });
+    const normalizedEmail = email.trim().toLowerCase();
+
+    // Check if user already exists using the validated email string
+    const userExists = await User.findOne({ email: normalizedEmail });
     if (userExists) {
       return res.status(400).json({ message: 'User already exists with this email' });
     }
 
     const user = await User.create({
       name,
-      email,
+      email: normalizedEmail,
       password, // Password is hashed automatically by the pre-save hook
       role      // Admins can set role since this route is admin-only
     });
