@@ -1,7 +1,14 @@
 node_modules
 npm-debug.log
+*.log
+
 .git
+.github
+.vscode
+
 .env
+.env.*
+!.env.example
+
 logs
 coverage
-.github
