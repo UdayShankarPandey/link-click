@@ -1,13 +1,21 @@
 import env from '../config/env.js';
 import { logger } from '../utils/logger.js';
 
+const sanitizeLogValue = (value) =>
+  String(value ?? '').replace(/[\r\n\t]/g, ' ');
+
 const errorMiddleware = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
 
   if (err.statusCode >= 500) {
+    const requestId = sanitizeLogValue(req.requestId || '-');
+    const method = sanitizeLogValue(req.method);
+    const url = sanitizeLogValue(req.originalUrl);
+    const errorMessage = sanitizeLogValue(err.message);
+
     logger.error(
-      `[${req.requestId || '-'}] ${req.method} ${req.originalUrl} - ${err.message}`
+      `[${requestId}] ${method} ${url} - ${errorMessage}`
     );
   }
 
