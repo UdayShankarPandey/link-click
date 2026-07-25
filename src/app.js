@@ -1,4 +1,5 @@
 import express, { json, urlencoded } from 'express';
+import env from './config/env.js';
 import cors from 'cors';
 import helmet from 'helmet';
 import { mongoSanitize } from './middleware/sanitize.middleware.js';
@@ -29,8 +30,10 @@ app.use(morgan('[:id] :method :url :status :res[content-length] - :response-time
 // Helmet — sets secure HTTP headers (XSS, clickjacking, MIME sniffing, etc.)
 app.use(helmet());
 
-// CORS — allow all origins in development, restrict in production
-app.use(cors());
+// CORS — restrict browser access to the configured frontend origin
+app.use(cors({
+  origin: env.CORS_ORIGIN,
+}));
 
 // Global rate limiter — 100 requests per 15 minutes per IP
 app.use(globalLimiter);
