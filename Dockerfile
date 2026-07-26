@@ -5,16 +5,16 @@ FROM node:22-alpine
 WORKDIR /usr/src/app
 
 # Upgrade npm to a Node 22-compatible release with patched dependencies
-RUN npm install -g npm@11.18.0
+RUN npm install -g npm@11.18.0 --ignore-scripts
 
 # Copy package files first to leverage Docker layer caching
 COPY package*.json ./
 
-# Install only production dependencies
-RUN npm ci --only=production
+# Install only production dependencies without running lifecycle scripts
+RUN npm ci --omit=dev --ignore-scripts
 
-# Copy the rest of the application code
-COPY . .
+# Copy only the backend application source required at runtime
+COPY src ./src
 
 # Create writable logs directory for the non-root Node.js user
 RUN mkdir -p /usr/src/app/logs && chown -R node:node /usr/src/app/logs
