@@ -39,6 +39,15 @@ const PostDetail = () => {
     fetchPost();
   }, [id]);
 
+  useEffect(() => {
+    if (!isLightboxOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setIsLightboxOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isLightboxOpen]);
+
   const handleLike = async () => {
     if (!user) {
       toast.error('Log in to like posts');
@@ -118,21 +127,14 @@ const PostDetail = () => {
       </Link>
 
       {/* Image */}
-      <div 
-        role="button"
-        tabIndex={0}
+      <button
+        type="button"
         aria-label="View full image in lightbox"
-        className="rounded-2xl overflow-hidden bg-canvas border border-border mb-6 relative cursor-zoom-in group select-none focus:outline-none focus:ring-2 focus:ring-amber/40"
+        className="w-full text-left p-0 rounded-2xl overflow-hidden bg-canvas border border-border mb-6 relative cursor-zoom-in group select-none block focus:outline-none focus:ring-2 focus:ring-amber/40"
         onClick={() => setIsLightboxOpen(true)}
         onDoubleClick={(e) => {
           e.stopPropagation();
           handleDoubleTap();
-        }}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            setIsLightboxOpen(true);
-          }
         }}
       >
         <img
@@ -146,34 +148,31 @@ const PostDetail = () => {
             <Heart className="h-24 w-24 fill-white text-white drop-shadow-2xl animate-like-pop" />
           </div>
         )}
-      </div>
+      </button>
 
       {/* Lightbox Modal */}
       {isLightboxOpen && (
-        <div 
-          role="button"
-          tabIndex={0}
-          aria-label="Close lightbox overlay"
-          className="fixed inset-0 z-100 bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 sm:p-8 animate-overlay-in cursor-zoom-out focus:outline-none"
-          onClick={() => setIsLightboxOpen(false)}
-          onKeyDown={(e) => {
-            if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              setIsLightboxOpen(false);
-            }
-          }}
-        >
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4 sm:p-8 animate-overlay-in overflow-hidden">
+          {/* Backdrop button */}
           <button
             type="button"
             onClick={() => setIsLightboxOpen(false)}
-            className="absolute top-4 right-4 p-2 rounded-full bg-surface-overlay/50 text-white hover:bg-surface-overlay transition-colors"
+            aria-label="Close lightbox overlay"
+            className="fixed inset-0 bg-black/95 backdrop-blur-xl cursor-zoom-out w-full h-full border-none p-0 m-0"
+          />
+
+          <button
+            type="button"
+            onClick={() => setIsLightboxOpen(false)}
+            className="absolute top-4 right-4 p-2 rounded-full bg-surface-overlay/50 text-white hover:bg-surface-overlay transition-colors z-10 cursor-pointer"
+            aria-label="Close lightbox"
           >
             <X className="h-6 w-6" />
           </button>
           <img
             src={post.imageUrl}
             alt={post.title}
-            className="max-w-full max-h-full object-contain animate-fade-in-scale select-none drop-shadow-2xl"
+            className="max-w-full max-h-full object-contain animate-fade-in-scale select-none drop-shadow-2xl z-10 pointer-events-none"
           />
         </div>
       )}

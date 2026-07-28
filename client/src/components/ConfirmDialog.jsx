@@ -38,16 +38,20 @@ const ConfirmDialog = ({ open, title, message, confirmLabel = 'Delete', onConfir
         e.preventDefault();
         onCancel?.();
       }}
-      onClick={(e) => {
-        if (e.target === dialogRef.current) {
-          onCancel?.();
-        }
-      }}
-      className="bg-transparent p-0 border-none max-w-none w-auto backdrop:bg-black/60 backdrop:backdrop-blur-sm fixed inset-0 z-100 items-center justify-center animate-overlay-in open:flex"
+      className="bg-transparent p-0 border-none max-w-none w-auto fixed inset-0 z-100 items-center justify-center animate-overlay-in open:flex overflow-hidden"
       aria-labelledby="confirm-title"
     >
+      {/* Backdrop button */}
+      <button
+        type="button"
+        onClick={onCancel}
+        tabIndex={-1}
+        aria-hidden="true"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm cursor-pointer w-full h-full border-none p-0 m-0"
+      />
+
       {/* Dialog */}
-      <div className="relative bg-surface-raised border border-border rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-fade-in-scale m-4">
+      <div className="relative bg-surface-raised border border-border rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-fade-in-scale m-4 z-10">
         <button
           type="button"
           onClick={onCancel}
