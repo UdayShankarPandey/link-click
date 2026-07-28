@@ -7,21 +7,17 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Check if token exists on mount and load user profile
+  // Check authentication on mount via HttpOnly cookie
   useEffect(() => {
     const loadUser = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        try {
-          const response = await api.get('/auth/me');
-          setUser(response.data);
-        } catch (error) {
-          console.error('Failed to load user profile:', error);
-          localStorage.removeItem('token');
-          setUser(null);
-        }
+      try {
+        const response = await api.get('/auth/me');
+        setUser(response.data.data || response.data);
+      } catch {
+        setUser(null);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     loadUser();
@@ -30,8 +26,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const response = await api.post('/auth/login', { email, password });
-      const { token, user: userData } = response.data;
-      localStorage.setItem('token', token);
+      const userData = response.data.data?.user || response.data.user || response.data;
       setUser(userData);
       return { success: true };
     } catch (error) {
@@ -43,8 +38,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (name, email, password) => {
     try {
       const response = await api.post('/auth/register', { name, email, password });
-      const { token, user: userData } = response.data;
-      localStorage.setItem('token', token);
+      const userData = response.data.data?.user || response.data.user || response.data;
       setUser(userData);
       return { success: true };
     } catch (error) {
@@ -53,9 +47,14 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    setUser(null);
+  const logout = async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setUser(null);
+    }
   };
 
   const value = useMemo(

@@ -2,32 +2,34 @@ import { logger } from '../utils/logger.js';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
+import env from '../config/env.js';
+
 export const protect = async (req, res, next) => {
-  let token;
+  let token = req.cookies?.token;
 
-  // Check if authorization header exists and starts with Bearer
-  if (req.headers.authorization?.startsWith('Bearer')) {
-    try {
-      // Extract the token from the header
-      token = req.headers.authorization.split(' ')[1];
+  if (!token && req.headers.authorization?.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
 
-      // Verify the token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-      // Get user from the database, excluding password field
-      req.user = await User.findById(decoded.id).select('-password');
-
-      if (!req.user) {
-        return res.status(401).json({ message: 'User belonging to this token no longer exists.' });
-      }
-
-      next();
-    } catch (error) {
-      logger.error(`JWT Verification Error: ${error.message}`);
-      return res.status(401).json({ message: 'Not authorized, token failed.' });
-    }
-  } else {
+  if (!token) {
     return res.status(401).json({ message: 'Not authorized, no token provided.' });
+  }
+
+  try {
+    // Verify the token
+    const decoded = jwt.verify(token, env.JWT_SECRET);
+
+    // Get user from the database, excluding password field
+    req.user = await User.findById(decoded.id).select('-password');
+
+    if (!req.user) {
+      return res.status(401).json({ message: 'User belonging to this token no longer exists.' });
+    }
+
+    next();
+  } catch (error) {
+    logger.error(`JWT Verification Error: ${error.message}`);
+    return res.status(401).json({ message: 'Not authorized, token failed.' });
   }
 };
 

@@ -7,7 +7,10 @@ const envSchema = z.object({
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
   MONGODB_URI: z.string().min(1, 'MONGODB_URI is required'),
   JWT_SECRET: z.string().min(1, 'JWT_SECRET is required'),
-  JWT_EXPIRES_IN: z.string().default('30d'),
+  JWT_EXPIRES_IN: z
+    .string()
+    .regex(/^\d+[dhms]$/, 'JWT_EXPIRES_IN must be a number followed by d, h, m, or s (e.g. 30d, 24h)')
+    .default('30d'),
   IMAGEKIT_PUBLIC_KEY: z.string().min(1, 'IMAGEKIT_PUBLIC_KEY is required'),
   IMAGEKIT_PRIVATE_KEY: z.string().min(1, 'IMAGEKIT_PRIVATE_KEY is required'),
   IMAGEKIT_URL_ENDPOINT: z.string().url('IMAGEKIT_URL_ENDPOINT must be a valid URL'),

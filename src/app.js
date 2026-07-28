@@ -14,6 +14,7 @@ import morgan from 'morgan';
 import { morganStream } from './utils/logger.js';
 import { requestIdMiddleware } from './middleware/requestId.middleware.js';
 import swaggerUi from 'swagger-ui-express';
+import cookieParser from 'cookie-parser';
 import { swaggerSpec } from './docs/swagger.js';
 
 const app = express();
@@ -27,12 +28,16 @@ app.use(requestIdMiddleware);
 morgan.token('id', (req) => req.requestId || '-');
 app.use(morgan('[:id] :method :url :status :res[content-length] - :response-time ms', { stream: morganStream }));
 
+// Cookie parser for reading HttpOnly authentication cookies
+app.use(cookieParser());
+
 // Helmet — sets secure HTTP headers (XSS, clickjacking, MIME sniffing, etc.)
 app.use(helmet());
 
-// CORS — restrict browser access to the configured frontend origin
+// CORS — restrict browser access to configured frontend origin with credentials support
 app.use(cors({
   origin: env.CORS_ORIGIN,
+  credentials: true,
 }));
 
 // Global rate limiter — 100 requests per 15 minutes per IP
