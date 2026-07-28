@@ -35,6 +35,9 @@ jobs:
     - name: Run lint
       run: npm run lint --if-present
 
+    - name: Run backend tests
+      run: npm test
+
     - name: Log in to GitHub Container Registry
       if: github.event_name == 'push'
       uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1 # v3
