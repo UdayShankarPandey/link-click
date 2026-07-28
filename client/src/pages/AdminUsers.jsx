@@ -104,17 +104,33 @@ const AdminUsers = () => {
     }
   };
 
+  const renderUsersContent = () => {
+    if (loading) {
+      return (
+        <div className="space-y-3">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="skeleton h-16 w-full rounded-xl"></div>
+          ))}
+        </div>
+      );
+    }
+    if (users.length === 0) {
+      return <div className="text-center py-16 text-text-secondary text-sm">No users found.</div>;
+    }
+    return null;
+  };
+
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6 sm:py-8">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6 animate-fade-in">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 animate-fade-in">
         <div>
           <h1 className="text-2xl font-bold text-text-primary tracking-tight flex items-center gap-2">
-            <Users className="h-5 w-5 text-amber" />
+            <Users className="h-6 w-6 text-amber" />
             User Management
           </h1>
           <p className="text-sm text-text-secondary mt-1">
-            {users.length} registered user{users.length !== 1 ? 's' : ''}
+            Manage user accounts, roles, and permissions ({users.length} total)
           </p>
         </div>
         <button
@@ -127,7 +143,7 @@ const AdminUsers = () => {
         </button>
       </div>
 
-      {/* Create Form */}
+      {/* Create User Form */}
       {showCreateForm && (
         <div className="bg-surface border border-border rounded-2xl p-5 mb-6 animate-slide-up">
           <div className="flex items-center justify-between mb-4">
@@ -138,9 +154,9 @@ const AdminUsers = () => {
           </div>
 
           {createError && (
-            <div className="bg-danger-muted border border-danger/20 text-danger p-3 rounded-xl mb-4 flex items-start gap-2 text-sm">
-              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-              <span>{createError}</span>
+            <div className="bg-danger-muted border border-danger/20 text-danger p-3 rounded-xl mb-4 text-xs flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              {createError}
             </div>
           )}
 
@@ -193,7 +209,7 @@ const AdminUsers = () => {
                 <option value="admin">Admin</option>
               </select>
             </div>
-            <div className="sm:col-span-2 flex justify-end gap-3 pt-1">
+            <div className="sm:col-span-2 flex justify-end gap-3 mt-2">
               <button
                 type="button"
                 onClick={() => setShowCreateForm(false)}
@@ -214,15 +230,7 @@ const AdminUsers = () => {
       )}
 
       {/* Users Table */}
-      {loading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="skeleton h-16 w-full rounded-xl"></div>
-          ))}
-        </div>
-      ) : users.length === 0 ? (
-        <div className="text-center py-16 text-text-secondary text-sm">No users found.</div>
-      ) : (
+      {renderUsersContent() || (
         <div className="space-y-2 animate-fade-in">
           {/* Desktop header */}
           <div className="hidden sm:grid sm:grid-cols-[1fr_1.5fr_80px_120px] gap-4 px-4 py-2 text-xs font-semibold text-text-tertiary uppercase tracking-wider">

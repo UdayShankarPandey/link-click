@@ -22,6 +22,8 @@ const Pagination = ({ page, totalPages, onPageChange }) => {
     return pages;
   };
 
+  const pageNumbers = getPageNumbers();
+
   return (
     <nav className="flex items-center justify-center gap-1.5 mt-10" aria-label="Pagination">
       <button
@@ -34,9 +36,9 @@ const Pagination = ({ page, totalPages, onPageChange }) => {
         <ChevronLeft className="h-4 w-4" />
       </button>
 
-      {getPageNumbers().map((pageNum, idx) =>
+      {pageNumbers.map((pageNum, idx) =>
         pageNum === '...' ? (
-          <span key={`dots-${idx}`} className="px-2 text-text-tertiary text-sm">
+          <span key={`ellipsis-after-${pageNumbers[idx - 1]}`} className="px-2 text-text-tertiary text-sm">
             …
           </span>
         ) : (

@@ -21,7 +21,7 @@ const startServer = async () => {
   }
 };
 
-startServer();
+await startServer();
 
 const gracefulShutdown = (signal) => {
   if (isShuttingDown) {

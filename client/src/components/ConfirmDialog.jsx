@@ -6,36 +6,48 @@ const ConfirmDialog = ({ open, title, message, confirmLabel = 'Delete', onConfir
   const dialogRef = useRef(null);
 
   useEffect(() => {
-    if (open) {
-      // Focus the cancel-like element or dialog on open
-      confirmBtnRef.current?.focus();
-      // Trap focus and handle Escape
-      const handleKeyDown = (e) => {
-        if (e.key === 'Escape') onCancel();
-      };
-      document.addEventListener('keydown', handleKeyDown);
-      // Prevent body scroll
-      document.body.style.overflow = 'hidden';
-      return () => {
-        document.removeEventListener('keydown', handleKeyDown);
-        document.body.style.overflow = '';
-      };
-    }
-  }, [open, onCancel]);
+    const dialog = dialogRef.current;
+    if (!dialog) return;
 
-  if (!open) return null;
+    if (open) {
+      if (!dialog.open) {
+        dialog.showModal();
+      }
+      confirmBtnRef.current?.focus();
+      document.body.style.overflow = 'hidden';
+    } else {
+      if (dialog.open) {
+        dialog.close();
+      }
+      document.body.style.overflow = '';
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [open]);
 
   const btnClass = variant === 'danger'
     ? 'bg-danger hover:bg-red-600 text-white'
     : 'bg-amber hover:bg-amber-hover text-text-inverse';
 
   return (
-    <div className="fixed inset-0 z-100 flex items-center justify-center p-4 animate-overlay-in" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onCancel}></div>
-
+    <dialog
+      ref={dialogRef}
+      onCancel={(e) => {
+        e.preventDefault();
+        onCancel?.();
+      }}
+      onClick={(e) => {
+        if (e.target === dialogRef.current) {
+          onCancel?.();
+        }
+      }}
+      className="bg-transparent p-0 border-none max-w-none w-auto backdrop:bg-black/60 backdrop:backdrop-blur-sm fixed inset-0 z-100 items-center justify-center animate-overlay-in open:flex"
+      aria-labelledby="confirm-title"
+    >
       {/* Dialog */}
-      <div ref={dialogRef} className="relative bg-surface-raised border border-border rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-fade-in-scale">
+      <div className="relative bg-surface-raised border border-border rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-fade-in-scale m-4">
         <button
           type="button"
           onClick={onCancel}
@@ -73,7 +85,7 @@ const ConfirmDialog = ({ open, title, message, confirmLabel = 'Delete', onConfir
           </button>
         </div>
       </div>
-    </div>
+    </dialog>
   );
 };
 

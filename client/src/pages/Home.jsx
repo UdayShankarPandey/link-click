@@ -46,8 +46,9 @@ const Home = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const postWord = totalPosts === 1 ? 'post' : 'posts';
   const subtitleText = totalPosts > 0
-    ? `${totalPosts} post${totalPosts !== 1 ? 's' : ''} shared by the community`
+    ? `${totalPosts} ${postWord} shared by the community`
     : 'Visual stories from the Link Click community';
 
   const renderFeedContent = () => {

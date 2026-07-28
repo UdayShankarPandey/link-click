@@ -133,12 +133,10 @@ const CreatePost = () => {
                 </button>
               </div>
             ) : (
-              <div
+              <button
+                type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="border border-dashed border-border hover:border-amber/30 bg-canvas/50 hover:bg-canvas rounded-xl p-8 text-center cursor-pointer transition-colors group"
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => e.key === 'Enter' && fileInputRef.current?.click()}
+                className="w-full border border-dashed border-border hover:border-amber/30 bg-canvas/50 hover:bg-canvas rounded-xl p-8 text-center cursor-pointer transition-colors group"
               >
                 <input
                   type="file"
@@ -154,7 +152,7 @@ const CreatePost = () => {
                   <p className="text-sm text-text-secondary font-medium">Click to upload</p>
                   <p className="text-xs text-text-tertiary">PNG, JPG, JPEG — Max 5 MB</p>
                 </div>
-              </div>
+              </button>
             )}
           </div>
 

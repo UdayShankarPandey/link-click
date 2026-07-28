@@ -51,8 +51,8 @@ body {
 }
 
 ::selection {
-  background-color: #E8A83840;
-  color: #fff;
+  background-color: var(--color-amber);
+  color: var(--color-text-inverse);
 }
 
 /* ─── Scrollbar ──────────────────────────────────────────────────────────── */

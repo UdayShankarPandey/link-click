@@ -119,11 +119,20 @@ const PostDetail = () => {
 
       {/* Image */}
       <div 
-        className="rounded-2xl overflow-hidden bg-canvas border border-border mb-6 relative cursor-zoom-in group select-none"
+        role="button"
+        tabIndex={0}
+        aria-label="View full image in lightbox"
+        className="rounded-2xl overflow-hidden bg-canvas border border-border mb-6 relative cursor-zoom-in group select-none focus:outline-none focus:ring-2 focus:ring-amber/40"
         onClick={() => setIsLightboxOpen(true)}
         onDoubleClick={(e) => {
           e.stopPropagation();
           handleDoubleTap();
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setIsLightboxOpen(true);
+          }
         }}
       >
         <img
@@ -142,8 +151,17 @@ const PostDetail = () => {
       {/* Lightbox Modal */}
       {isLightboxOpen && (
         <div 
-          className="fixed inset-0 z-100 bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 sm:p-8 animate-overlay-in cursor-zoom-out"
+          role="button"
+          tabIndex={0}
+          aria-label="Close lightbox overlay"
+          className="fixed inset-0 z-100 bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 sm:p-8 animate-overlay-in cursor-zoom-out focus:outline-none"
           onClick={() => setIsLightboxOpen(false)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              setIsLightboxOpen(false);
+            }
+          }}
         >
           <button
             type="button"
