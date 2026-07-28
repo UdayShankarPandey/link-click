@@ -50,7 +50,7 @@ const AdminUsers = () => {
     setCreateSubmitting(true);
     setCreateError('');
     try {
-      const response = await api.post('/users', createForm);
+      await api.post('/users', createForm);
       toast.success('User created');
       setShowCreateForm(false);
       setCreateForm({ name: '', email: '', password: '', role: 'user' });
@@ -118,6 +118,7 @@ const AdminUsers = () => {
           </p>
         </div>
         <button
+          type="button"
           onClick={() => { setShowCreateForm(true); setEditingUser(null); }}
           className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-amber text-text-inverse text-sm font-semibold hover:bg-amber-hover transition-colors cursor-pointer"
         >
@@ -131,7 +132,7 @@ const AdminUsers = () => {
         <div className="bg-surface border border-border rounded-2xl p-5 mb-6 animate-slide-up">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-semibold text-text-primary">Create New User</h2>
-            <button onClick={() => setShowCreateForm(false)} className="p-1 text-text-tertiary hover:text-text-primary cursor-pointer">
+            <button type="button" onClick={() => setShowCreateForm(false)} className="p-1 text-text-tertiary hover:text-text-primary cursor-pointer">
               <X className="h-4 w-4" />
             </button>
           </div>
@@ -145,8 +146,9 @@ const AdminUsers = () => {
 
           <form onSubmit={handleCreate} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-text-secondary mb-1">Name</label>
+              <label htmlFor="create-name" className="block text-xs font-medium text-text-secondary mb-1">Name</label>
               <input
+                id="create-name"
                 type="text"
                 value={createForm.name}
                 onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
@@ -156,8 +158,9 @@ const AdminUsers = () => {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-text-secondary mb-1">Email</label>
+              <label htmlFor="create-email" className="block text-xs font-medium text-text-secondary mb-1">Email</label>
               <input
+                id="create-email"
                 type="email"
                 value={createForm.email}
                 onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
@@ -167,8 +170,9 @@ const AdminUsers = () => {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-text-secondary mb-1">Password</label>
+              <label htmlFor="create-password" className="block text-xs font-medium text-text-secondary mb-1">Password</label>
               <input
+                id="create-password"
                 type="password"
                 value={createForm.password}
                 onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
@@ -178,8 +182,9 @@ const AdminUsers = () => {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-text-secondary mb-1">Role</label>
+              <label htmlFor="create-role" className="block text-xs font-medium text-text-secondary mb-1">Role</label>
               <select
+                id="create-role"
                 value={createForm.role}
                 onChange={(e) => setCreateForm({ ...createForm, role: e.target.value })}
                 className="w-full px-3 py-2 bg-canvas border border-border rounded-lg text-sm text-text-primary focus:outline-none focus:border-amber/40 transition-colors cursor-pointer"
@@ -240,8 +245,9 @@ const AdminUsers = () => {
                   )}
                   <form onSubmit={handleEdit} className="flex flex-col sm:grid sm:grid-cols-[1fr_1.5fr_80px_120px] gap-3 sm:items-end">
                     <div className="flex flex-col gap-1 sm:gap-0 sm:block">
-                      <label className="text-xs text-text-secondary sm:hidden">Name</label>
+                      <label htmlFor={`edit-name-${u._id}`} className="text-xs text-text-secondary sm:hidden">Name</label>
                       <input
+                        id={`edit-name-${u._id}`}
                         type="text"
                         value={editForm.name}
                         onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
@@ -251,8 +257,9 @@ const AdminUsers = () => {
                       />
                     </div>
                     <div className="flex flex-col gap-1 sm:gap-0 sm:block">
-                      <label className="text-xs text-text-secondary sm:hidden">Email</label>
+                      <label htmlFor={`edit-email-${u._id}`} className="text-xs text-text-secondary sm:hidden">Email</label>
                       <input
+                        id={`edit-email-${u._id}`}
                         type="email"
                         value={editForm.email}
                         onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
@@ -262,8 +269,9 @@ const AdminUsers = () => {
                       />
                     </div>
                     <div className="flex flex-col gap-1 sm:gap-0 sm:block">
-                      <label className="text-xs text-text-secondary sm:hidden">Role</label>
+                      <label htmlFor={`edit-role-${u._id}`} className="text-xs text-text-secondary sm:hidden">Role</label>
                       <select
+                        id={`edit-role-${u._id}`}
                         value={editForm.role}
                         onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
                         className="w-full px-3 py-2 bg-canvas border border-border rounded-lg text-sm text-text-primary focus:outline-none focus:border-amber/40 transition-colors cursor-pointer"
@@ -322,6 +330,7 @@ const AdminUsers = () => {
                     </span>
                     <div className="flex sm:justify-end gap-2">
                       <button
+                        type="button"
                         onClick={() => startEdit(u)}
                         className="p-2 rounded-lg text-text-tertiary hover:text-amber hover:bg-amber-muted border border-border sm:opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                         aria-label={`Edit ${u.name}`}
@@ -329,6 +338,7 @@ const AdminUsers = () => {
                         <Edit3 className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
                       </button>
                       <button
+                        type="button"
                         onClick={() => setDeleteTarget(u._id)}
                         className="p-2 rounded-lg text-text-tertiary hover:text-danger hover:bg-danger-muted border border-border sm:opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                         aria-label={`Delete ${u.name}`}

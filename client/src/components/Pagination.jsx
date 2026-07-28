@@ -15,7 +15,7 @@ const Pagination = ({ page, totalPages, onPageChange }) => {
         (i >= page - delta && i <= page + delta)
       ) {
         pages.push(i);
-      } else if (pages[pages.length - 1] !== '...') {
+      } else if (pages.at(-1) !== '...') {
         pages.push('...');
       }
     }
@@ -25,6 +25,7 @@ const Pagination = ({ page, totalPages, onPageChange }) => {
   return (
     <nav className="flex items-center justify-center gap-1.5 mt-10" aria-label="Pagination">
       <button
+        type="button"
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1}
         className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-raised border border-border disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
@@ -40,6 +41,7 @@ const Pagination = ({ page, totalPages, onPageChange }) => {
           </span>
         ) : (
           <button
+            type="button"
             key={pageNum}
             onClick={() => onPageChange(pageNum)}
             className={`min-w-9 h-9 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
@@ -55,6 +57,7 @@ const Pagination = ({ page, totalPages, onPageChange }) => {
       )}
 
       <button
+        type="button"
         onClick={() => onPageChange(page + 1)}
         disabled={page >= totalPages}
         className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-raised border border-border disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"

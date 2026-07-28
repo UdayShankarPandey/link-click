@@ -146,6 +146,7 @@ const PostDetail = () => {
           onClick={() => setIsLightboxOpen(false)}
         >
           <button
+            type="button"
             onClick={() => setIsLightboxOpen(false)}
             className="absolute top-4 right-4 p-2 rounded-full bg-surface-overlay/50 text-white hover:bg-surface-overlay transition-colors"
           >
@@ -179,6 +180,7 @@ const PostDetail = () => {
               )}
               {canDelete && (
                 <button
+                  type="button"
                   onClick={() => setShowDelete(true)}
                   className="p-2 rounded-lg text-text-tertiary hover:text-danger hover:bg-danger-muted border border-border transition-colors cursor-pointer"
                   title="Delete post"
@@ -224,6 +226,7 @@ const PostDetail = () => {
         {/* Like bar */}
         <div className="flex items-center gap-4 py-3 border-y border-border">
           <button
+            type="button"
             onClick={handleLike}
             className={`flex items-center gap-2 text-sm font-medium transition-colors cursor-pointer ${
               isLiked ? 'text-coral' : 'text-text-tertiary hover:text-coral'

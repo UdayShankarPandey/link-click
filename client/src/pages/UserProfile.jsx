@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { ArrowLeft, Calendar, Shield, Link as LinkIcon, Heart, Grid, Camera } from 'lucide-react';
+import { ArrowLeft, Calendar, Shield, Link as LinkIcon, Heart, Camera } from 'lucide-react';
 import toast from 'react-hot-toast';
 import PostCard from '../components/PostCard';
 import Pagination from '../components/Pagination';
@@ -18,20 +18,19 @@ const UserProfile = () => {
   const [loadingPosts, setLoadingPosts] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [totalPosts, setTotalPosts] = useState(0);
   const [activeTab, setActiveTab] = useState('posts');
   const [isLinked, setIsLinked] = useState(false);
   const [isLinking, setIsLinking] = useState(false);
 
   useEffect(() => {
     fetchUser();
-    // eslint-disable-next-line
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   useEffect(() => {
     fetchPosts(1);
     setPage(1);
-    // eslint-disable-next-line
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, activeTab]);
 
   const fetchUser = async () => {
@@ -56,7 +55,6 @@ const UserProfile = () => {
       const response = await api.get(endpoint);
       setPosts(response.data.posts || []);
       setTotalPages(response.data.totalPages || 1);
-      setTotalPosts(response.data.totalPosts || 0);
     } catch {
       toast.error('Failed to load posts');
     } finally {
@@ -99,6 +97,47 @@ const UserProfile = () => {
 
   const isSelf = currentUser && (currentUser.id === id || currentUser._id === id);
 
+  const renderPostsSection = () => {
+    if (loadingPosts) {
+      return (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <Skeleton variant="post" count={6} />
+        </div>
+      );
+    }
+    if (posts.length === 0) {
+      return (
+        <EmptyState
+          icon={activeTab === 'posts' ? Camera : Heart}
+          title={activeTab === 'posts' ? "No posts yet" : "No liked posts"}
+          description={activeTab === 'posts' ? "This user hasn't shared any posts." : "This user hasn't liked any posts."}
+        />
+      );
+    }
+    return (
+      <>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 stagger-children">
+          {posts.map((post) => (
+            <PostCard key={post._id} post={post} onLikeUpdate={handleLikeUpdate} />
+          ))}
+        </div>
+        {totalPages > 1 && (
+          <Pagination page={page} totalPages={totalPages} onPageChange={handlePageChange} />
+        )}
+      </>
+    );
+  };
+
+  const renderPageContent = () => {
+    if (loadingUser) {
+      return <Skeleton variant="profile" />;
+    }
+    if (!userInfo) {
+      return <EmptyState title="User not found" description="The user you are looking for does not exist." />;
+    }
+    return null; // signal to render the full profile below
+  };
+
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors mb-5">
@@ -106,9 +145,7 @@ const UserProfile = () => {
         Feed
       </Link>
 
-      {loadingUser ? (
-        <Skeleton variant="profile" />
-      ) : userInfo ? (
+      {renderPageContent() || (
         <div className="animate-fade-in">
           {/* User Header */}
           <div className="bg-surface border border-border rounded-2xl p-5 sm:p-6 mb-7">
@@ -145,6 +182,7 @@ const UserProfile = () => {
               
               {!isSelf && currentUser && (
                 <button
+                  type="button"
                   onClick={handleToggleLink}
                   disabled={isLinking}
                   className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 group cursor-pointer ${
@@ -164,6 +202,7 @@ const UserProfile = () => {
           {/* Tabs */}
           <div className="flex items-center gap-4 border-b border-border mb-6">
             <button
+              type="button"
               onClick={() => setActiveTab('posts')}
               className={`pb-3 px-1 text-sm font-bold border-b-2 transition-colors cursor-pointer ${
                 activeTab === 'posts' ? 'border-amber text-amber' : 'border-transparent text-text-secondary hover:text-text-primary'
@@ -172,6 +211,7 @@ const UserProfile = () => {
               Posts
             </button>
             <button
+              type="button"
               onClick={() => setActiveTab('liked')}
               className={`pb-3 px-1 text-sm font-bold border-b-2 transition-colors cursor-pointer ${
                 activeTab === 'liked' ? 'border-amber text-amber' : 'border-transparent text-text-secondary hover:text-text-primary'
@@ -182,31 +222,8 @@ const UserProfile = () => {
           </div>
 
           {/* Posts */}
-          {loadingPosts ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              <Skeleton variant="post" count={6} />
-            </div>
-          ) : posts.length === 0 ? (
-            <EmptyState
-              icon={activeTab === 'posts' ? Camera : Heart}
-              title={activeTab === 'posts' ? "No posts yet" : "No liked posts"}
-              description={activeTab === 'posts' ? "This user hasn't shared any posts." : "This user hasn't liked any posts."}
-            />
-          ) : (
-            <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 stagger-children">
-                {posts.map((post) => (
-                  <PostCard key={post._id} post={post} onLikeUpdate={handleLikeUpdate} />
-                ))}
-              </div>
-              {totalPages > 1 && (
-                <Pagination page={page} totalPages={totalPages} onPageChange={handlePageChange} />
-              )}
-            </>
-          )}
+          {renderPostsSection()}
         </div>
-      ) : (
-        <EmptyState title="User not found" description="The user you are looking for does not exist." />
       )}
     </div>
   );

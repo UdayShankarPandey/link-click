@@ -126,6 +126,7 @@ const PostCard = ({ post, onLikeUpdate }) => {
       {/* Engagement bar */}
       <div className="px-4 sm:px-5 pb-4 flex items-center gap-5">
         <button
+          type="button"
           onClick={handleLike}
           className={`flex items-center gap-1.5 text-sm font-medium transition-colors cursor-pointer ${
             isLiked ? 'text-coral' : 'text-text-tertiary hover:text-coral'

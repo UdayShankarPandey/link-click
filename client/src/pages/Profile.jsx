@@ -76,6 +76,24 @@ const Profile = () => {
 
   const currentPosts = activeTab === 'posts' ? posts : likedPosts;
 
+  const renderPostsContent = () => {
+    if (loading) {
+      return <Skeleton variant="profile" />;
+    }
+    if (currentPosts.length === 0) {
+      return (
+        <EmptyState
+          icon={activeTab === 'posts' ? Camera : Heart}
+          title={activeTab === 'posts' ? "No posts yet" : "No liked posts"}
+          description={activeTab === 'posts' ? "Your published posts will appear here." : "Posts you like will appear here."}
+          actionLabel={activeTab === 'posts' ? "Create your first post" : "Explore feed"}
+          actionTo={activeTab === 'posts' ? "/create" : "/"}
+        />
+      );
+    }
+    return null; // signal to render the grid below
+  };
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 sm:py-8">
       {/* Profile Header */}
@@ -129,6 +147,7 @@ const Profile = () => {
       {/* Tabs */}
       <div className="flex items-center gap-4 border-b border-border mb-6">
         <button
+          type="button"
           onClick={() => setActiveTab('posts')}
           className={`pb-3 px-1 text-sm font-bold border-b-2 transition-colors cursor-pointer ${
             activeTab === 'posts' ? 'border-amber text-amber' : 'border-transparent text-text-secondary hover:text-text-primary'
@@ -137,6 +156,7 @@ const Profile = () => {
           My Posts
         </button>
         <button
+          type="button"
           onClick={() => setActiveTab('liked')}
           className={`pb-3 px-1 text-sm font-bold border-b-2 transition-colors cursor-pointer ${
             activeTab === 'liked' ? 'border-amber text-amber' : 'border-transparent text-text-secondary hover:text-text-primary'
@@ -165,17 +185,7 @@ const Profile = () => {
           )}
         </div>
 
-        {loading ? (
-          <Skeleton variant="profile" />
-        ) : currentPosts.length === 0 ? (
-          <EmptyState
-            icon={activeTab === 'posts' ? Camera : Heart}
-            title={activeTab === 'posts' ? "No posts yet" : "No liked posts"}
-            description={activeTab === 'posts' ? "Your published posts will appear here." : "Posts you like will appear here."}
-            actionLabel={activeTab === 'posts' ? "Create your first post" : "Explore feed"}
-            actionTo={activeTab === 'posts' ? "/create" : "/"}
-          />
-        ) : (
+        {renderPostsContent() || (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 stagger-children">
             {currentPosts.map((post) => (
               <div key={post._id} className="bg-surface border border-border rounded-2xl overflow-hidden group hover:border-surface-overlay transition-colors">
@@ -199,6 +209,7 @@ const Profile = () => {
                         <Edit3 className="h-3.5 w-3.5" />
                       </Link>
                       <button
+                        type="button"
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();

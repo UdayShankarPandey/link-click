@@ -135,6 +135,7 @@ const CommentSection = ({ postId, postOwnerId, comments = [], onCommentsUpdate }
                 </div>
                 {canDeleteComment(comment) && (
                   <button
+                    type="button"
                     onClick={() => setDeleteTarget(comment._id)}
                     className="p-1 rounded-md text-text-tertiary hover:text-danger opacity-0 group-hover/comment:opacity-100 transition-all cursor-pointer"
                     aria-label="Delete comment"

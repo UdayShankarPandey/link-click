@@ -55,8 +55,8 @@ export const createPost = async (req, res) => {
 // Get all posts (newest first, with pagination)
 export const getPosts = async (req, res) => {
   try {
-    const page = Math.max(1, parseInt(req.query.page) || 1);
-    const limit = Math.min(MAX_LIMIT, Math.max(1, parseInt(req.query.limit) || 20));
+    const page = Math.max(1, Number.parseInt(req.query.page) || 1);
+    const limit = Math.min(MAX_LIMIT, Math.max(1, Number.parseInt(req.query.limit) || 20));
     const skip = (page - 1) * limit;
 
     const [posts, total] = await Promise.all([
@@ -102,8 +102,8 @@ export const getPostById = async (req, res) => {
 // Get posts by a specific user
 export const getPostsByUser = async (req, res) => {
   try {
-    const page = Math.max(1, parseInt(req.query.page) || 1);
-    const limit = Math.min(MAX_LIMIT, Math.max(1, parseInt(req.query.limit) || 20));
+    const page = Math.max(1, Number.parseInt(req.query.page) || 1);
+    const limit = Math.min(MAX_LIMIT, Math.max(1, Number.parseInt(req.query.limit) || 20));
     const skip = (page - 1) * limit;
 
     const [posts, total] = await Promise.all([
@@ -321,8 +321,8 @@ export const deleteComment = async (req, res) => {
 // Get posts liked by a user
 export const getLikedPostsByUser = async (req, res) => {
   try {
-    const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 10;
+    const page = Number.parseInt(req.query.page, 10) || 1;
+    const limit = Number.parseInt(req.query.limit, 10) || 10;
     const startIndex = (page - 1) * limit;
     const userId = req.params.userId;
 

@@ -79,6 +79,7 @@ const Navbar = () => {
                     </div>
                   )}
                   <button
+                    type="button"
                     onClick={handleLogout}
                     className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-text-secondary hover:text-danger hover:bg-danger-muted transition-colors duration-150 cursor-pointer"
                   >
@@ -107,6 +108,7 @@ const Navbar = () => {
 
           {/* Mobile Menu Button */}
           <button
+            type="button"
             className="md:hidden p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-raised transition-colors cursor-pointer"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
@@ -144,6 +146,7 @@ const Navbar = () => {
                 )}
                 <div className="border-t border-border my-2"></div>
                 <button
+                  type="button"
                   onClick={handleLogout}
                   className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-danger hover:bg-danger-muted transition-colors cursor-pointer"
                 >

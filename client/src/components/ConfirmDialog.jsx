@@ -37,6 +37,7 @@ const ConfirmDialog = ({ open, title, message, confirmLabel = 'Delete', onConfir
       {/* Dialog */}
       <div ref={dialogRef} className="relative bg-surface-raised border border-border rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-fade-in-scale">
         <button
+          type="button"
           onClick={onCancel}
           className="absolute top-4 right-4 p-1 rounded-md text-text-tertiary hover:text-text-primary transition-colors cursor-pointer"
           aria-label="Close dialog"
@@ -56,12 +57,14 @@ const ConfirmDialog = ({ open, title, message, confirmLabel = 'Delete', onConfir
 
         <div className="flex justify-end gap-3 mt-6">
           <button
+            type="button"
             onClick={onCancel}
             className="px-4 py-2 rounded-lg text-sm font-medium text-text-secondary bg-surface hover:bg-surface-raised border border-border transition-colors cursor-pointer"
           >
             Cancel
           </button>
           <button
+            type="button"
             ref={confirmBtnRef}
             onClick={onConfirm}
             className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors cursor-pointer ${btnClass}`}

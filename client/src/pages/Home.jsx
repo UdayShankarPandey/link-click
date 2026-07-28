@@ -46,6 +46,41 @@ const Home = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const subtitleText = totalPosts > 0
+    ? `${totalPosts} post${totalPosts !== 1 ? 's' : ''} shared by the community`
+    : 'Visual stories from the Link Click community';
+
+  const renderFeedContent = () => {
+    if (loading) {
+      return (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <Skeleton variant="post" count={6} />
+        </div>
+      );
+    }
+    if (posts.length === 0) {
+      return (
+        <EmptyState
+          icon={Camera}
+          title="No posts yet"
+          description="Be the first to share something with the community."
+          actionLabel={user ? 'Create a Post' : 'Sign Up to Post'}
+          actionTo={user ? '/create' : '/register'}
+        />
+      );
+    }
+    return (
+      <>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 stagger-children">
+          {posts.map((post) => (
+            <PostCard key={post._id} post={post} onLikeUpdate={handleLikeUpdate} />
+          ))}
+        </div>
+        <Pagination page={page} totalPages={totalPages} onPageChange={handlePageChange} />
+      </>
+    );
+  };
+
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       {/* Header */}
@@ -56,9 +91,7 @@ const Home = () => {
               {user ? `Welcome back, ${user.name?.split(' ')[0]}` : 'Explore'}
             </h1>
             <p className="text-text-secondary mt-1 text-sm sm:text-base">
-              {totalPosts > 0
-                ? `${totalPosts} post${totalPosts !== 1 ? 's' : ''} shared by the community`
-                : 'Visual stories from the Link Click community'}
+              {subtitleText}
             </p>
           </div>
           {user && (
@@ -74,28 +107,7 @@ const Home = () => {
       </header>
 
       {/* Feed */}
-      {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          <Skeleton variant="post" count={6} />
-        </div>
-      ) : posts.length === 0 ? (
-        <EmptyState
-          icon={Camera}
-          title="No posts yet"
-          description="Be the first to share something with the community."
-          actionLabel={user ? 'Create a Post' : 'Sign Up to Post'}
-          actionTo={user ? '/create' : '/register'}
-        />
-      ) : (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 stagger-children">
-            {posts.map((post) => (
-              <PostCard key={post._id} post={post} onLikeUpdate={handleLikeUpdate} />
-            ))}
-          </div>
-          <Pagination page={page} totalPages={totalPages} onPageChange={handlePageChange} />
-        </>
-      )}
+      {renderFeedContent()}
     </div>
   );
 };

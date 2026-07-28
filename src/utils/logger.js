@@ -1,7 +1,7 @@
 import winston from 'winston';
 import env from '../config/env.js';
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 // Ensure logs directory exists
 const logsDir = path.join(process.cwd(), 'logs');
