@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals';
 import request from 'supertest';
+import AppError from '../errors/AppError.js';
 
 const mockRegisterUser = jest.fn();
 const mockLoginUser = jest.fn();
@@ -53,6 +54,31 @@ describe('Auth API with mocked service', () => {
         password: 'secure123',
       });
     });
+
+    it('should return 400 when the user already exists', async () => {
+      mockRegisterUser.mockRejectedValue(
+        new AppError('User already exists with this email.', 400)
+      );
+
+      const response = await request(app)
+        .post('/api/auth/register')
+        .send({
+          name: 'Uday',
+          email: 'uday@example.com',
+          password: 'secure123',
+        });
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body.message).toBe(
+        'User already exists with this email.'
+      );
+
+      expect(mockRegisterUser).toHaveBeenCalledWith({
+        name: 'Uday',
+        email: 'uday@example.com',
+        password: 'secure123',
+      });
+    });
   });
 
   describe('POST /api/auth/login', () => {
@@ -84,6 +110,29 @@ describe('Auth API with mocked service', () => {
       expect(mockLoginUser).toHaveBeenCalledWith({
         email: 'uday@example.com',
         password: 'secure123',
+      });
+    });
+
+    it('should return 401 for invalid credentials', async () => {
+      mockLoginUser.mockRejectedValue(
+        new AppError('Invalid email or password.', 401)
+      );
+
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send({
+          email: 'uday@example.com',
+          password: 'wrongpassword',
+        });
+
+      expect(response.statusCode).toBe(401);
+      expect(response.body.message).toBe(
+        'Invalid email or password.'
+      );
+
+      expect(mockLoginUser).toHaveBeenCalledWith({
+        email: 'uday@example.com',
+        password: 'wrongpassword',
       });
     });
   });
