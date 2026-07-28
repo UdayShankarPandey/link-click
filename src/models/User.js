@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema(
       trim: true,
       maxlength: [255, 'Email cannot exceed 255 characters'],
       match: [
-        /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/,
         'Please fill a valid email address',
       ],
     },
