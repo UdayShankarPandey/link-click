@@ -41,7 +41,14 @@ jobs:
       run: npm run lint --if-present
 
     - name: Run backend tests
-      run: npm test
+      env:
+        NODE_ENV: test
+        MONGODB_URI: mongodb://localhost:27017/test
+        JWT_SECRET: ci-test-secret
+        IMAGEKIT_PUBLIC_KEY: ci-test-public-key
+        IMAGEKIT_PRIVATE_KEY: ci-test-private-key
+        IMAGEKIT_URL_ENDPOINT: https://ik.imagekit.io/test
+      run: npm test -- --runInBand
 
     - name: Log in to GitHub Container Registry
       if: github.event_name == 'push'
