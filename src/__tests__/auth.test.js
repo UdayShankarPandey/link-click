@@ -18,4 +18,31 @@ describe('Auth API', () => {
       expect(response.body.message).toContain('Password must be at least 6 characters');
     });
   });
+
+  describe('POST /api/auth/login', () => {
+    it('should reject invalid login data', async () => {
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send({
+          email: 'invalid-email',
+          password: ''
+        });
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body.message).toContain('Invalid email address');
+      expect(response.body.message).toContain('Password is required');
+    });
+  });
+
+  describe('GET /api/auth/me', () => {
+    it('should reject requests without an authentication token', async () => {
+      const response = await request(app)
+        .get('/api/auth/me');
+
+      expect(response.statusCode).toBe(401);
+      expect(response.body.message).toBe(
+        'Not authorized, no token provided.'
+      );
+    });
+  });
 });
