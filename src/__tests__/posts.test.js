@@ -16,4 +16,16 @@ describe('Posts API', () => {
       );
     });
   });
+
+  describe('DELETE /api/posts/:id', () => {
+    it('should reject post deletion without authentication', async () => {
+      const response = await request(app)
+        .delete('/api/posts/test-post-id');
+
+      expect(response.statusCode).toBe(401);
+      expect(response.body.message).toBe(
+        'Not authorized, no token provided.'
+      );
+    });
+  });
 });
