@@ -18,11 +18,22 @@ const mockFind = jest.fn(() => ({
   populate: mockPopulateUser,
 }));
 
+const mockFindByIdPopulateComments = jest.fn();
+
+const mockFindByIdPopulateUser = jest.fn(() => ({
+  populate: mockFindByIdPopulateComments,
+}));
+
+const mockFindById = jest.fn(() => ({
+  populate: mockFindByIdPopulateUser,
+}));
+
 const mockCountDocuments = jest.fn();
 
 jest.unstable_mockModule('../models/Post.js', () => ({
   default: {
     find: mockFind,
+    findById: mockFindById,
     countDocuments: mockCountDocuments,
   },
 }));
@@ -78,6 +89,45 @@ describe('Posts API with mocked database', () => {
 
       expect(mockSkip).toHaveBeenCalledWith(50);
       expect(mockLimit).toHaveBeenCalledWith(50);
+    });
+  });
+
+  describe('GET /api/posts/:id', () => {
+    it('should return a post by ID', async () => {
+      const fakePost = {
+        _id: 'post-123',
+        title: 'Test Post',
+        content: 'Test content',
+        imageUrl: 'https://example.com/image.jpg',
+      };
+
+      mockFindByIdPopulateComments.mockResolvedValue(fakePost);
+
+      const response = await request(app)
+        .get('/api/posts/post-123');
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toEqual(fakePost);
+
+      expect(mockFindById).toHaveBeenCalledWith('post-123');
+      expect(mockFindByIdPopulateUser).toHaveBeenCalledWith(
+        'user',
+        'name email role'
+      );
+      expect(mockFindByIdPopulateComments).toHaveBeenCalledWith(
+        'comments.user',
+        'name email'
+      );
+    });
+
+    it('should return 404 when the post does not exist', async () => {
+      mockFindByIdPopulateComments.mockResolvedValue(null);
+
+      const response = await request(app)
+        .get('/api/posts/missing-post');
+
+      expect(response.statusCode).toBe(404);
+      expect(response.body.message).toBe('Post not found.');
     });
   });
 });
