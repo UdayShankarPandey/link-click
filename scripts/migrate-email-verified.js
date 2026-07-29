@@ -74,7 +74,9 @@ async function migrate() {
   console.log('Disconnected.');
 }
 
-migrate().catch((err) => {
+try {
+  await migrate();
+} catch (err) {
   console.error('Migration failed:', err);
   process.exit(1);
-});
+}

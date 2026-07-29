@@ -103,23 +103,29 @@ const CheckEmail = () => {
         {/* Resend Action */}
         <div className="mt-6 pt-5 border-t border-border/60">
           <p className="text-xs text-text-secondary mb-3">Didn't receive the email?</p>
-          <button
-            type="button"
-            onClick={handleResend}
-            disabled={isResending || cooldown > 0 || !email}
-            className="w-full bg-surface-hover border border-border hover:border-amber/40 text-text-primary font-medium py-2.5 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-          >
-            {isResending ? (
-              <RefreshCw className="h-4 w-4 animate-spin text-amber" />
-            ) : (
-              <Mail className="h-4 w-4 text-amber" />
-            )}
-            {isResending
-              ? 'Sending...'
-              : cooldown > 0
-              ? `Resend in ${cooldown}s`
-              : 'Resend verification email'}
-          </button>
+          {(() => {
+            let resendButtonText = 'Resend verification email';
+            if (isResending) {
+              resendButtonText = 'Sending...';
+            } else if (cooldown > 0) {
+              resendButtonText = `Resend in ${cooldown}s`;
+            }
+            return (
+              <button
+                type="button"
+                onClick={handleResend}
+                disabled={isResending || cooldown > 0 || !email}
+                className="w-full bg-surface-hover border border-border hover:border-amber/40 text-text-primary font-medium py-2.5 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              >
+                {isResending ? (
+                  <RefreshCw className="h-4 w-4 animate-spin text-amber" />
+                ) : (
+                  <Mail className="h-4 w-4 text-amber" />
+                )}
+                {resendButtonText}
+              </button>
+            );
+          })()}
         </div>
 
         {/* Back link */}

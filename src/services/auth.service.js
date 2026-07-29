@@ -6,6 +6,20 @@ import env from '../config/env.js';
 import { generateVerificationToken, hashToken } from '../utils/verificationToken.js';
 import { sendVerificationEmail } from './email.service.js';
 
+/**
+ * Validates and canonicalizes an email input from user-controlled data.
+ *
+ * Rejects non-string values (objects, arrays, MongoDB operators) BEFORE they
+ * can reach a Mongoose query, preventing NoSQL injection. Normalizes the value
+ * to match the User schema (lowercase, trimmed).
+ */
+const sanitizeEmail = (value) => {
+  if (typeof value !== 'string') {
+    throw new AppError('Invalid email address.', 400);
+  }
+  return value.trim().toLowerCase();
+};
+
 // Helper function to generate JWT
 const generateToken = (id) => {
   return jwt.sign({ id }, env.JWT_SECRET, {
@@ -16,7 +30,8 @@ const generateToken = (id) => {
 const RESEND_COOLDOWN_MS = 60 * 1000; // 60 seconds
 
 export const authService = {
-  async registerUser({ name, email, password }) {
+  async registerUser({ name, email: rawEmail, password }) {
+    const email = sanitizeEmail(rawEmail);
     const userExists = await User.findOne({ email });
     if (userExists) {
       throw new AppError('User already exists with this email.', 400);
@@ -39,7 +54,8 @@ export const authService = {
     return { email };
   },
 
-  async loginUser({ email, password }) {
+  async loginUser({ email: rawEmail, password }) {
+    const email = sanitizeEmail(rawEmail);
     const user = await User.findOne({ email });
     if (!user || !(await user.comparePassword(password))) {
       throw new AppError('Invalid email or password.', 401);
@@ -87,7 +103,8 @@ export const authService = {
     return { message: 'Email verified successfully. You can now log in.' };
   },
 
-  async resendVerification(email) {
+  async resendVerification(rawEmail) {
+    const email = sanitizeEmail(rawEmail);
     const user = await User.findOne({ email });
 
     // Return success even if user not found (prevents email enumeration)

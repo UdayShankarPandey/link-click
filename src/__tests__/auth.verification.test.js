@@ -268,6 +268,62 @@ describe('Email Verification Flow', () => {
       expect(response.statusCode).toBe(400);
       expect(response.body.message).toContain('Email is required');
     });
+
+    // ── NoSQL Injection Protection ──────────────────────────────────────
+
+    it('should reject object-shaped email (NoSQL operator injection)', async () => {
+      const response = await request(app)
+        .post('/api/auth/resend-verification')
+        .send({ email: { $gt: '' } });
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body.message).toContain('Invalid email');
+      // Must NOT have queried the database
+      expect(mockFindOne).not.toHaveBeenCalled();
+      expect(mockSendVerificationEmail).not.toHaveBeenCalled();
+    });
+
+    it('should reject array-shaped email input', async () => {
+      const response = await request(app)
+        .post('/api/auth/resend-verification')
+        .send({ email: ['attack@example.com'] });
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body.message).toContain('Invalid email');
+      expect(mockFindOne).not.toHaveBeenCalled();
+    });
+
+    it('should reject $ne operator injection', async () => {
+      const response = await request(app)
+        .post('/api/auth/resend-verification')
+        .send({ email: { $ne: null } });
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body.message).toContain('Invalid email');
+      expect(mockFindOne).not.toHaveBeenCalled();
+    });
+
+    it('should reject numeric email input', async () => {
+      const response = await request(app)
+        .post('/api/auth/resend-verification')
+        .send({ email: 12345 });
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body.message).toContain('Invalid email');
+      expect(mockFindOne).not.toHaveBeenCalled();
+    });
+
+    it('should accept valid string email and preserve anti-enumeration response', async () => {
+      mockFindOne.mockResolvedValue(null); // unknown user
+
+      const response = await request(app)
+        .post('/api/auth/resend-verification')
+        .send({ email: 'unknown@example.com' });
+
+      expect(response.statusCode).toBe(200);
+      expect(mockFindOne).toHaveBeenCalledWith({ email: 'unknown@example.com' });
+      expect(mockSendVerificationEmail).not.toHaveBeenCalled();
+    });
   });
 
   // ── Login with Verification Guard ───────────────────────────────────────

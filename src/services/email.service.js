@@ -5,23 +5,14 @@ import { logger } from '../utils/logger.js';
 /**
  * Sends the email verification link to a newly registered user.
  *
- * - Production: requires RESEND_API_KEY; fails fast if missing.
- * - Development/test: if RESEND_API_KEY is absent, logs the verification
- *   URL to the console for local testing.
+ * Requires RESEND_API_KEY in every environment. If the key is not
+ * configured, throws immediately with a clear configuration error.
  *
- * Raw verification tokens and URLs are NEVER written to production logs.
+ * Logs never contain email addresses, raw tokens, or verification URLs.
  */
 export const sendVerificationEmail = async (to, rawToken) => {
-  // Production guard — fail fast if email delivery is not configured
   if (!env.RESEND_API_KEY) {
-    if (env.NODE_ENV === 'production') {
-      throw new Error('Email delivery is not configured. RESEND_API_KEY is required in production.');
-    }
-
-    // Development / test fallback — log the link for local testing only
-    const verificationUrl = `${env.FRONTEND_URL}/verify-email?token=${rawToken}`;
-    logger.info(`[Email] Verification link for ${to}: ${verificationUrl}`);
-    return;
+    throw new Error('Email delivery is not configured. Set the RESEND_API_KEY environment variable.');
   }
 
   const verificationUrl = `${env.FRONTEND_URL}/verify-email?token=${rawToken}`;
@@ -41,6 +32,6 @@ export const sendVerificationEmail = async (to, rawToken) => {
     `,
   });
 
-  logger.info(`[Email] Verification email sent to ${to}`);
+  logger.info('[Email] Verification email sent');
 };
 

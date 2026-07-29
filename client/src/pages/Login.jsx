@@ -95,23 +95,29 @@ const Login = () => {
               <span>{error}</span>
               {unverifiedEmail && (
                 <div className="mt-2.5 pt-2 border-t border-danger/20">
-                  <button
-                    type="button"
-                    onClick={handleResend}
-                    disabled={isResending || resendCooldown > 0}
-                    className="inline-flex items-center gap-1.5 font-medium text-xs text-amber hover:underline disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                  >
-                    {isResending ? (
-                      <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      <Mail className="h-3.5 w-3.5" />
-                    )}
-                    {isResending
-                      ? 'Sending link...'
-                      : resendCooldown > 0
-                      ? `Resend in ${resendCooldown}s`
-                      : 'Resend verification email'}
-                  </button>
+                  {(() => {
+                    let resendButtonText = 'Resend verification email';
+                    if (isResending) {
+                      resendButtonText = 'Sending link...';
+                    } else if (resendCooldown > 0) {
+                      resendButtonText = `Resend in ${resendCooldown}s`;
+                    }
+                    return (
+                      <button
+                        type="button"
+                        onClick={handleResend}
+                        disabled={isResending || resendCooldown > 0}
+                        className="inline-flex items-center gap-1.5 font-medium text-xs text-amber hover:underline disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                      >
+                        {isResending ? (
+                          <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Mail className="h-3.5 w-3.5" />
+                        )}
+                        {resendButtonText}
+                      </button>
+                    );
+                  })()}
                 </div>
               )}
             </div>
