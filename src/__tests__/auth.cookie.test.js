@@ -23,6 +23,8 @@ jest.unstable_mockModule('../services/auth.service.js', () => ({
     loginUser: mockLoginUser,
     getCurrentUser: mockGetCurrentUser,
     updateProfilePicture: jest.fn(),
+    verifyEmail: jest.fn(),
+    resendVerification: jest.fn(),
   },
 }));
 
@@ -35,16 +37,8 @@ describe('HttpOnly Cookie Authentication', () => {
   });
 
   describe('POST /api/auth/register cookie handling', () => {
-    it('should set HttpOnly authentication cookie on successful registration', async () => {
-      const serviceResult = {
-        token: 'test-register-jwt-token',
-        user: {
-          id: 'user-123',
-          name: 'New User',
-          email: 'newuser@domain.com',
-          role: 'user',
-        },
-      };
+    it('should NOT set auth cookie on registration (email verification required)', async () => {
+      const serviceResult = { email: 'newuser@domain.com' };
 
       mockRegisterUser.mockResolvedValue(serviceResult);
 
@@ -57,10 +51,13 @@ describe('HttpOnly Cookie Authentication', () => {
         });
 
       expect(response.statusCode).toBe(201);
-      expect(response.headers['set-cookie']).toBeDefined();
-      const cookies = response.headers['set-cookie'].join(';');
-      expect(cookies).toContain('token=test-register-jwt-token');
-      expect(cookies).toContain('HttpOnly');
+      expect(response.body.message).toContain('check your email');
+      // Registration must NOT set an auth cookie
+      const cookies = response.headers['set-cookie'];
+      if (cookies) {
+        const joined = cookies.join(';');
+        expect(joined).not.toContain('token=');
+      }
     });
   });
 

@@ -3,11 +3,30 @@ import apiResponse from '../utils/apiResponse.js';
 import { authService } from '../services/auth.service.js';
 import { setAuthCookie, clearAuthCookie } from '../utils/cookie.js';
 
-// Register a new user
+// Register a new user (does NOT establish a session — email verification required)
 export const register = asyncHandler(async (req, res) => {
   const result = await authService.registerUser(req.body);
-  setAuthCookie(res, result.token);
-  return apiResponse(res, 201, 'User registered successfully.', result);
+  return apiResponse(res, 201, 'Registration successful. Please check your email to verify your account.', result);
+});
+
+// Verify email ownership via POST with token in request body
+export const verifyEmail = asyncHandler(async (req, res) => {
+  const { token } = req.body;
+  if (!token) {
+    return apiResponse(res, 400, 'Verification token is required.');
+  }
+  const result = await authService.verifyEmail(token);
+  return apiResponse(res, 200, result.message);
+});
+
+// Resend verification email
+export const resendVerification = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return apiResponse(res, 400, 'Email is required.');
+  }
+  const result = await authService.resendVerification(email);
+  return apiResponse(res, 200, result.message);
 });
 
 // Login user

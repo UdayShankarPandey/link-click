@@ -37,8 +37,8 @@ const Register = () => {
     setIsSubmitting(false);
 
     if (result.success) {
-      toast.success('Account created! Welcome to Link Click.');
-      navigate('/');
+      toast.success(result.message || 'Account created! Please check your email.');
+      navigate('/check-email', { state: { email: result.email || email } });
     } else {
       setError(result.message);
     }
