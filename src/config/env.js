@@ -14,6 +14,9 @@ const envSchema = z.object({
   IMAGEKIT_PUBLIC_KEY: z.string().min(1, 'IMAGEKIT_PUBLIC_KEY is required'),
   IMAGEKIT_PRIVATE_KEY: z.string().min(1, 'IMAGEKIT_PRIVATE_KEY is required'),
   IMAGEKIT_URL_ENDPOINT: z.string().url('IMAGEKIT_URL_ENDPOINT must be a valid URL'),
+  RESEND_API_KEY: z.string().optional(),
+  EMAIL_FROM: z.string().default('Link Click <onboarding@resend.dev>'),
+  FRONTEND_URL: z.string().url().default('http://localhost:5173'),
 });
 
 const _env = envSchema.safeParse(process.env);

@@ -12,6 +12,8 @@ import AdminRoute from './components/AdminRoute';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import CheckEmail from './pages/CheckEmail';
+import VerifyEmail from './pages/VerifyEmail';
 import Profile from './pages/Profile';
 import CreatePost from './pages/CreatePost';
 import PostDetail from './pages/PostDetail';
@@ -32,6 +34,8 @@ const App = () => {
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/check-email" element={<CheckEmail />} />
+              <Route path="/verify-email" element={<VerifyEmail />} />
               <Route path="/post/:id" element={<PostDetail />} />
               <Route path="/user/:id" element={<UserProfile />} />
 

@@ -11,6 +11,8 @@ jest.unstable_mockModule('../services/auth.service.js', () => ({
     loginUser: mockLoginUser,
     getCurrentUser: jest.fn(),
     updateProfilePicture: jest.fn(),
+    verifyEmail: jest.fn(),
+    resendVerification: jest.fn(),
   },
 }));
 
@@ -22,16 +24,8 @@ describe('Auth API with mocked service', () => {
   });
 
   describe('POST /api/auth/register', () => {
-    it('should register a user successfully', async () => {
-      const serviceResult = {
-        token: 'test-jwt-token',
-        user: {
-          id: 'user-123',
-          name: 'Uday',
-          email: 'uday@example.com',
-          role: 'user',
-        },
-      };
+    it('should register a user successfully (no session established)', async () => {
+      const serviceResult = { email: 'uday@example.com' };
 
       mockRegisterUser.mockResolvedValue(serviceResult);
 
@@ -45,7 +39,7 @@ describe('Auth API with mocked service', () => {
 
       expect(response.statusCode).toBe(201);
       expect(response.body.success).toBe(true);
-      expect(response.body.message).toBe('User registered successfully.');
+      expect(response.body.message).toContain('check your email');
       expect(response.body.data).toEqual(serviceResult);
 
       expect(mockRegisterUser).toHaveBeenCalledWith({

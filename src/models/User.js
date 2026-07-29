@@ -46,7 +46,14 @@ const userSchema = new mongoose.Schema(
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
       }
-    ]
+    ],
+    emailVerified: {
+      type: Boolean,
+      default: false,
+    },
+    emailVerificationTokenHash: String,
+    emailVerificationExpires: Date,
+    emailVerificationSentAt: Date
   },
   {
     timestamps: true,
@@ -55,6 +62,9 @@ const userSchema = new mongoose.Schema(
       transform(doc, ret) {
         delete ret.password;
         delete ret.__v;
+        delete ret.emailVerificationTokenHash;
+        delete ret.emailVerificationExpires;
+        delete ret.emailVerificationSentAt;
         return ret;
       }
     },
@@ -62,6 +72,9 @@ const userSchema = new mongoose.Schema(
       transform(doc, ret) {
         delete ret.password;
         delete ret.__v;
+        delete ret.emailVerificationTokenHash;
+        delete ret.emailVerificationExpires;
+        delete ret.emailVerificationSentAt;
         return ret;
       }
     }

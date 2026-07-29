@@ -31,16 +31,19 @@ export const AuthProvider = ({ children }) => {
       return { success: true };
     } catch (error) {
       const message = error.response?.data?.message || 'Login failed';
-      return { success: false, message };
+      const emailVerified = error.response?.data?.emailVerified;
+      return { success: false, message, emailVerified };
     }
   };
 
   const register = async (name, email, password) => {
     try {
       const response = await api.post('/auth/register', { name, email, password });
-      const userData = response.data.data?.user || response.data.user || response.data;
-      setUser(userData);
-      return { success: true };
+      return {
+        success: true,
+        email,
+        message: response.data?.message || 'Registration successful. Please check your email.',
+      };
     } catch (error) {
       const message = error.response?.data?.message || 'Registration failed';
       return { success: false, message };

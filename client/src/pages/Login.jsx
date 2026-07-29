@@ -1,19 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LogIn, Mail, Lock, AlertCircle } from 'lucide-react';
+import { LogIn, Mail, Lock, AlertCircle, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
+import api from '../services/api';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [unverifiedEmail, setUnverifiedEmail] = useState(null);
+  const [isResending, setIsResending] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
 
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || '/';
+
+  // Resend cooldown timer
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setResendCooldown((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,6 +37,7 @@ const Login = () => {
 
     setIsSubmitting(true);
     setError('');
+    setUnverifiedEmail(null);
 
     const result = await login(email, password);
     setIsSubmitting(false);
@@ -33,6 +47,32 @@ const Login = () => {
       navigate(from, { replace: true });
     } else {
       setError(result.message);
+      if (result.emailVerified === false) {
+        setUnverifiedEmail(email);
+        setPassword('');
+      }
+    }
+  };
+
+  const handleResend = async () => {
+    const targetEmail = unverifiedEmail || email;
+    if (!targetEmail) return;
+
+    setIsResending(true);
+    try {
+      const response = await api.post('/auth/resend-verification', { email: targetEmail });
+      toast.success(response.data?.message || 'Verification link sent!');
+      setResendCooldown(60);
+    } catch (err) {
+      const message = err.response?.data?.message || 'Failed to resend verification email.';
+      if (err.response?.status === 429) {
+        const retryAfter = err.response?.data?.retryAfter;
+        const seconds = typeof retryAfter === 'number' && retryAfter > 0 ? retryAfter : 60;
+        setResendCooldown(seconds);
+      }
+      toast.error(message);
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -49,9 +89,32 @@ const Login = () => {
         </div>
 
         {error && (
-          <div className="bg-danger-muted border border-danger/20 text-danger p-3 rounded-xl mb-5 flex items-start gap-2 text-sm">
+          <div role="alert" className="bg-danger-muted border border-danger/20 text-danger p-3 rounded-xl mb-5 flex items-start gap-2 text-sm">
             <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-            <span>{error}</span>
+            <div className="flex-1">
+              <span>{error}</span>
+              {unverifiedEmail && (
+                <div className="mt-2.5 pt-2 border-t border-danger/20">
+                  <button
+                    type="button"
+                    onClick={handleResend}
+                    disabled={isResending || resendCooldown > 0}
+                    className="inline-flex items-center gap-1.5 font-medium text-xs text-amber hover:underline disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    {isResending ? (
+                      <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Mail className="h-3.5 w-3.5" />
+                    )}
+                    {isResending
+                      ? 'Sending link...'
+                      : resendCooldown > 0
+                      ? `Resend in ${resendCooldown}s`
+                      : 'Resend verification email'}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         )}
 

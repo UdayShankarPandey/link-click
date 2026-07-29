@@ -28,6 +28,7 @@ const errorMiddleware = (err, req, res, next) => {
     success: false,
     status: err.status,
     message,
+    ...(err.isOperational && err.data),
   });
 };
 
