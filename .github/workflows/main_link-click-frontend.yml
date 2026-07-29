@@ -24,7 +24,7 @@ jobs:
           node-version: '24.x'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
         working-directory: ./client
 
       - name: Run frontend lint
