@@ -16,10 +16,10 @@ jobs:
       contents: read # This is required for actions/checkout
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4 (v4.4.0)
 
       - name: Set up Node.js version
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 (v4.4.0)
         with:
           node-version: '24.x'
 
@@ -42,7 +42,7 @@ jobs:
         working-directory: ./client
 
       - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4 (v4.6.2)
         with:
           name: node-app
           path: ./client
@@ -56,12 +56,12 @@ jobs:
 
     steps:
       - name: Download artifact from build job
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4 (v4.3.0)
         with:
           name: node-app
 
       - name: Login to Azure
-        uses: azure/login@v2
+        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2 (v2.3.0)
         with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_20409DA653754169B8526B4D05FF3E55 }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_183F011D01654D10BA1DED49BB44FD98 }}
@@ -69,7 +69,7 @@ jobs:
 
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
-        uses: azure/webapps-deploy@v3
+        uses: azure/webapps-deploy@02a81bead70021f5284939794bcec79c271ab383 # v3 (v3.0.8)
         with:
           app-name: 'link-click-frontend'
           slot-name: 'Production'
