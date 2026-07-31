@@ -128,7 +128,7 @@ const PostCard = ({ post, onLikeUpdate }) => {
         <button
           type="button"
           onClick={handleLike}
-          className={`flex items-center gap-1.5 text-sm font-medium transition-colors cursor-pointer ${
+          className={`flex items-center gap-1.5 text-sm font-medium transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral/50 rounded-md active:scale-95 ${
             isLiked ? 'text-coral' : 'text-text-tertiary hover:text-coral'
           }`}
           aria-label={isLiked ? 'Unlike this post' : 'Like this post'}
@@ -141,7 +141,7 @@ const PostCard = ({ post, onLikeUpdate }) => {
 
         <Link
           to={`/post/${post._id}`}
-          className="flex items-center gap-1.5 text-sm font-medium text-text-tertiary hover:text-amber transition-colors"
+          className="flex items-center gap-1.5 text-sm font-medium text-text-tertiary hover:text-amber transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber/50 rounded-md active:scale-95"
         >
           <MessageSquare className="h-4.5 w-4.5" />
           <span>{post.comments?.length || 0}</span>

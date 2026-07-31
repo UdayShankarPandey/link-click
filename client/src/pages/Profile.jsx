@@ -149,7 +149,7 @@ const Profile = () => {
         <button
           type="button"
           onClick={() => setActiveTab('posts')}
-          className={`pb-3 px-1 text-sm font-bold border-b-2 transition-colors cursor-pointer ${
+          className={`pb-3 px-1 text-sm font-bold border-b-2 transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber rounded-t ${
             activeTab === 'posts' ? 'border-amber text-amber' : 'border-transparent text-text-secondary hover:text-text-primary'
           }`}
         >
@@ -158,7 +158,7 @@ const Profile = () => {
         <button
           type="button"
           onClick={() => setActiveTab('liked')}
-          className={`pb-3 px-1 text-sm font-bold border-b-2 transition-colors cursor-pointer ${
+          className={`pb-3 px-1 text-sm font-bold border-b-2 transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber rounded-t ${
             activeTab === 'liked' ? 'border-amber text-amber' : 'border-transparent text-text-secondary hover:text-text-primary'
           }`}
         >
@@ -177,7 +177,7 @@ const Profile = () => {
           {activeTab === 'posts' && (
             <Link
               to="/create"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-amber text-text-inverse text-sm font-semibold hover:bg-amber-hover transition-colors"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber text-text-inverse text-sm font-semibold hover:bg-amber-hover transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber focus-visible:ring-offset-2 focus-visible:ring-offset-canvas active:scale-[0.98]"
             >
               <Camera className="h-3.5 w-3.5" />
               New
@@ -203,7 +203,7 @@ const Profile = () => {
                       <Link
                         to={`/post/${post._id}/edit`}
                         onClick={(e) => e.stopPropagation()}
-                        className="p-2 bg-canvas/80 backdrop-blur-sm rounded-lg text-text-secondary hover:text-amber border border-border transition-colors"
+                        className="p-2 bg-canvas/80 backdrop-blur-sm rounded-lg text-text-secondary hover:text-amber border border-border transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber active:scale-95"
                         title="Edit post"
                       >
                         <Edit3 className="h-3.5 w-3.5" />
@@ -215,7 +215,7 @@ const Profile = () => {
                           e.stopPropagation();
                           setDeleteTarget(post._id);
                         }}
-                        className="p-2 bg-canvas/80 backdrop-blur-sm rounded-lg text-text-secondary hover:text-danger border border-border transition-colors cursor-pointer"
+                        className="p-2 bg-canvas/80 backdrop-blur-sm rounded-lg text-text-secondary hover:text-danger border border-border transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger active:scale-95"
                         title="Delete post"
                       >
                         <Trash2 className="h-3.5 w-3.5" />

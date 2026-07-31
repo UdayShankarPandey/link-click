@@ -28,7 +28,7 @@ const ConfirmDialog = ({ open, title, message, confirmLabel = 'Delete', onConfir
   }, [open]);
 
   const btnClass = variant === 'danger'
-    ? 'bg-danger hover:bg-red-600 text-white'
+    ? 'bg-danger hover:bg-danger/90 text-white'
     : 'bg-amber hover:bg-amber-hover text-text-inverse';
 
   return (
@@ -55,7 +55,7 @@ const ConfirmDialog = ({ open, title, message, confirmLabel = 'Delete', onConfir
         <button
           type="button"
           onClick={onCancel}
-          className="absolute top-4 right-4 p-1 rounded-md text-text-tertiary hover:text-text-primary transition-colors cursor-pointer"
+          className="absolute top-4 right-4 p-1 rounded-md text-text-tertiary hover:text-text-primary transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber active:scale-95"
           aria-label="Close dialog"
         >
           <X className="h-4 w-4" />
@@ -75,7 +75,7 @@ const ConfirmDialog = ({ open, title, message, confirmLabel = 'Delete', onConfir
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 rounded-lg text-sm font-medium text-text-secondary bg-surface hover:bg-surface-raised border border-border transition-colors cursor-pointer"
+            className="px-4 py-2 rounded-xl text-sm font-medium text-text-secondary bg-surface hover:bg-surface-raised hover:text-text-primary border border-border transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber focus-visible:ring-offset-2 focus-visible:ring-offset-surface-raised active:scale-[0.98]"
           >
             Cancel
           </button>
@@ -83,7 +83,7 @@ const ConfirmDialog = ({ open, title, message, confirmLabel = 'Delete', onConfir
             type="button"
             ref={confirmBtnRef}
             onClick={onConfirm}
-            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors cursor-pointer ${btnClass}`}
+            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 ${variant === 'danger' ? 'focus-visible:ring-danger' : 'focus-visible:ring-amber'} focus-visible:ring-offset-2 focus-visible:ring-offset-surface-raised active:scale-[0.98] ${btnClass}`}
           >
             {confirmLabel}
           </button>
