@@ -188,9 +188,9 @@ const Profile = () => {
         {renderPostsContent() || (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 stagger-children">
             {currentPosts.map((post) => (
-              <div key={post._id} className="bg-surface border border-border rounded-2xl overflow-hidden group hover:border-surface-overlay transition-colors">
+              <div key={post._id} className="bg-surface border border-border rounded-2xl overflow-hidden group hover:border-surface-overlay transition-colors duration-200">
                 {/* Image */}
-                <Link to={`/post/${post._id}`} className="block relative aspect-video bg-canvas overflow-hidden">
+                <Link to={`/post/${post._id}`} className="block relative aspect-16/10 bg-canvas overflow-hidden">
                   <img
                     src={post.imageUrl}
                     alt={post.title}

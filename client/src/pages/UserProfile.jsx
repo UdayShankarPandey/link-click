@@ -148,7 +148,7 @@ const UserProfile = () => {
       {renderPageContent() || (
         <div className="animate-fade-in">
           {/* User Header */}
-          <div className="bg-surface border border-border rounded-2xl p-5 sm:p-6 mb-7">
+          <div className="bg-surface border border-border rounded-2xl p-5 sm:p-7 mb-7">
             <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-5">
               <div className="flex items-center gap-4">
                 {userInfo.profilePicUrl ? (
