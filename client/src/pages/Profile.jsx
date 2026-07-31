@@ -199,7 +199,7 @@ const Profile = () => {
                   />
                   {/* Actions overlay (only for own posts) */}
                   {activeTab === 'posts' && (
-                    <div className="absolute top-2.5 right-2.5 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute top-2.5 right-2.5 flex gap-2 sm:opacity-0 sm:group-hover:opacity-100 opacity-100 transition-opacity">
                       <Link
                         to={`/post/${post._id}/edit`}
                         onClick={(e) => e.stopPropagation()}
