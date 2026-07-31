@@ -24,7 +24,7 @@
 
   --color-text-primary: #F5F0E8;
   --color-text-secondary: #9A9690;
-  --color-text-tertiary: #6A6560;
+  --color-text-tertiary: #8C8780;
   --color-text-inverse: #111113;
 
   --font-family-sans: 'Inter', system-ui, -apple-system, sans-serif;
@@ -53,6 +53,11 @@ body {
 ::selection {
   background-color: var(--color-amber);
   color: var(--color-text-inverse);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-amber);
+  outline-offset: 2px;
 }
 
 /* ─── Scrollbar ──────────────────────────────────────────────────────────── */
