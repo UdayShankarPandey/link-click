@@ -67,7 +67,7 @@ const Register = () => {
           <div>
             <label htmlFor="reg-name" className="block text-sm font-medium text-text-secondary mb-1.5">Full Name</label>
             <div className="relative">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-text-tertiary">
+              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-text-tertiary pointer-events-none">
                 <User className="h-4 w-4" />
               </span>
               <input
@@ -75,7 +75,7 @@ const Register = () => {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-amber/40 focus:ring-1 focus:ring-amber/20 transition-colors"
+                className="w-full pl-10 pr-4 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-amber/40 focus:ring-2 focus:ring-amber/20 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="Jane Doe"
                 maxLength={100}
                 required
@@ -87,7 +87,7 @@ const Register = () => {
           <div>
             <label htmlFor="reg-email" className="block text-sm font-medium text-text-secondary mb-1.5">Email</label>
             <div className="relative">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-text-tertiary">
+              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-text-tertiary pointer-events-none">
                 <Mail className="h-4 w-4" />
               </span>
               <input
@@ -95,7 +95,7 @@ const Register = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-amber/40 focus:ring-1 focus:ring-amber/20 transition-colors"
+                className="w-full pl-10 pr-4 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-amber/40 focus:ring-2 focus:ring-amber/20 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="you@example.com"
                 maxLength={255}
                 required
@@ -107,7 +107,7 @@ const Register = () => {
           <div>
             <label htmlFor="reg-password" className="block text-sm font-medium text-text-secondary mb-1.5">Password</label>
             <div className="relative">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-text-tertiary">
+              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-text-tertiary pointer-events-none">
                 <Lock className="h-4 w-4" />
               </span>
               <input
@@ -115,7 +115,7 @@ const Register = () => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-amber/40 focus:ring-1 focus:ring-amber/20 transition-colors"
+                className="w-full pl-10 pr-4 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-amber/40 focus:ring-2 focus:ring-amber/20 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="At least 6 characters"
                 required
                 autoComplete="new-password"
@@ -126,7 +126,7 @@ const Register = () => {
           <div>
             <label htmlFor="reg-confirm" className="block text-sm font-medium text-text-secondary mb-1.5">Confirm Password</label>
             <div className="relative">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-text-tertiary">
+              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-text-tertiary pointer-events-none">
                 <Lock className="h-4 w-4" />
               </span>
               <input
@@ -134,7 +134,7 @@ const Register = () => {
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-amber/40 focus:ring-1 focus:ring-amber/20 transition-colors"
+                className="w-full pl-10 pr-4 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-amber/40 focus:ring-2 focus:ring-amber/20 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="Repeat password"
                 required
                 autoComplete="new-password"

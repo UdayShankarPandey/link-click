@@ -168,7 +168,7 @@ const AdminUsers = () => {
                 type="text"
                 value={createForm.name}
                 onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
-                className="w-full px-3 py-2 bg-canvas border border-border rounded-lg text-sm text-text-primary focus:outline-none focus:border-amber/40 transition-colors"
+                className="w-full px-3.5 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-amber/40 focus:ring-2 focus:ring-amber/20 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                 required
                 maxLength={100}
               />
@@ -180,7 +180,7 @@ const AdminUsers = () => {
                 type="email"
                 value={createForm.email}
                 onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
-                className="w-full px-3 py-2 bg-canvas border border-border rounded-lg text-sm text-text-primary focus:outline-none focus:border-amber/40 transition-colors"
+                className="w-full px-3.5 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-amber/40 focus:ring-2 focus:ring-amber/20 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                 required
                 maxLength={255}
               />
@@ -192,7 +192,7 @@ const AdminUsers = () => {
                 type="password"
                 value={createForm.password}
                 onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
-                className="w-full px-3 py-2 bg-canvas border border-border rounded-lg text-sm text-text-primary focus:outline-none focus:border-amber/40 transition-colors"
+                className="w-full px-3.5 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-amber/40 focus:ring-2 focus:ring-amber/20 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                 required
                 minLength={6}
               />
@@ -203,10 +203,10 @@ const AdminUsers = () => {
                 id="create-role"
                 value={createForm.role}
                 onChange={(e) => setCreateForm({ ...createForm, role: e.target.value })}
-                className="w-full px-3 py-2 bg-canvas border border-border rounded-lg text-sm text-text-primary focus:outline-none focus:border-amber/40 transition-colors cursor-pointer"
+                className="w-full px-3.5 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary focus:outline-none focus:border-amber/40 focus:ring-2 focus:ring-amber/20 transition-all duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
+                <option value="user" className="bg-canvas text-text-primary">User</option>
+                <option value="admin" className="bg-canvas text-text-primary">Admin</option>
               </select>
             </div>
             <div className="sm:col-span-2 flex justify-end gap-3 mt-2">
@@ -259,7 +259,7 @@ const AdminUsers = () => {
                         type="text"
                         value={editForm.name}
                         onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                        className="w-full px-3 py-2 bg-canvas border border-border rounded-lg text-sm text-text-primary focus:outline-none focus:border-amber/40 transition-colors"
+                        className="w-full px-3 py-2 bg-canvas border border-border rounded-xl text-sm text-text-primary focus:outline-none focus:border-amber/40 focus:ring-2 focus:ring-amber/20 transition-all duration-150"
                         required
                         maxLength={100}
                       />
@@ -271,7 +271,7 @@ const AdminUsers = () => {
                         type="email"
                         value={editForm.email}
                         onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                        className="w-full px-3 py-2 bg-canvas border border-border rounded-lg text-sm text-text-primary focus:outline-none focus:border-amber/40 transition-colors"
+                        className="w-full px-3 py-2 bg-canvas border border-border rounded-xl text-sm text-text-primary focus:outline-none focus:border-amber/40 focus:ring-2 focus:ring-amber/20 transition-all duration-150"
                         required
                         maxLength={255}
                       />
@@ -282,10 +282,10 @@ const AdminUsers = () => {
                         id={`edit-role-${u._id}`}
                         value={editForm.role}
                         onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
-                        className="w-full px-3 py-2 bg-canvas border border-border rounded-lg text-sm text-text-primary focus:outline-none focus:border-amber/40 transition-colors cursor-pointer"
+                        className="w-full px-3 py-2 bg-canvas border border-border rounded-xl text-sm text-text-primary focus:outline-none focus:border-amber/40 focus:ring-2 focus:ring-amber/20 transition-all duration-150 cursor-pointer"
                       >
-                        <option value="user">User</option>
-                        <option value="admin">Admin</option>
+                        <option value="user" className="bg-canvas text-text-primary">User</option>
+                        <option value="admin" className="bg-canvas text-text-primary">Admin</option>
                       </select>
                     </div>
                     <div className="flex justify-end gap-2 mt-2 sm:mt-0">
