@@ -30,7 +30,7 @@ const Pagination = ({ page, totalPages, onPageChange }) => {
         type="button"
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1}
-        className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-raised border border-border disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+        className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-raised border border-border disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber active:scale-95"
         aria-label="Previous page"
       >
         <ChevronLeft className="h-4 w-4" />
@@ -38,7 +38,7 @@ const Pagination = ({ page, totalPages, onPageChange }) => {
 
       {pageNumbers.map((pageNum, idx) =>
         pageNum === '...' ? (
-          <span key={`ellipsis-after-${pageNumbers[idx - 1]}`} className="px-2 text-text-tertiary text-sm">
+          <span key={`ellipsis-after-${pageNumbers[idx - 1]}`} className="px-2 text-text-tertiary text-sm select-none">
             …
           </span>
         ) : (
@@ -46,7 +46,7 @@ const Pagination = ({ page, totalPages, onPageChange }) => {
             type="button"
             key={pageNum}
             onClick={() => onPageChange(pageNum)}
-            className={`min-w-9 h-9 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+            className={`min-w-9 h-9 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber active:scale-95 ${
               pageNum === page
                 ? 'bg-amber text-text-inverse'
                 : 'text-text-secondary hover:text-text-primary hover:bg-surface-raised border border-border'
@@ -62,7 +62,7 @@ const Pagination = ({ page, totalPages, onPageChange }) => {
         type="button"
         onClick={() => onPageChange(page + 1)}
         disabled={page >= totalPages}
-        className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-raised border border-border disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+        className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-raised border border-border disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber active:scale-95"
         aria-label="Next page"
       >
         <ChevronRight className="h-4 w-4" />

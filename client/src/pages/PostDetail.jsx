@@ -121,7 +121,7 @@ const PostDetail = () => {
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 sm:py-8 animate-fade-in">
       {/* Back button */}
-      <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors mb-5">
+      <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-all duration-150 mb-5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-amber rounded">
         <ArrowLeft className="h-4 w-4" />
         Feed
       </Link>
