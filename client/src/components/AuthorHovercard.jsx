@@ -111,22 +111,17 @@ const AuthorHovercard = ({ author, children }) => {
 
   return (
     <div
-      tabIndex={0}
-      role="region"
-      aria-label="Author preview card"
-      className="relative inline-block focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-amber/40 rounded-lg"
+      className="relative inline-block"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      onFocus={handleMouseEnter}
-      onBlur={handleMouseLeave}
     >
       {/* Anchor trigger */}
       {children}
 
       {/* Popover Card */}
       {isVisible && (
-        <aside
-          role="tooltip"
+        <section
+          aria-label="Author preview"
           className="absolute left-0 bottom-full mb-2 w-64 bg-surface border border-border rounded-2xl p-4 shadow-xl z-30 animate-fade-in pointer-events-auto"
         >
           {/* Header row */}
@@ -166,7 +161,7 @@ const AuthorHovercard = ({ author, children }) => {
             <span>View Profile</span>
             <ArrowUpRight className="h-3.5 w-3.5" />
           </Link>
-        </aside>
+        </section>
       )}
     </div>
   );

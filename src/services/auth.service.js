@@ -39,7 +39,7 @@ export const authService = {
 
     const { rawToken, tokenHash, expires, sentAt } = generateVerificationToken();
 
-    const isFounder = Boolean(env.FOUNDER_EMAIL && email === env.FOUNDER_EMAIL.trim().toLowerCase());
+    const isFounder = Boolean(env.FOUNDER_EMAIL && email === env.FOUNDER_EMAIL?.trim().toLowerCase());
     const role = isFounder ? 'founder' : 'user';
 
     await User.create({
@@ -130,7 +130,7 @@ export const authService = {
 
     // Enforce 60-second cooldown using emailVerificationSentAt
     if (user?.emailVerificationSentAt) {
-      const elapsed = Date.now() - user.emailVerificationSentAt.getTime();
+      const elapsed = Date.now() - user.emailVerificationSentAt?.getTime();
       if (elapsed < RESEND_COOLDOWN_MS) {
         const remaining = Math.ceil((RESEND_COOLDOWN_MS - elapsed) / 1000);
         throw new AppError(`Please wait ${remaining} seconds before requesting another email.`, 429, { retryAfter: remaining });
@@ -168,8 +168,8 @@ export const authService = {
     }
 
     const result = await imagekit.files.upload({
-      file: file.buffer.toString('base64'),
-      fileName: `avatar-${Date.now()}-${file.originalname}`,
+      file: file?.buffer?.toString('base64'),
+      fileName: `avatar-${Date.now()}-${file?.originalname}`,
       folder: '/avatars'
     });
 
@@ -177,7 +177,7 @@ export const authService = {
     await user.save();
 
     return {
-      profilePicUrl: user.profilePicUrl
+      profilePicUrl: user?.profilePicUrl
     };
   },
 
@@ -192,8 +192,8 @@ export const authService = {
     }
 
     const result = await imagekit.files.upload({
-      file: file.buffer.toString('base64'),
-      fileName: `cover-${Date.now()}-${file.originalname}`,
+      file: file?.buffer?.toString('base64'),
+      fileName: `cover-${Date.now()}-${file?.originalname}`,
       folder: '/covers'
     });
 
@@ -201,7 +201,7 @@ export const authService = {
     await user.save();
 
     return {
-      coverPicUrl: user.coverPicUrl
+      coverPicUrl: user?.coverPicUrl
     };
   },
 
