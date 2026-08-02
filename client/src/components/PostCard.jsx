@@ -104,7 +104,7 @@ const PostCard = ({ post, onLikeUpdate }) => {
               <Link
                 to={author._id ? `/user/${author._id}` : '#'}
                 onClick={(e) => e.stopPropagation()}
-                className="w-9 h-9 rounded-lg bg-surface-raised border border-border flex items-center justify-center text-sm font-bold text-amber shrink-0 hover:border-amber/30 transition-colors block"
+                className="w-9 h-9 rounded-lg bg-surface-raised border border-border flex items-center justify-center text-sm font-bold text-amber shrink-0 hover:border-amber/30 transition-colors"
               >
                 {author.name ? author.name.charAt(0).toUpperCase() : '?'}
               </Link>

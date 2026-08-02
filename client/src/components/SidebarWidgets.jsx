@@ -38,11 +38,11 @@ export const PlatformStatsCard = ({ stats = DEFAULT_STATS }) => {
       </div>
 
       <div className="grid grid-cols-3 gap-3">
-        {statItems.map((item, index) => {
+        {statItems.map((item) => {
           const Icon = item.icon;
           return (
             <div
-              key={index}
+              key={`stat-${item.label}`}
               className="bg-canvas border border-border/60 rounded-xl p-3 text-center flex flex-col items-center justify-center transition-all duration-150 hover:border-border"
             >
               <Icon className={`h-4 w-4 ${item.color} mb-1.5`} />

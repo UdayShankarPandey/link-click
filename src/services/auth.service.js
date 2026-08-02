@@ -61,19 +61,19 @@ export const authService = {
   async loginUser({ email: rawEmail, password }) {
     const email = sanitizeEmail(rawEmail);
     const user = await User.findOne({ email });
-    if (!user || !(await user.comparePassword(password))) {
+    if (!user || !(await user?.comparePassword(password))) {
       throw new AppError('Invalid email or password.', 401);
     }
 
-    if (!user.emailVerified) {
+    if (!user?.emailVerified) {
       throw new AppError('Please verify your email before logging in.', 403, { emailVerified: false });
     }
 
-    if (user.status === 'suspended') {
+    if (user?.status === 'suspended') {
       throw new AppError('Account is suspended.', 403);
     }
 
-    if (user.status === 'deleted') {
+    if (user?.status === 'deleted') {
       throw new AppError('Account has been deactivated.', 403);
     }
 
@@ -102,7 +102,7 @@ export const authService = {
       throw new AppError('Verification link is invalid or has expired.', 400);
     }
 
-    if (user.emailVerified) {
+    if (user?.emailVerified) {
       throw new AppError('Email is already verified.', 400);
     }
 
@@ -124,12 +124,12 @@ export const authService = {
       return { message: 'If that email is registered, a verification link has been sent.' };
     }
 
-    if (user.emailVerified) {
+    if (user?.emailVerified) {
       throw new AppError('Email is already verified.', 400);
     }
 
     // Enforce 60-second cooldown using emailVerificationSentAt
-    if (user.emailVerificationSentAt) {
+    if (user?.emailVerificationSentAt) {
       const elapsed = Date.now() - user.emailVerificationSentAt.getTime();
       if (elapsed < RESEND_COOLDOWN_MS) {
         const remaining = Math.ceil((RESEND_COOLDOWN_MS - elapsed) / 1000);

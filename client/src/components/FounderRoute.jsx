@@ -14,7 +14,7 @@ const FounderRoute = () => {
     );
   }
 
-  if (!user || user.role !== 'founder') {
+  if (user?.role !== 'founder') {
     return <Navigate to="/" replace />;
   }
 

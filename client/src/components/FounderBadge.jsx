@@ -1,15 +1,18 @@
 import React from 'react';
 
+const SIZE_MAP = {
+  xs: 'px-1.5 py-0.2 text-[10px]',
+  sm: 'px-2 py-0.5 text-xs',
+  md: 'px-2.5 py-0.5 text-xs',
+  lg: 'px-3 py-1 text-sm',
+};
+
 /**
  * Single elevated Founder Badge component.
  * Displays 👑 Founder badge consistently across profiles, post cards, comments, and hovercards.
  */
 const FounderBadge = ({ size = 'sm', className = '' }) => {
-  const sizeClasses = size === 'xs' 
-    ? 'px-1.5 py-0.2 text-[10px]' 
-    : size === 'lg' 
-    ? 'px-3 py-1 text-sm' 
-    : 'px-2 py-0.5 text-xs';
+  const sizeClasses = SIZE_MAP[size] || SIZE_MAP.sm;
 
   return (
     <span

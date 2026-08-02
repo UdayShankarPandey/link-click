@@ -21,14 +21,13 @@ export const seedFounder = async () => {
 
 // If run directly via node scripts/seed-founder.js
 if (process.argv[1]?.includes('seed-founder.js')) {
-  mongoose.connect(env.MONGODB_URI)
-    .then(async () => {
-      await seedFounder();
-      console.log('Founder seed check complete.');
-      process.exit(0);
-    })
-    .catch((err) => {
-      console.error(err);
-      process.exit(1);
-    });
+  try {
+    await mongoose.connect(env.MONGODB_URI);
+    await seedFounder();
+    console.log('Founder seed check complete.');
+    process.exit(0);
+  } catch (err) {
+    console.error(err);
+    process.exit(1);
+  }
 }

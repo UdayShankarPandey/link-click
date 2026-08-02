@@ -167,7 +167,7 @@ const UserProfile = () => {
           {/* User Header Card */}
           <div className="bg-surface border border-border rounded-2xl overflow-hidden">
             {/* Cover Image Container */}
-            <div className="h-36 sm:h-48 w-full bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 overflow-hidden border-b border-border relative">
+            <div className="h-36 sm:h-48 w-full bg-linear-to-r from-slate-900 via-slate-800 to-slate-900 overflow-hidden border-b border-border relative">
               {userInfo.coverPicUrl && (
                 <img src={userInfo.coverPicUrl} alt="Cover Banner" className="w-full h-full object-cover" />
               )}

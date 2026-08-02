@@ -48,7 +48,6 @@ const AuthorHovercard = ({ author, children }) => {
     if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
     hoverTimerRef.current = setTimeout(() => {
       setIsVisible(true);
-      // Fetch extra details (e.g. bio, join date) if missing from post author payload
       if (!profileData.bio && !profileData.createdAt) {
         fetchProfileDetails();
       }
@@ -70,34 +69,69 @@ const AuthorHovercard = ({ author, children }) => {
   const joinedDate = formatJoinedDate(profileData.createdAt);
   const isFounder = profileData.role === 'founder';
 
+  const renderBioContent = () => {
+    if (loading) {
+      return (
+        <div className="space-y-1.5 mb-3">
+          <div className="skeleton h-3 w-3/4 rounded"></div>
+          <div className="skeleton h-3 w-1/2 rounded"></div>
+        </div>
+      );
+    }
+    if (profileData.bio) {
+      return (
+        <p className="text-xs text-text-secondary line-clamp-2 leading-relaxed mb-3">
+          {profileData.bio}
+        </p>
+      );
+    }
+    return (
+      <p className="text-xs text-text-tertiary italic mb-3">
+        Member of the Link Click community.
+      </p>
+    );
+  };
+
+  const renderAvatar = () => {
+    if (profileData.profilePicUrl) {
+      return (
+        <img
+          src={profileData.profilePicUrl}
+          alt={profileData.name || 'Author Avatar'}
+          className="w-11 h-11 rounded-xl object-cover border border-border shrink-0"
+        />
+      );
+    }
+    return (
+      <div className="w-11 h-11 rounded-xl bg-surface-raised border border-border flex items-center justify-center text-base font-bold text-amber shrink-0">
+        {profileData.name ? profileData.name.charAt(0).toUpperCase() : '?'}
+      </div>
+    );
+  };
+
   return (
     <div
-      className="relative inline-block"
+      tabIndex={0}
+      role="region"
+      aria-label="Author preview card"
+      className="relative inline-block focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-amber/40 rounded-lg"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      onFocus={handleMouseEnter}
+      onBlur={handleMouseLeave}
     >
       {/* Anchor trigger */}
       {children}
 
       {/* Popover Card */}
       {isVisible && (
-        <div
+        <aside
+          role="tooltip"
           className="absolute left-0 bottom-full mb-2 w-64 bg-surface border border-border rounded-2xl p-4 shadow-xl z-30 animate-fade-in pointer-events-auto"
-          onClick={(e) => e.stopPropagation()}
         >
           {/* Header row */}
           <div className="flex items-start gap-3 mb-3">
-            {profileData.profilePicUrl ? (
-              <img
-                src={profileData.profilePicUrl}
-                alt={profileData.name}
-                className="w-11 h-11 rounded-xl object-cover border border-border shrink-0"
-              />
-            ) : (
-              <div className="w-11 h-11 rounded-xl bg-surface-raised border border-border flex items-center justify-center text-base font-bold text-amber shrink-0">
-                {profileData.name ? profileData.name.charAt(0).toUpperCase() : '?'}
-              </div>
-            )}
+            {renderAvatar()}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
                 <span className="text-sm font-bold text-text-primary truncate">
@@ -122,20 +156,7 @@ const AuthorHovercard = ({ author, children }) => {
           </div>
 
           {/* Bio Preview */}
-          {loading ? (
-            <div className="space-y-1.5 mb-3">
-              <div className="skeleton h-3 w-3/4 rounded"></div>
-              <div className="skeleton h-3 w-1/2 rounded"></div>
-            </div>
-          ) : profileData.bio ? (
-            <p className="text-xs text-text-secondary line-clamp-2 leading-relaxed mb-3">
-              {profileData.bio}
-            </p>
-          ) : (
-            <p className="text-xs text-text-tertiary italic mb-3">
-              Member of the Link Click community.
-            </p>
-          )}
+          {renderBioContent()}
 
           {/* Action Footer */}
           <Link
@@ -145,7 +166,7 @@ const AuthorHovercard = ({ author, children }) => {
             <span>View Profile</span>
             <ArrowUpRight className="h-3.5 w-3.5" />
           </Link>
-        </div>
+        </aside>
       )}
     </div>
   );

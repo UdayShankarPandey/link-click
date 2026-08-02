@@ -46,6 +46,42 @@ const Dashboard = () => {
     }
   };
 
+  const renderAuditLogsContent = () => {
+    if (loadingLogs) {
+      return (
+        <div className="space-y-3">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={`log-skel-${i}`} className="skeleton h-12 w-full rounded-xl"></div>
+          ))}
+        </div>
+      );
+    }
+    if (logs.length === 0) {
+      return <p className="text-xs text-text-tertiary text-center py-12">No audit log entries recorded yet.</p>;
+    }
+    return (
+      <div className="space-y-2">
+        <div className="hidden sm:grid sm:grid-cols-[140px_1fr_1.2fr_1.5fr] gap-4 px-4 py-2 text-[11px] font-semibold text-text-tertiary uppercase tracking-wider border-b border-border mb-2">
+          <span>Action</span>
+          <span>Actor</span>
+          <span>Target User</span>
+          <span>Timestamp</span>
+        </div>
+
+        {logs.map((log) => (
+          <div key={log._id} className="flex flex-col sm:grid sm:grid-cols-[140px_1fr_1.2fr_1.5fr] gap-2 sm:gap-4 items-start sm:items-center bg-canvas border border-border/60 rounded-xl p-3.5 text-xs text-text-secondary">
+            <span className="font-semibold text-amber uppercase text-[10px] tracking-wide px-2 py-0.5 rounded bg-amber-muted shrink-0">
+              {log.action}
+            </span>
+            <span className="font-medium text-text-primary truncate">{log.actor?.name || 'System'}</span>
+            <span className="truncate">{log.targetUser?.name || '-'}</span>
+            <span className="text-text-tertiary text-[11px]">{new Date(log.createdAt).toLocaleString()}</span>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 animate-fade-in">
       {/* Header */}
@@ -209,35 +245,7 @@ const Dashboard = () => {
             Security Audit Trail
           </h2>
 
-          {loadingLogs ? (
-            <div className="space-y-3">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="skeleton h-12 w-full rounded-xl"></div>
-              ))}
-            </div>
-          ) : logs.length === 0 ? (
-            <p className="text-xs text-text-tertiary text-center py-12">No audit log entries recorded yet.</p>
-          ) : (
-            <div className="space-y-2">
-              <div className="hidden sm:grid sm:grid-cols-[140px_1fr_1.2fr_1.5fr] gap-4 px-4 py-2 text-[11px] font-semibold text-text-tertiary uppercase tracking-wider border-b border-border mb-2">
-                <span>Action</span>
-                <span>Actor</span>
-                <span>Target User</span>
-                <span>Timestamp</span>
-              </div>
-
-              {logs.map((log) => (
-                <div key={log._id} className="flex flex-col sm:grid sm:grid-cols-[140px_1fr_1.2fr_1.5fr] gap-2 sm:gap-4 items-start sm:items-center bg-canvas border border-border/60 rounded-xl p-3.5 text-xs text-text-secondary">
-                  <span className="font-semibold text-amber uppercase text-[10px] tracking-wide px-2 py-0.5 rounded bg-amber-muted shrink-0">
-                    {log.action}
-                  </span>
-                  <span className="font-medium text-text-primary truncate">{log.actor?.name || 'System'}</span>
-                  <span className="truncate">{log.targetUser?.name || '-'}</span>
-                  <span className="text-text-tertiary text-[11px]">{new Date(log.createdAt).toLocaleString()}</span>
-                </div>
-              ))}
-            </div>
-          )}
+          {renderAuditLogsContent()}
         </div>
       )}
 

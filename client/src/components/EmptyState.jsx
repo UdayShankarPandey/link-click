@@ -17,9 +17,9 @@ const EmptyState = ({ icon: Icon, title, description, actionLabel, actionTo, sug
       {/* Optional starter suggestions */}
       {suggestions.length > 0 && (
         <div className="flex flex-wrap items-center justify-center gap-2 mt-4 mb-2">
-          {suggestions.map((item, idx) => (
+          {suggestions.map((item) => (
             <span
-              key={idx}
+              key={`suggestion-${item}`}
               className="text-xs px-2.5 py-1 rounded-lg bg-surface-raised border border-border text-text-tertiary"
             >
               {item}

@@ -133,12 +133,34 @@ const AdminUsers = () => {
     }
   };
 
+  const renderStatusBadge = (u) => {
+    if (u.status === 'suspended') {
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-danger-muted text-danger text-[11px] font-medium">
+          Suspended
+        </span>
+      );
+    }
+    if (u.status === 'deleted') {
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-raised text-text-tertiary text-[11px] font-medium line-through">
+          Deleted
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 text-[11px] font-medium">
+        Active
+      </span>
+    );
+  };
+
   const renderUsersContent = () => {
     if (loading) {
       return (
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="skeleton h-16 w-full rounded-xl"></div>
+            <div key={`user-skel-${i}`} className="skeleton h-16 w-full rounded-xl"></div>
           ))}
         </div>
       );
@@ -272,7 +294,6 @@ const AdminUsers = () => {
           {users.map((u) => {
             const isFounder = u.role === 'founder';
             const isSuspended = u.status === 'suspended';
-            const isDeleted = u.status === 'deleted';
 
             return (
               <div key={u._id}>
@@ -352,19 +373,7 @@ const AdminUsers = () => {
 
                     {/* Status Badge */}
                     <div>
-                      {isSuspended ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-danger-muted text-danger text-[11px] font-medium">
-                          Suspended
-                        </span>
-                      ) : isDeleted ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-raised text-text-tertiary text-[11px] font-medium line-through">
-                          Deleted
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 text-[11px] font-medium">
-                          Active
-                        </span>
-                      )}
+                      {renderStatusBadge(u)}
                     </div>
 
                     {/* Action Controls */}

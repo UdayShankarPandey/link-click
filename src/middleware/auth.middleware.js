@@ -27,11 +27,11 @@ export const protect = async (req, res, next) => {
     }
 
     // Account lifecycle safeguards
-    if (req.user.status === 'suspended') {
+    if (req.user?.status === 'suspended') {
       return res.status(403).json({ message: 'Account is suspended.' });
     }
 
-    if (req.user.status === 'deleted') {
+    if (req.user?.status === 'deleted') {
       return res.status(403).json({ message: 'Account has been deactivated.' });
     }
 
@@ -45,7 +45,7 @@ export const protect = async (req, res, next) => {
 // Role-based authorization middleware (use after protect)
 export const authorize = (...roles) => {
   return (req, res, next) => {
-    if (!req.user || (!roles.includes(req.user.role) && req.user.role !== 'founder')) {
+    if (!roles.includes(req.user?.role) && req.user?.role !== 'founder') {
       return res.status(403).json({
         message: `Access denied. Required role(s): ${roles.join(', ')}`
       });
@@ -56,7 +56,7 @@ export const authorize = (...roles) => {
 
 // Dedicated Founder authorization middleware
 export const checkFounder = (req, res, next) => {
-  if (!req.user || req.user.role !== 'founder') {
+  if (req.user?.role !== 'founder') {
     return res.status(403).json({ message: 'Access denied. Founder privileges required.' });
   }
   next();
