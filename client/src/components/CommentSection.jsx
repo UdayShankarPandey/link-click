@@ -84,7 +84,7 @@ const CommentSection = ({ postId, postOwnerId, comments = [], onCommentsUpdate }
             type="text"
             value={text}
             onChange={(e) => setText(e.target.value)}
-            className="flex-1 px-4 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-amber/40 focus:ring-1 focus:ring-amber/20 transition-colors"
+            className="flex-1 px-4 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-amber/40 focus:ring-2 focus:ring-amber/20 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
             placeholder="Write a comment…"
             maxLength={2000}
             required
@@ -137,7 +137,7 @@ const CommentSection = ({ postId, postOwnerId, comments = [], onCommentsUpdate }
                   <button
                     type="button"
                     onClick={() => setDeleteTarget(comment._id)}
-                    className="p-1 rounded-md text-text-tertiary hover:text-danger opacity-0 group-hover/comment:opacity-100 transition-all cursor-pointer"
+                    className="p-1 rounded-md text-text-tertiary hover:text-danger sm:opacity-0 sm:group-hover/comment:opacity-100 opacity-100 transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger active:scale-95"
                     aria-label="Delete comment"
                   >
                     <Trash2 className="h-3.5 w-3.5" />

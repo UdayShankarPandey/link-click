@@ -136,7 +136,7 @@ const AdminUsers = () => {
         <button
           type="button"
           onClick={() => { setShowCreateForm(true); setEditingUser(null); }}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-amber text-text-inverse text-sm font-semibold hover:bg-amber-hover transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber text-text-inverse text-sm font-semibold hover:bg-amber-hover transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber focus-visible:ring-offset-2 focus-visible:ring-offset-canvas active:scale-[0.98]"
         >
           <Plus className="h-4 w-4" />
           Add User
@@ -148,7 +148,7 @@ const AdminUsers = () => {
         <div className="bg-surface border border-border rounded-2xl p-5 mb-6 animate-slide-up">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-semibold text-text-primary">Create New User</h2>
-            <button type="button" onClick={() => setShowCreateForm(false)} className="p-1 text-text-tertiary hover:text-text-primary cursor-pointer">
+            <button type="button" onClick={() => setShowCreateForm(false)} className="p-1 text-text-tertiary hover:text-text-primary cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber rounded active:scale-95">
               <X className="h-4 w-4" />
             </button>
           </div>
@@ -168,7 +168,7 @@ const AdminUsers = () => {
                 type="text"
                 value={createForm.name}
                 onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
-                className="w-full px-3 py-2 bg-canvas border border-border rounded-lg text-sm text-text-primary focus:outline-none focus:border-amber/40 transition-colors"
+                className="w-full px-3.5 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-amber/40 focus:ring-2 focus:ring-amber/20 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                 required
                 maxLength={100}
               />
@@ -180,7 +180,7 @@ const AdminUsers = () => {
                 type="email"
                 value={createForm.email}
                 onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
-                className="w-full px-3 py-2 bg-canvas border border-border rounded-lg text-sm text-text-primary focus:outline-none focus:border-amber/40 transition-colors"
+                className="w-full px-3.5 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-amber/40 focus:ring-2 focus:ring-amber/20 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                 required
                 maxLength={255}
               />
@@ -192,7 +192,7 @@ const AdminUsers = () => {
                 type="password"
                 value={createForm.password}
                 onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
-                className="w-full px-3 py-2 bg-canvas border border-border rounded-lg text-sm text-text-primary focus:outline-none focus:border-amber/40 transition-colors"
+                className="w-full px-3.5 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-amber/40 focus:ring-2 focus:ring-amber/20 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                 required
                 minLength={6}
               />
@@ -203,24 +203,24 @@ const AdminUsers = () => {
                 id="create-role"
                 value={createForm.role}
                 onChange={(e) => setCreateForm({ ...createForm, role: e.target.value })}
-                className="w-full px-3 py-2 bg-canvas border border-border rounded-lg text-sm text-text-primary focus:outline-none focus:border-amber/40 transition-colors cursor-pointer"
+                className="w-full px-3.5 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary focus:outline-none focus:border-amber/40 focus:ring-2 focus:ring-amber/20 transition-all duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
+                <option value="user" className="bg-canvas text-text-primary">User</option>
+                <option value="admin" className="bg-canvas text-text-primary">Admin</option>
               </select>
             </div>
             <div className="sm:col-span-2 flex justify-end gap-3 mt-2">
               <button
                 type="button"
                 onClick={() => setShowCreateForm(false)}
-                className="px-4 py-2 rounded-lg text-sm font-medium text-text-secondary border border-border hover:bg-surface-raised transition-colors cursor-pointer"
+                className="px-4 py-2 rounded-xl text-sm font-medium text-text-secondary border border-border hover:bg-surface-raised hover:text-text-primary transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber focus-visible:ring-offset-2 focus-visible:ring-offset-surface active:scale-[0.98]"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={createSubmitting}
-                className="px-5 py-2 rounded-lg text-sm font-semibold bg-amber text-text-inverse hover:bg-amber-hover disabled:opacity-50 transition-colors cursor-pointer"
+                className="px-5 py-2 rounded-xl text-sm font-semibold bg-amber text-text-inverse hover:bg-amber-hover disabled:opacity-50 transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber focus-visible:ring-offset-2 focus-visible:ring-offset-surface active:scale-[0.98]"
               >
                 {createSubmitting ? 'Creating…' : 'Create User'}
               </button>
@@ -259,7 +259,7 @@ const AdminUsers = () => {
                         type="text"
                         value={editForm.name}
                         onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                        className="w-full px-3 py-2 bg-canvas border border-border rounded-lg text-sm text-text-primary focus:outline-none focus:border-amber/40 transition-colors"
+                        className="w-full px-3 py-2 bg-canvas border border-border rounded-xl text-sm text-text-primary focus:outline-none focus:border-amber/40 focus:ring-2 focus:ring-amber/20 transition-all duration-150"
                         required
                         maxLength={100}
                       />
@@ -271,7 +271,7 @@ const AdminUsers = () => {
                         type="email"
                         value={editForm.email}
                         onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                        className="w-full px-3 py-2 bg-canvas border border-border rounded-lg text-sm text-text-primary focus:outline-none focus:border-amber/40 transition-colors"
+                        className="w-full px-3 py-2 bg-canvas border border-border rounded-xl text-sm text-text-primary focus:outline-none focus:border-amber/40 focus:ring-2 focus:ring-amber/20 transition-all duration-150"
                         required
                         maxLength={255}
                       />
@@ -282,17 +282,17 @@ const AdminUsers = () => {
                         id={`edit-role-${u._id}`}
                         value={editForm.role}
                         onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
-                        className="w-full px-3 py-2 bg-canvas border border-border rounded-lg text-sm text-text-primary focus:outline-none focus:border-amber/40 transition-colors cursor-pointer"
+                        className="w-full px-3 py-2 bg-canvas border border-border rounded-xl text-sm text-text-primary focus:outline-none focus:border-amber/40 focus:ring-2 focus:ring-amber/20 transition-all duration-150 cursor-pointer"
                       >
-                        <option value="user">User</option>
-                        <option value="admin">Admin</option>
+                        <option value="user" className="bg-canvas text-text-primary">User</option>
+                        <option value="admin" className="bg-canvas text-text-primary">Admin</option>
                       </select>
                     </div>
                     <div className="flex justify-end gap-2 mt-2 sm:mt-0">
                       <button
                         type="button"
                         onClick={() => setEditingUser(null)}
-                        className="p-2 rounded-lg text-text-tertiary hover:text-text-primary border border-border hover:bg-surface-raised transition-colors cursor-pointer"
+                        className="p-2 rounded-lg text-text-tertiary hover:text-text-primary border border-border hover:bg-surface-raised transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber active:scale-95"
                         aria-label="Cancel edit"
                       >
                         <X className="h-4 w-4" />
@@ -300,7 +300,7 @@ const AdminUsers = () => {
                       <button
                         type="submit"
                         disabled={editSubmitting}
-                        className="p-2 rounded-lg bg-amber text-text-inverse hover:bg-amber-hover disabled:opacity-50 transition-colors cursor-pointer"
+                        className="p-2 rounded-lg bg-amber text-text-inverse hover:bg-amber-hover disabled:opacity-50 transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber active:scale-95"
                         aria-label="Save changes"
                       >
                         <Save className="h-4 w-4" />
@@ -340,7 +340,7 @@ const AdminUsers = () => {
                       <button
                         type="button"
                         onClick={() => startEdit(u)}
-                        className="p-2 rounded-lg text-text-tertiary hover:text-amber hover:bg-amber-muted border border-border sm:opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                        className="p-2 rounded-lg text-text-tertiary hover:text-amber hover:bg-amber-muted border border-border sm:opacity-0 group-hover:opacity-100 transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber active:scale-95"
                         aria-label={`Edit ${u.name}`}
                       >
                         <Edit3 className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
@@ -348,7 +348,7 @@ const AdminUsers = () => {
                       <button
                         type="button"
                         onClick={() => setDeleteTarget(u._id)}
-                        className="p-2 rounded-lg text-text-tertiary hover:text-danger hover:bg-danger-muted border border-border sm:opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                        className="p-2 rounded-lg text-text-tertiary hover:text-danger hover:bg-danger-muted border border-border sm:opacity-0 group-hover:opacity-100 transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger active:scale-95"
                         aria-label={`Delete ${u.name}`}
                       >
                         <Trash2 className="h-4 w-4 sm:h-3.5 sm:w-3.5" />

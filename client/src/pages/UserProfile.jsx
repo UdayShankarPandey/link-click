@@ -140,7 +140,7 @@ const UserProfile = () => {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-      <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors mb-5">
+      <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-all duration-150 mb-5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-amber rounded">
         <ArrowLeft className="h-4 w-4" />
         Feed
       </Link>
@@ -148,7 +148,7 @@ const UserProfile = () => {
       {renderPageContent() || (
         <div className="animate-fade-in">
           {/* User Header */}
-          <div className="bg-surface border border-border rounded-2xl p-5 sm:p-6 mb-7">
+          <div className="bg-surface border border-border rounded-2xl p-5 sm:p-7 mb-7">
             <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-5">
               <div className="flex items-center gap-4">
                 {userInfo.profilePicUrl ? (
@@ -185,7 +185,7 @@ const UserProfile = () => {
                   type="button"
                   onClick={handleToggleLink}
                   disabled={isLinking}
-                  className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 group cursor-pointer ${
+                  className={`px-5 py-2 rounded-xl text-sm font-semibold transition-all duration-150 flex items-center gap-2 group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber focus-visible:ring-offset-2 focus-visible:ring-offset-surface active:scale-[0.98] ${
                     isLinked 
                     ? 'bg-surface-raised text-text-primary border border-border hover:border-danger hover:text-danger hover:bg-danger-muted' 
                     : 'bg-amber text-text-inverse hover:bg-amber-hover'
@@ -204,7 +204,7 @@ const UserProfile = () => {
             <button
               type="button"
               onClick={() => setActiveTab('posts')}
-              className={`pb-3 px-1 text-sm font-bold border-b-2 transition-colors cursor-pointer ${
+              className={`pb-3 px-1 text-sm font-bold border-b-2 transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber rounded-t ${
                 activeTab === 'posts' ? 'border-amber text-amber' : 'border-transparent text-text-secondary hover:text-text-primary'
               }`}
             >
@@ -213,7 +213,7 @@ const UserProfile = () => {
             <button
               type="button"
               onClick={() => setActiveTab('liked')}
-              className={`pb-3 px-1 text-sm font-bold border-b-2 transition-colors cursor-pointer ${
+              className={`pb-3 px-1 text-sm font-bold border-b-2 transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber rounded-t ${
                 activeTab === 'liked' ? 'border-amber text-amber' : 'border-transparent text-text-secondary hover:text-text-primary'
               }`}
             >

@@ -20,7 +20,7 @@ const Navbar = () => {
   const isActive = (path) => location.pathname === path;
 
   const navLinkClass = (path) =>
-    `flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-150 ${
+    `flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber ${
       isActive(path)
         ? 'text-amber bg-amber-muted'
         : 'text-text-secondary hover:text-text-primary hover:bg-surface-raised'
@@ -33,7 +33,7 @@ const Navbar = () => {
       <div className="max-w-5xl mx-auto px-4 sm:px-6">
         <div className="flex justify-between h-14 items-center">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 group" onClick={closeMobile}>
+          <Link to="/" className="flex items-center gap-2 group rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber" onClick={closeMobile}>
             <div className="w-8 h-8 rounded-lg bg-amber flex items-center justify-center transition-transform duration-150 group-hover:scale-105">
               <Camera className="h-4 w-4 text-text-inverse" strokeWidth={2.5} />
             </div>
@@ -81,7 +81,7 @@ const Navbar = () => {
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-text-secondary hover:text-danger hover:bg-danger-muted transition-colors duration-150 cursor-pointer"
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-text-secondary hover:text-danger hover:bg-danger-muted transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger active:scale-[0.98]"
                   >
                     <LogOut className="h-4 w-4" />
                     <span>Logout</span>
@@ -97,7 +97,7 @@ const Navbar = () => {
 
                 <Link
                   to="/register"
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-amber text-text-inverse hover:bg-amber-hover transition-colors duration-150"
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-amber text-text-inverse hover:bg-amber-hover transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber focus-visible:ring-offset-2 focus-visible:ring-offset-canvas active:scale-[0.98]"
                 >
                   <UserPlus className="h-4 w-4" />
                   <span>Sign Up</span>
@@ -109,7 +109,7 @@ const Navbar = () => {
           {/* Mobile Menu Button */}
           <button
             type="button"
-            className="md:hidden p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-raised transition-colors cursor-pointer"
+            className="md:hidden p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-raised transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber active:scale-95"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={mobileMenuOpen}
@@ -148,7 +148,7 @@ const Navbar = () => {
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-danger hover:bg-danger-muted transition-colors cursor-pointer"
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-danger hover:bg-danger-muted transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger active:scale-[0.98]"
                 >
                   <LogOut className="h-4 w-4" />
                   <span>Logout</span>

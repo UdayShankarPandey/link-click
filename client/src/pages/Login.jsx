@@ -107,7 +107,7 @@ const Login = () => {
                         type="button"
                         onClick={handleResend}
                         disabled={isResending || resendCooldown > 0}
-                        className="inline-flex items-center gap-1.5 font-medium text-xs text-amber hover:underline disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                        className="inline-flex items-center gap-1.5 font-medium text-xs text-amber hover:underline disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-amber rounded"
                       >
                         {isResending ? (
                           <RefreshCw className="h-3.5 w-3.5 animate-spin" />
@@ -130,7 +130,7 @@ const Login = () => {
               Email
             </label>
             <div className="relative">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-text-tertiary">
+              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-text-tertiary pointer-events-none">
                 <Mail className="h-4 w-4" />
               </span>
               <input
@@ -138,7 +138,7 @@ const Login = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-amber/40 focus:ring-1 focus:ring-amber/20 transition-colors"
+                className="w-full pl-10 pr-4 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-amber/40 focus:ring-2 focus:ring-amber/20 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="you@example.com"
                 required
                 autoComplete="email"
@@ -151,7 +151,7 @@ const Login = () => {
               Password
             </label>
             <div className="relative">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-text-tertiary">
+              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-text-tertiary pointer-events-none">
                 <Lock className="h-4 w-4" />
               </span>
               <input
@@ -159,7 +159,7 @@ const Login = () => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-amber/40 focus:ring-1 focus:ring-amber/20 transition-colors"
+                className="w-full pl-10 pr-4 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-amber/40 focus:ring-2 focus:ring-amber/20 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="••••••••"
                 required
                 autoComplete="current-password"
@@ -170,7 +170,7 @@ const Login = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-amber hover:bg-amber-hover text-text-inverse font-semibold py-2.5 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm"
+            className="w-full bg-amber hover:bg-amber-hover text-text-inverse font-semibold py-2.5 px-4 rounded-xl transition-all duration-150 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber focus-visible:ring-offset-2 focus-visible:ring-offset-canvas active:scale-[0.99]"
           >
             {isSubmitting ? (
               <div className="w-5 h-5 border-2 border-text-inverse border-t-transparent rounded-full animate-spin"></div>

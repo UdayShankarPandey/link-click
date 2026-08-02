@@ -16,7 +16,7 @@ const EmptyState = ({ icon: Icon, title, description, actionLabel, actionTo }) =
       {actionLabel && actionTo && (
         <Link
           to={actionTo}
-          className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-amber text-text-inverse text-sm font-semibold hover:bg-amber-hover transition-colors duration-150"
+          className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber text-text-inverse text-sm font-semibold hover:bg-amber-hover transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber focus-visible:ring-offset-2 focus-visible:ring-offset-canvas active:scale-[0.98]"
         >
           {actionLabel}
         </Link>

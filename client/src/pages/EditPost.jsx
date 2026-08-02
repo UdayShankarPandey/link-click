@@ -135,7 +135,7 @@ const EditPost = () => {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 sm:py-8 animate-fade-in">
-      <Link to={`/post/${id}`} className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors mb-5">
+      <Link to={`/post/${id}`} className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors mb-5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-amber rounded">
         <ArrowLeft className="h-4 w-4" />
         Back to post
       </Link>
@@ -156,7 +156,7 @@ const EditPost = () => {
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-amber/40 focus:ring-1 focus:ring-amber/20 transition-colors"
+              className="w-full px-4 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-amber/40 focus:ring-2 focus:ring-amber/20 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
               maxLength={300}
               required
             />
@@ -174,7 +174,7 @@ const EditPost = () => {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               rows={4}
-              className="w-full px-4 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-amber/40 focus:ring-1 focus:ring-amber/20 transition-colors resize-none"
+              className="w-full px-4 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-amber/40 focus:ring-2 focus:ring-amber/20 transition-all duration-150 resize-none disabled:opacity-50 disabled:cursor-not-allowed"
               maxLength={10000}
             />
             <div className="text-right text-xs text-text-tertiary mt-1">{content.length}/10000</div>
@@ -194,7 +194,7 @@ const EditPost = () => {
                   <button
                     type="button"
                     onClick={removeNewImage}
-                    className="absolute top-3 right-3 p-1.5 bg-canvas/80 backdrop-blur-sm rounded-lg text-text-secondary hover:text-text-primary border border-border transition-colors cursor-pointer"
+                    className="absolute top-3 right-3 p-1.5 bg-canvas/80 backdrop-blur-sm rounded-lg text-text-secondary hover:text-text-primary border border-border transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber active:scale-95"
                     aria-label="Remove new image"
                   >
                     <X className="h-4 w-4" />
@@ -206,7 +206,7 @@ const EditPost = () => {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="text-sm text-amber hover:text-amber-hover font-medium cursor-pointer transition-colors"
+              className="text-sm text-amber hover:text-amber-hover font-medium cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-amber rounded"
             >
               {currentImageUrl ? 'Replace image' : 'Upload image'}
             </button>
@@ -224,7 +224,7 @@ const EditPost = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 bg-amber hover:bg-amber-hover text-text-inverse font-semibold py-2.5 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm"
+              className="flex-1 bg-amber hover:bg-amber-hover text-text-inverse font-semibold py-2.5 px-4 rounded-xl transition-all duration-150 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber focus-visible:ring-offset-2 focus-visible:ring-offset-canvas active:scale-[0.99]"
             >
               {isSubmitting ? (
                 <div className="w-5 h-5 border-2 border-text-inverse border-t-transparent rounded-full animate-spin"></div>
@@ -237,7 +237,7 @@ const EditPost = () => {
             </button>
             <Link
               to={`/post/${id}`}
-              className="px-4 py-2.5 rounded-xl text-sm font-medium text-text-secondary bg-canvas border border-border hover:bg-surface-raised transition-colors"
+              className="px-4 py-2.5 rounded-xl text-sm font-medium text-text-secondary bg-canvas border border-border hover:bg-surface-raised hover:text-text-primary transition-all duration-150 flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber focus-visible:ring-offset-2 focus-visible:ring-offset-canvas active:scale-[0.99]"
             >
               Cancel
             </Link>

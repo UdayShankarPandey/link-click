@@ -87,7 +87,7 @@ const CreatePost = () => {
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-amber/40 focus:ring-1 focus:ring-amber/20 transition-colors"
+              className="w-full px-4 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-amber/40 focus:ring-2 focus:ring-amber/20 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
               placeholder="Give your post a title"
               maxLength={300}
               required
@@ -106,7 +106,7 @@ const CreatePost = () => {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               rows={4}
-              className="w-full px-4 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-amber/40 focus:ring-1 focus:ring-amber/20 transition-colors resize-none"
+              className="w-full px-4 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-amber/40 focus:ring-2 focus:ring-amber/20 transition-all duration-150 resize-none disabled:opacity-50 disabled:cursor-not-allowed"
               placeholder="What's this about?"
               maxLength={10000}
             />
@@ -126,7 +126,7 @@ const CreatePost = () => {
                 <button
                   type="button"
                   onClick={removeImage}
-                  className="absolute top-3 right-3 p-1.5 bg-canvas/80 backdrop-blur-sm text-text-secondary hover:text-text-primary rounded-lg border border-border transition-colors cursor-pointer"
+                  className="absolute top-3 right-3 p-1.5 bg-canvas/80 backdrop-blur-sm text-text-secondary hover:text-text-primary rounded-lg border border-border transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber active:scale-95"
                   aria-label="Remove image"
                 >
                   <X className="h-4 w-4" />
@@ -136,7 +136,7 @@ const CreatePost = () => {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full border border-dashed border-border hover:border-amber/30 bg-canvas/50 hover:bg-canvas rounded-xl p-8 text-center cursor-pointer transition-colors group"
+                className="w-full border border-dashed border-border hover:border-amber/30 bg-canvas/50 hover:bg-canvas rounded-xl p-8 text-center cursor-pointer transition-all duration-150 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber focus-visible:border-amber/50"
               >
                 <input
                   type="file"
@@ -160,7 +160,7 @@ const CreatePost = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-amber hover:bg-amber-hover text-text-inverse font-semibold py-2.5 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm"
+            className="w-full bg-amber hover:bg-amber-hover text-text-inverse font-semibold py-2.5 px-4 rounded-xl transition-all duration-150 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber focus-visible:ring-offset-2 focus-visible:ring-offset-canvas active:scale-[0.99]"
           >
             {isSubmitting ? (
               <div className="w-5 h-5 border-2 border-text-inverse border-t-transparent rounded-full animate-spin"></div>
