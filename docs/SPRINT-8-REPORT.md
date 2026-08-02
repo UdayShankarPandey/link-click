@@ -2,42 +2,42 @@
 
 ## Sprint Objective
 
-The objective of Sprint 8 ("Branding & UI Polish") was to transform the PEP application into a cohesive, highly responsive, accessible, and production-ready platform while retaining 100% backend architecture stability and zero regression in core business logic. Sprint 8 focused on establishing a systematic design token architecture, standardizing component patterns (buttons, forms, cards, navigation), enforcing touch ergonomics, securing supply chain dependencies, integrating secure email verification workflows, and verifying production build stability prior to main branch integration.
+The objective of Sprint 8 ("Branding & UI Polish") was to transform the PEP application into a cohesive, highly responsive, accessible, and production-ready platform while retaining 100% backend architecture stability and zero regression in core business logic. Sprint 8 focused on establishing a systematic design token architecture, standardizing component patterns (buttons, forms, cards, navigation), enforcing mobile touch ergonomics, refining typography and spacing scale, and verifying production build stability prior to main branch integration.
 
 ---
 
 ## Phases Completed
 
-### Phase 1: Security & Supply Chain Hardening
-- **Actions**: Audited and pinned all GitHub Actions workflows to immutable commit SHAs (`@v4` / `@v3` resolved to 40-character commit hashes). Resolved SonarQube security vulnerability findings across backend middleware and routing layers.
-- **Outcome**: Eliminated supply chain attack vectors in CI/CD pipelines and established immutable build reproducibility.
+### Phase 1: Design System Foundations
+- **Actions**: Created comprehensive design system documentation (`docs/design-system.md`). Centralized CSS custom properties in `client/src/index.css` for background, text contrast, interactive surfaces, focus outlines, and border tokens. Established global `:focus-visible` outline styles with a 2px offset ring (`var(--ring)`).
+- **Outcome**: Eliminated hardcoded arbitrary color values and established a unified visual design token architecture.
 
-### Phase 2: Azure & Infrastructure Deployment Readiness
-- **Actions**: Hardened Vite production build configuration for static SPA deployment on Azure App Service. Resolved environment-aware API URL resolution (`VITE_API_URL`) to support seamlessly switching between localhost development and production deployment endpoints.
-- **Outcome**: Zero runtime network endpoint configuration mismatches during environment transitions.
-
-### Phase 3: Email Verification Architecture
-- **Actions**: Implemented secure OTP-based email verification workflow. Added backend verification token generation, expiration handling, Resend transactional email client integration, resend rate-limiting, dedicated `/verify-email` and `/check-email` pages, and global context verification state banners.
-- **Outcome**: Complete user email verification lifecycle fully integrated with HttpOnly authentication cookies.
-
-### Phase 4: Design System Foundations & Token System Refinements
-- **Actions**: Created comprehensive design system documentation (`docs/design-system.md`). Standardized CSS custom properties in `client/src/index.css` for background, text contrast, interactive surfaces, focus outlines, and border tokens. Established global `:focus-visible` styles with a 2px offset ring (`var(--ring)`).
-- **Outcome**: Eliminates hardcoded arbitrary color values and provides unified visual theme tokens.
-
-### Phase 5: Button System Standardization
-- **Actions**: Standardized button interaction states (`primary`, `secondary`, `outline`, `ghost`, `danger`), focus rings, active press scales (`active:scale-[0.98]`), loading spinner overlays, and minimum touch target dimensions (`44px` touch height for mobile) across authentication forms (`Login.jsx`, `Register.jsx`), post creation (`CreatePost.jsx`, `EditPost.jsx`), and profile forms.
+### Phase 2: Button System
+- **Actions**: Standardized button interaction states (`primary`, `secondary`, `outline`, `ghost`, `danger`), focus rings, active press scale feedback (`active:scale-[0.98]`), loading spinner overlays, and minimum touch target dimensions (`44px` touch height for mobile) across authentication forms (`Login.jsx`, `Register.jsx`), post creation (`CreatePost.jsx`, `EditPost.jsx`), and profile forms.
 - **Outcome**: Consistently tactile, accessible, and visually uniform button hierarchy application-wide.
 
-### Phase 6: Form System Harmonization
+### Phase 3: Forms & Input Controls
 - **Actions**: Harmonized input fields, textareas, selection dropdowns, label typography (`text-xs font-semibold uppercase tracking-wider text-slate-400`), error helper state messages, and focus states across `Login.jsx`, `Register.jsx`, `CreatePost.jsx`, `EditPost.jsx`, `Profile.jsx`, and `AdminUsers.jsx`. Enforced explicit `id`, `name`, `htmlFor`, `aria-describedby`, and `aria-invalid` bindings on all form elements.
 - **Outcome**: 100% WCAG 2.1 AA compliant form interactions with uniform visual affordance.
 
-### Phase 7: Card System Harmonization & Navigation Alignment
-- **Actions**: Refactored `PostCard.jsx` and profile card containers to standard structural elevation (`bg-slate-800/80 border border-slate-700/60 rounded-2xl`), uniform aspect ratio constraints on media attachments, consistent inner padding (`p-5` to `p-6`), standardized pagination bar (`Pagination.jsx`), back button focus rings, and max-width layout alignment (`max-w-4xl`).
+### Phase 4: Cards & Containers
+- **Actions**: Refactored `PostCard.jsx` and profile card containers to standard structural elevation (`bg-slate-800/80 border border-slate-700/60 rounded-2xl`), uniform aspect ratio constraints on media attachments (`aspect-video` / `object-cover`), consistent inner padding (`p-5` to `p-6`), and max-width layout alignment (`max-w-4xl`).
 - **Outcome**: Cohesive card presentation across feeds, profile views, admin panels, and search results.
 
-### Phase 8: Mobile Touch Ergonomics & Repository Closure
-- **Actions**: Refined mobile touch target ergonomics for `PostCard.jsx` hover overlays and `CommentSection.jsx` action controls. Verified mobile viewport touch interactions (preventing hover state lockup on iOS/Android devices). Executed complete repository-wide audit, linting, test suite, and Vite production build validation.
+### Phase 5: Navigation & Layout
+- **Actions**: Standardized header alignment in `Navbar.jsx`, mobile navigation drawer transitions, pagination controls in `Pagination.jsx`, container max-width bounds (`max-w-7xl` / `max-w-4xl`), and back-link focus indicators.
+- **Outcome**: Clean structural layout hierarchy and predictable navigation experience across all application views.
+
+### Phase 6: Responsive Layout & Mobile Experience
+- **Actions**: Refined layout breakpoints (`320px`, `768px`, `1024px+`) and mobile touch ergonomics for `PostCard.jsx` hover overlays and `CommentSection.jsx` action controls. Resolved touch state lockup issues on mobile browsers (iOS/Android).
+- **Outcome**: Fully responsive layout without horizontal overflow and with ergonomic mobile touch interactions.
+
+### Phase 7: Typography, Spacing & Motion
+- **Actions**: Standardized typography scale (font sizes, line heights, font weights), consistent spacing tokens (`gap`, `padding`, `margin`), subtle scale micro-transitions (`transition-all duration-150`), and backdrop blur effects (`backdrop-blur-md`).
+- **Outcome**: Polished visual rhythm, enhanced legibility, and refined interactive motion throughout the application.
+
+### Phase 8: Production Readiness Verification
+- **Actions**: Performed exhaustive repository audit, verified build pipelines (`npm run build`), executed backend test suite (`npm test`), validated code quality (`npm run lint`), verified Docker container configurations, and prepared official Sprint 8 documentation.
 - **Outcome**: Repository left in a clean, documented, zero-defect state ready for main branch merge.
 
 ---
@@ -111,14 +111,14 @@ The objective of Sprint 8 ("Branding & UI Polish") was to transform the PEP appl
 
 ## Design Debt Review
 
-### Short-term (Immediate post-merge priorities)
+### Short-Term (Immediate post-merge priorities)
 - Re-export `useAuth` hook from a dedicated utility file to satisfy `oxlint` fast-refresh recommendation.
 - Add additional unit tests covering frontend React component rendering (e.g., using React Testing Library).
 
-### Medium-term (Next feature sprint)
+### Medium-Term (Next feature sprint)
 - Consolidate inline modal confirmation states in `AdminUsers.jsx` and `Profile.jsx` into global modal context hooks.
 - Refactor repetitive form error state binding logic into a custom form state hook.
 
-### Long-term (Architectural scaling)
+### Long-Term (Architectural scaling)
 - Transition frontend codebase from JavaScript (`.jsx`) to TypeScript (`.tsx`) for strict prop interface enforcement.
 - Introduce automated Visual Regression Testing (e.g., Playwright screenshot diffing) in CI pipeline.
