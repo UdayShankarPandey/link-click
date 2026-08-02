@@ -24,6 +24,10 @@ jest.unstable_mockModule('../models/Post.js', () => ({
   },
 }));
 
+jest.unstable_mockModule('../services/email.service.js', () => ({
+  sendVerificationEmail: jest.fn().mockResolvedValue({ success: true }),
+}));
+
 jest.unstable_mockModule('../models/AuditLog.js', () => ({
   default: {
     create: jest.fn().mockResolvedValue({}),

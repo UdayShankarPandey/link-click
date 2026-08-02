@@ -122,13 +122,10 @@ Content-Type: application/json
 }
 
 
-### Delete Comment (Protected - Must be comment author, post owner, or admin)
-# Replace with a real comment ID
-@commentId = 64b8a24bfc13ae21287c88ba
-DELETE http://localhost:3000/api/posts/{{postId}}/comments/{{commentId}}
+### Delete Comment (Protected - Must be comment author, post owner, or founder)
+DELETE {{baseUrl}}/api/posts/65d8a9b1c2e3f4a5b6c7d8e9/comments/65d8a9b1c2e3f4a5b6c7d8ea
 Authorization: Bearer {{token}}
 
-
-### Delete Post (Protected - Must be author or admin)
+### Delete Post (Protected - Must be author or founder)
 DELETE http://localhost:3000/api/posts/{{postId}}
 Authorization: Bearer {{token}}

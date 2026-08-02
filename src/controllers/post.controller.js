@@ -179,7 +179,7 @@ export const updatePost = async (req, res) => {
   }
 };
 
-// Delete a post (only allowed for the author or an admin)
+// Delete a post (only allowed for the author or founder)
 export const deletePost = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);

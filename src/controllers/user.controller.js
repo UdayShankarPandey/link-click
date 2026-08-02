@@ -1,7 +1,7 @@
 import { logger } from '../utils/logger.js';
 import User from '../models/User.js';
 
-// Create a new user (admin only)
+// Create a new user (Founder only)
 export const createUser = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
@@ -28,11 +28,13 @@ export const createUser = async (req, res) => {
       return res.status(400).json({ message: 'User already exists with this email' });
     }
 
+    const assignedRole = (role === 'founder' && normalizedEmail === (process.env.FOUNDER_EMAIL || '').trim().toLowerCase()) ? 'founder' : 'user';
+
     const user = await User.create({
       name,
       email: normalizedEmail,
       password, // Password is hashed automatically by the pre-save hook
-      role      // Admins can set role since this route is admin-only
+      role: assignedRole
     });
 
     res.status(201).json({

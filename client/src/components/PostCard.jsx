@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, MessageSquare, Shield } from 'lucide-react';
+import { Heart, MessageSquare } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import toast from 'react-hot-toast';
@@ -123,9 +123,6 @@ const PostCard = ({ post, onLikeUpdate }) => {
                 </AuthorHovercard>
 
                 {author.role === 'founder' && <FounderBadge size="xs" />}
-                {author.role === 'admin' && (
-                  <Shield className="h-3 w-3 text-amber shrink-0" />
-                )}
               </div>
 
               {/* Metadata: Timestamp • Reading Time • Edited Indicator */}
