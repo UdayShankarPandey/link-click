@@ -17,6 +17,7 @@ const envSchema = z.object({
   RESEND_API_KEY: z.string().optional(),
   EMAIL_FROM: z.string().default('Link Click <onboarding@resend.dev>'),
   FRONTEND_URL: z.string().url().default('http://localhost:5173'),
+  FOUNDER_EMAIL: z.string().default('udayshankarpandey.03@gmail.com'),
 });
 
 const _env = envSchema.safeParse(process.env);

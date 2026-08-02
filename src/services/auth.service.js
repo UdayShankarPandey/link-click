@@ -39,10 +39,14 @@ export const authService = {
 
     const { rawToken, tokenHash, expires, sentAt } = generateVerificationToken();
 
+    const isFounder = Boolean(env.FOUNDER_EMAIL && email === env.FOUNDER_EMAIL.trim().toLowerCase());
+    const role = isFounder ? 'founder' : 'user';
+
     await User.create({
       name,
       email,
       password,
+      role,
       emailVerified: false,
       emailVerificationTokenHash: tokenHash,
       emailVerificationExpires: expires,
@@ -63,6 +67,14 @@ export const authService = {
 
     if (!user.emailVerified) {
       throw new AppError('Please verify your email before logging in.', 403, { emailVerified: false });
+    }
+
+    if (user.status === 'suspended') {
+      throw new AppError('Account is suspended.', 403);
+    }
+
+    if (user.status === 'deleted') {
+      throw new AppError('Account has been deactivated.', 403);
     }
 
     const token = generateToken(user._id);
@@ -167,5 +179,64 @@ export const authService = {
     return {
       profilePicUrl: user.profilePicUrl
     };
+  },
+
+  async updateCoverPicture(userId, file) {
+    if (!file) {
+      throw new AppError('No file uploaded.', 400);
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new AppError('User not found.', 404);
+    }
+
+    const result = await imagekit.files.upload({
+      file: file.buffer.toString('base64'),
+      fileName: `cover-${Date.now()}-${file.originalname}`,
+      folder: '/covers'
+    });
+
+    user.coverPicUrl = result.url;
+    await user.save();
+
+    return {
+      coverPicUrl: user.coverPicUrl
+    };
+  },
+
+  async removeCoverPicture(userId) {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new AppError('User not found.', 404);
+    }
+
+    user.coverPicUrl = '';
+    await user.save();
+
+    return { message: 'Cover picture removed successfully.', coverPicUrl: '' };
+  },
+
+  async updateUserProfile(userId, { name, bio, socials, pinnedPost }) {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new AppError('User not found.', 404);
+    }
+
+    if (name && typeof name === 'string') user.name = name.trim();
+    if (bio !== undefined && typeof bio === 'string') user.bio = bio.trim();
+    if (socials && typeof socials === 'object') {
+      user.socials = {
+        github: socials.github?.trim() || '',
+        twitter: socials.twitter?.trim() || '',
+        website: socials.website?.trim() || ''
+      };
+    }
+    if (pinnedPost !== undefined) {
+      user.pinnedPost = pinnedPost || null;
+    }
+
+    await user.save();
+    return user;
   }
 };

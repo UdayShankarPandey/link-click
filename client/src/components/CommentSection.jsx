@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import ConfirmDialog from './ConfirmDialog';
+import FounderBadge from './FounderBadge';
 
 const CommentSection = ({ postId, postOwnerId, comments = [], onCommentsUpdate }) => {
   const { user } = useAuth();
@@ -54,7 +55,7 @@ const CommentSection = ({ postId, postOwnerId, comments = [], onCommentsUpdate }
     return (
       commentUserId === userId ||
       postOwnerId === userId ||
-      user.role === 'admin'
+      user.role === 'founder'
     );
   };
 
@@ -127,6 +128,7 @@ const CommentSection = ({ postId, postOwnerId, comments = [], onCommentsUpdate }
                     >
                       {author.name || 'Anonymous'}
                     </Link>
+                    {author.role === 'founder' && <FounderBadge size="xs" />}
                     <span className="text-[11px] text-text-tertiary shrink-0">{timeAgo(comment.createdAt)}</span>
                   </div>
                   <p className="text-sm text-text-secondary mt-0.5 leading-relaxed wrap-break-word whitespace-pre-wrap">

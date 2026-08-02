@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { Heart, ArrowLeft, Edit3, Trash2, Shield, Calendar, X } from 'lucide-react';
+import { Heart, ArrowLeft, Edit3, Trash2, Calendar, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import CommentSection from '../components/CommentSection';
+import FounderBadge from '../components/FounderBadge';
 import Skeleton from '../components/Skeleton';
 import ConfirmDialog from '../components/ConfirmDialog';
 
@@ -113,7 +114,7 @@ const PostDetail = () => {
   const author = post.user || {};
   const userId = user?.id || user?._id;
   const isOwner = userId && author._id === userId;
-  const canDelete = isOwner || user?.role === 'admin';
+  const canDelete = isOwner || user?.role === 'founder';
   const isLiked = user && post.likes?.some(
     (likeId) => likeId === userId || likeId?._id === userId
   );
@@ -222,9 +223,7 @@ const PostDetail = () => {
               <Link to={`/user/${author._id}`} className="text-sm font-semibold text-text-primary hover:text-amber transition-colors">
                 {author.name || 'Unknown'}
               </Link>
-              {author.role === 'admin' && (
-                <Shield className="h-3 w-3 text-amber" />
-              )}
+              {author.role === 'founder' && <FounderBadge size="xs" />}
             </div>
             <span className="text-xs text-text-tertiary flex items-center gap-1">
               <Calendar className="h-3 w-3" />

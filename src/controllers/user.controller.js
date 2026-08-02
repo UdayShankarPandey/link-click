@@ -131,7 +131,7 @@ export const deleteUser = async (req, res) => {
 // Get a user's public profile
 export const getUserProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id, '-password -role -email');
+    const user = await User.findById(req.params.id, '-password -email');
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }

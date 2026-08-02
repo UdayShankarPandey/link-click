@@ -53,3 +53,21 @@ export const updateProfilePic = asyncHandler(async (req, res) => {
   const result = await authService.updateProfilePicture(req.user._id, req.file);
   return apiResponse(res, 200, 'Profile picture updated successfully.', result);
 });
+
+// Update cover picture
+export const updateCoverPic = asyncHandler(async (req, res) => {
+  const result = await authService.updateCoverPicture(req.user._id, req.file);
+  return apiResponse(res, 200, 'Cover picture updated successfully.', result);
+});
+
+// Remove cover picture
+export const removeCoverPic = asyncHandler(async (req, res) => {
+  const result = await authService.removeCoverPicture(req.user._id);
+  return apiResponse(res, 200, result.message, result);
+});
+
+// Update profile details (bio, socials, name, pinnedPost)
+export const updateProfileDetails = asyncHandler(async (req, res) => {
+  const result = await authService.updateUserProfile(req.user._id, req.body);
+  return apiResponse(res, 200, 'Profile details updated successfully.', result);
+});
