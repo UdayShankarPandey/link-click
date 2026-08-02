@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, MessageSquare, Shield } from 'lucide-react';
+import { Heart, MessageSquare } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import AuthorHovercard from './AuthorHovercard';
+import FounderBadge from './FounderBadge';
 
 const PostCard = ({ post, onLikeUpdate }) => {
   const { user } = useAuth();
@@ -13,6 +15,17 @@ const PostCard = ({ post, onLikeUpdate }) => {
   const author = post.user || {};
   const isLiked = user && post.likes?.some(
     (likeId) => likeId === (user.id || user._id) || likeId?._id === (user.id || user._id)
+  );
+
+  // Task 1: Client-side Reading Time (Math.ceil(wordCount / 200))
+  const wordCount = ((post.title || '') + ' ' + (post.content || '')).trim().split(/\s+/).filter(Boolean).length;
+  const readingTimeMinutes = Math.max(1, Math.ceil(wordCount / 200));
+
+  // Task 2: Subtle Edited Indicator (updatedAt > createdAt by > 1 min)
+  const isEdited = Boolean(
+    post.updatedAt &&
+    post.createdAt &&
+    new Date(post.updatedAt) - new Date(post.createdAt) > 60000
   );
 
   const handleLike = async (e) => {
@@ -87,27 +100,43 @@ const PostCard = ({ post, onLikeUpdate }) => {
         <div className="p-4 sm:p-5">
           {/* Author row */}
           <div className="flex items-center gap-3 mb-3">
-            <Link
-              to={author._id ? `/user/${author._id}` : '#'}
-              onClick={(e) => e.stopPropagation()}
-              className="w-9 h-9 rounded-lg bg-surface-raised border border-border flex items-center justify-center text-sm font-bold text-amber shrink-0 hover:border-amber/30 transition-colors"
-            >
-              {author.name ? author.name.charAt(0).toUpperCase() : '?'}
-            </Link>
+            <AuthorHovercard author={author}>
+              <Link
+                to={author._id ? `/user/${author._id}` : '#'}
+                onClick={(e) => e.stopPropagation()}
+                className="w-9 h-9 rounded-lg bg-surface-raised border border-border flex items-center justify-center text-sm font-bold text-amber shrink-0 hover:border-amber/30 transition-colors"
+              >
+                {author.name ? author.name.charAt(0).toUpperCase() : '?'}
+              </Link>
+            </AuthorHovercard>
+
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
-                <Link
-                  to={author._id ? `/user/${author._id}` : '#'}
-                  onClick={(e) => e.stopPropagation()}
-                  className="text-sm font-semibold text-text-primary truncate hover:text-amber transition-colors"
-                >
-                  {author.name || 'Unknown'}
-                </Link>
-                {author.role === 'admin' && (
-                  <Shield className="h-3 w-3 text-amber shrink-0" />
+                <AuthorHovercard author={author}>
+                  <Link
+                    to={author._id ? `/user/${author._id}` : '#'}
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-sm font-semibold text-text-primary truncate hover:text-amber transition-colors"
+                  >
+                    {author.name || 'Unknown'}
+                  </Link>
+                </AuthorHovercard>
+
+                {author.role === 'founder' && <FounderBadge size="xs" />}
+              </div>
+
+              {/* Metadata: Timestamp • Reading Time • Edited Indicator */}
+              <div className="flex items-center gap-1.5 text-xs text-text-tertiary flex-wrap">
+                <span>{timeAgo(post.createdAt)}</span>
+                <span>•</span>
+                <span>{readingTimeMinutes} min read</span>
+                {isEdited && (
+                  <>
+                    <span>•</span>
+                    <span className="italic" title="This post was edited">(edited)</span>
+                  </>
                 )}
               </div>
-              <span className="text-xs text-text-tertiary">{timeAgo(post.createdAt)}</span>
             </div>
           </div>
 

@@ -7,6 +7,7 @@ import PostCard from '../components/PostCard';
 import Pagination from '../components/Pagination';
 import Skeleton from '../components/Skeleton';
 import EmptyState from '../components/EmptyState';
+import SidebarWidgets from '../components/SidebarWidgets';
 import toast from 'react-hot-toast';
 
 const Home = () => {
@@ -64,9 +65,10 @@ const Home = () => {
         <EmptyState
           icon={Camera}
           title="No posts yet"
-          description="Be the first to share something with the community."
+          description="Be the first to share a visual story with the community."
           actionLabel={user ? 'Create a Post' : 'Sign Up to Post'}
           actionTo={user ? '/create' : '/register'}
+          suggestions={['Visual Stories', 'Community Photos', 'Design Snippets']}
         />
       );
     }
@@ -83,7 +85,7 @@ const Home = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       {/* Header */}
       <header className="mb-8 animate-fade-in">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
@@ -107,8 +109,18 @@ const Home = () => {
         </div>
       </header>
 
-      {/* Feed */}
-      {renderFeedContent()}
+      {/* Main 2-Column Desktop Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 items-start">
+        {/* Main Feed Column */}
+        <main className="min-w-0">
+          {renderFeedContent()}
+        </main>
+
+        {/* Desktop Sidebar Column */}
+        <aside className="hidden lg:block sticky top-24">
+          <SidebarWidgets stats={{ totalMembers: 128, activeMembers: 42, postsToday: totalPosts }} />
+        </aside>
+      </div>
     </div>
   );
 };

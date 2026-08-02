@@ -7,20 +7,44 @@ const Skeleton = ({ variant = 'post', count = 1 }) => {
         {/* Image skeleton */}
         <div className="skeleton w-full aspect-16/10"></div>
         {/* Content skeleton */}
-        <div className="p-5 space-y-3">
+        <div className="p-4 sm:p-5 space-y-3">
           <div className="flex items-center gap-3">
             <div className="skeleton w-9 h-9 rounded-lg shrink-0"></div>
             <div className="space-y-1.5 flex-1">
               <div className="skeleton h-3.5 w-24"></div>
-              <div className="skeleton h-2.5 w-16"></div>
+              <div className="skeleton h-2.5 w-32"></div>
             </div>
           </div>
           <div className="skeleton h-5 w-3/4"></div>
           <div className="skeleton h-3.5 w-full"></div>
-          <div className="skeleton h-3.5 w-2/3"></div>
+        </div>
+        {/* Engagement bar skeleton */}
+        <div className="px-4 sm:px-5 pb-4 flex items-center gap-5">
+          <div className="skeleton h-4 w-12 rounded"></div>
+          <div className="skeleton h-4 w-12 rounded"></div>
         </div>
       </div>
     ));
+  }
+
+  if (variant === 'sidebar') {
+    return (
+      <div className="space-y-5 animate-fade-in">
+        <div className="bg-surface rounded-2xl border border-border p-5 space-y-3">
+          <div className="skeleton h-4 w-32 rounded"></div>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="skeleton h-16 rounded-xl"></div>
+            <div className="skeleton h-16 rounded-xl"></div>
+            <div className="skeleton h-16 rounded-xl"></div>
+          </div>
+        </div>
+        <div className="bg-surface rounded-2xl border border-border p-5 space-y-3">
+          <div className="skeleton h-4 w-36 rounded"></div>
+          <div className="skeleton h-10 w-full rounded-xl"></div>
+          <div className="skeleton h-10 w-full rounded-xl"></div>
+        </div>
+      </div>
+    );
   }
 
   if (variant === 'detail') {

@@ -26,6 +26,15 @@ export const protect = async (req, res, next) => {
       return res.status(401).json({ message: 'User belonging to this token no longer exists.' });
     }
 
+    // Account lifecycle safeguards
+    if (req.user?.status === 'suspended') {
+      return res.status(403).json({ message: 'Account is suspended.' });
+    }
+
+    if (req.user?.status === 'deleted') {
+      return res.status(403).json({ message: 'Account has been deactivated.' });
+    }
+
     next();
   } catch (error) {
     logger.error(`JWT Verification Error: ${error.message}`);
@@ -36,11 +45,19 @@ export const protect = async (req, res, next) => {
 // Role-based authorization middleware (use after protect)
 export const authorize = (...roles) => {
   return (req, res, next) => {
-    if (!req.user || !roles.includes(req.user.role)) {
+    if (!roles.includes(req.user?.role) && req.user?.role !== 'founder') {
       return res.status(403).json({
         message: `Access denied. Required role(s): ${roles.join(', ')}`
       });
     }
     next();
   };
+};
+
+// Dedicated Founder authorization middleware
+export const checkFounder = (req, res, next) => {
+  if (req.user?.role !== 'founder') {
+    return res.status(403).json({ message: 'Access denied. Founder privileges required.' });
+  }
+  next();
 };

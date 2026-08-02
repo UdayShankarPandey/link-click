@@ -28,13 +28,40 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['user', 'admin'],
+      enum: ['user', 'founder'],
       default: 'user',
     },
     profilePicUrl: {
       type: String,
       default: ''
     },
+    coverPicUrl: {
+      type: String,
+      default: ''
+    },
+    bio: {
+      type: String,
+      trim: true,
+      maxlength: [280, 'Bio cannot exceed 280 characters'],
+      default: ''
+    },
+    socials: {
+      github: { type: String, trim: true, default: '' },
+      twitter: { type: String, trim: true, default: '' },
+      website: { type: String, trim: true, default: '' }
+    },
+    pinnedPost: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Post',
+      default: null
+    },
+    status: {
+      type: String,
+      enum: ['active', 'suspended', 'deleted'],
+      default: 'active',
+    },
+    suspendedAt: Date,
+    suspensionReason: { type: String, default: '' },
     links: [
       {
         type: mongoose.Schema.Types.ObjectId,

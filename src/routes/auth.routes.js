@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { register, login, logout, getMe, updateProfilePic, verifyEmail, resendVerification } from '../controllers/auth.controller.js';
+import { register, login, logout, getMe, updateProfilePic, updateCoverPic, removeCoverPic, updateProfileDetails, verifyEmail, resendVerification } from '../controllers/auth.controller.js';
 import { protect } from '../middleware/auth.middleware.js';
 import validate from '../middleware/validate.middleware.js';
 import { registerSchema, loginSchema } from '../validators/auth.validator.js';
@@ -44,5 +44,14 @@ router.get('/me', protect, getMe);
 
 // Route for updating profile pic: PUT /api/auth/me/profile-pic
 router.put('/me/profile-pic', protect, upload.single('image'), updateProfilePic);
+
+// Route for updating cover pic: PUT /api/auth/me/cover-pic
+router.put('/me/cover-pic', protect, upload.single('image'), updateCoverPic);
+
+// Route for removing cover pic: DELETE /api/auth/me/cover-pic
+router.delete('/me/cover-pic', protect, removeCoverPic);
+
+// Route for updating profile details: PUT /api/auth/me/profile
+router.put('/me/profile', protect, updateProfileDetails);
 
 export default router;

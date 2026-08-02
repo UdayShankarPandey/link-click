@@ -61,10 +61,10 @@ const Navbar = () => {
                   <span>Profile</span>
                 </Link>
 
-                {user.role === 'admin' && (
-                  <Link to="/admin/users" className={navLinkClass('/admin/users')}>
-                    <Shield className="h-4 w-4" />
-                    <span>Admin</span>
+                {user.role === 'founder' && (
+                  <Link to="/dashboard" className={navLinkClass('/dashboard')}>
+                    <Shield className="h-4 w-4 text-amber" />
+                    <span>Dashboard</span>
                   </Link>
                 )}
 
@@ -138,10 +138,10 @@ const Navbar = () => {
                   <User className="h-4 w-4" />
                   <span>My Profile</span>
                 </Link>
-                {user.role === 'admin' && (
-                  <Link to="/admin/users" className={navLinkClass('/admin/users')} onClick={closeMobile}>
-                    <Shield className="h-4 w-4" />
-                    <span>Admin Panel</span>
+                {user.role === 'founder' && (
+                  <Link to="/dashboard" className={navLinkClass('/dashboard')} onClick={closeMobile}>
+                    <Shield className="h-4 w-4 text-amber" />
+                    <span>Founder Dashboard</span>
                   </Link>
                 )}
                 <div className="border-t border-border my-2"></div>

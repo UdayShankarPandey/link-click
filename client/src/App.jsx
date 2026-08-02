@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
@@ -7,19 +7,23 @@ import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
+import FounderRoute from './components/FounderRoute';
+import Skeleton from './components/Skeleton';
 
-// Pages
+// Pages (Core critical paths loaded synchronously)
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import CheckEmail from './pages/CheckEmail';
 import VerifyEmail from './pages/VerifyEmail';
-import Profile from './pages/Profile';
-import CreatePost from './pages/CreatePost';
 import PostDetail from './pages/PostDetail';
-import EditPost from './pages/EditPost';
-import UserProfile from './pages/UserProfile';
-import AdminUsers from './pages/AdminUsers';
+
+// Lazy Loaded Pages (Code-split for performance)
+const Profile = lazy(() => import('./pages/Profile'));
+const CreatePost = lazy(() => import('./pages/CreatePost'));
+const EditPost = lazy(() => import('./pages/EditPost'));
+const UserProfile = lazy(() => import('./pages/UserProfile'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
 
 const App = () => {
   return (
@@ -29,64 +33,71 @@ const App = () => {
           <Navbar />
           
           <main className="flex-1">
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<Home />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/check-email" element={<CheckEmail />} />
-              <Route path="/verify-email" element={<VerifyEmail />} />
-              <Route path="/post/:id" element={<PostDetail />} />
-              <Route path="/user/:id" element={<UserProfile />} />
+            <Suspense fallback={<div className="max-w-5xl mx-auto px-4 py-8"><Skeleton variant="post" count={2} /></div>}>
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<Home />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/check-email" element={<CheckEmail />} />
+                <Route path="/verify-email" element={<VerifyEmail />} />
+                <Route path="/post/:id" element={<PostDetail />} />
+                <Route path="/user/:id" element={<UserProfile />} />
 
-              {/* Protected Routes */}
-              <Route
-                path="/profile"
-                element={
-                  <ProtectedRoute>
-                    <Profile />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/create"
-                element={
-                  <ProtectedRoute>
-                    <CreatePost />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/post/:id/edit"
-                element={
-                  <ProtectedRoute>
-                    <EditPost />
-                  </ProtectedRoute>
-                }
-              />
+                {/* Protected Routes */}
+                <Route
+                  path="/profile"
+                  element={
+                    <ProtectedRoute>
+                      <Profile />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/create"
+                  element={
+                    <ProtectedRoute>
+                      <CreatePost />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/post/:id/edit"
+                  element={
+                    <ProtectedRoute>
+                      <EditPost />
+                    </ProtectedRoute>
+                  }
+                />
 
-              {/* Admin Routes */}
-              <Route
-                path="/admin/users"
-                element={
-                  <AdminRoute>
-                    <AdminUsers />
-                  </AdminRoute>
-                }
-              />
-              
-              {/* 404 */}
-              <Route
-                path="*"
-                element={
-                  <div className="min-h-[60vh] flex flex-col items-center justify-center px-4 text-center animate-fade-in">
-                    <h2 className="text-3xl font-bold text-text-primary mb-2">404</h2>
-                    <p className="text-text-secondary mb-6">This page doesn't exist.</p>
-                    <a href="/" className="text-amber hover:underline font-medium text-sm">← Back to feed</a>
-                  </div>
-                }
-              />
-            </Routes>
+                {/* Founder Dashboard Route */}
+                <Route element={<FounderRoute />}>
+                  <Route path="/dashboard" element={<Dashboard />} />
+                </Route>
+
+                {/* Admin Legacy Route mapping to Dashboard */}
+                <Route
+                  path="/admin/users"
+                  element={
+                    <AdminRoute>
+                      <Dashboard />
+                    </AdminRoute>
+                  }
+                />
+                
+                {/* 404 */}
+                <Route
+                  path="*"
+                  element={
+                    <div className="min-h-[60vh] flex flex-col items-center justify-center px-4 text-center animate-fade-in">
+                      <h2 className="text-3xl font-bold text-text-primary mb-2">404</h2>
+                      <p className="text-text-secondary mb-6">This page doesn't exist.</p>
+                      <a href="/" className="text-amber hover:underline font-medium text-sm">← Back to feed</a>
+                    </div>
+                  }
+                />
+              </Routes>
+            </Suspense>
           </main>
         </div>
         <Toaster

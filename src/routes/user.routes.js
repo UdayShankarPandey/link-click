@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { protect, authorize } from '../middleware/auth.middleware.js';
+import { protect, checkFounder } from '../middleware/auth.middleware.js';
 import {
   createUser,
   getUsers,
@@ -19,8 +19,8 @@ router.use(protect);
 router.get('/:id/profile', getUserProfile);
 router.post('/:id/link', toggleLinkUser);
 
-// Admin only routes
-router.use(authorize('admin'));
+// Founder only management routes
+router.use(checkFounder);
 
 // Routes for /api/users
 router.route('/')

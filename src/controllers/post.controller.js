@@ -179,7 +179,7 @@ export const updatePost = async (req, res) => {
   }
 };
 
-// Delete a post (only allowed for the author or an admin)
+// Delete a post (only allowed for the author or founder)
 export const deletePost = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
@@ -188,8 +188,8 @@ export const deletePost = async (req, res) => {
       return res.status(404).json({ message: 'Post not found.' });
     }
 
-    // Check authorization (post owner or admin)
-    if (post.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+    // Check authorization (post owner or founder)
+    if (post.user.toString() !== req.user._id.toString() && req.user.role !== 'founder') {
       return res.status(403).json({ message: 'You are not authorized to delete this post.' });
     }
 
@@ -296,11 +296,11 @@ export const deleteComment = async (req, res) => {
       return res.status(404).json({ message: 'Comment not found.' });
     }
 
-    // Check authorization: comment author, post owner, or admin
+    // Check authorization: comment author, post owner, or founder
     if (
       comment.user.toString() !== req.user._id.toString() &&
       post.user.toString() !== req.user._id.toString() &&
-      req.user.role !== 'admin'
+      req.user.role !== 'founder'
     ) {
       return res.status(403).json({ message: 'You are not authorized to delete this comment.' });
     }

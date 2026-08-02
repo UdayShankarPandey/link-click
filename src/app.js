@@ -8,6 +8,7 @@ import userRoutes from './routes/user.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
 import postRoutes from './routes/post.routes.js';
+import dashboardRoutes from './routes/dashboard.routes.js';
 import healthRoutes from './routes/health.routes.js';
 import errorMiddleware from './middleware/error.middleware.js';
 import morgan from 'morgan';
@@ -61,6 +62,7 @@ app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/posts', postRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Health check routes
 app.use('/health', healthRoutes);

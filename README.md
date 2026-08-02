@@ -10,7 +10,7 @@ Link Click is a beautifully designed, modern full-stack social media application
 - **Rich Media**: Upload high-quality post images and custom profile avatars (powered by ImageKit). View images in a dedicated full-screen lightbox.
 - **Robust Profiles**: View a user's original posts or browse the content they've liked via sleek profile tabs.
 - **Secure Authentication**: End-to-end security using JWT tokens, HTTP-only best practices, and Bcrypt password hashing.
-- **Admin Dashboard**: Fully responsive, mobile-first administrative data tables for complete user management.
+- **Founder Platform & Dashboard**: Single-founder operational platform featuring metrics overview, user governance, audit logs, and account immutability safeguards.
 
 ## 🛠️ Technology Stack
 
@@ -49,14 +49,20 @@ Link Click is a beautifully designed, modern full-stack social media application
    # Install dependencies
    npm install
 
-   # Create a .env file in the root directory
-   # Add the following variables:
+   # Copy example environment variables
+   cp .env.example .env
+
+   # Configure .env variables:
    PORT=3000
-   MONGO_URI=your_mongodb_connection_string
+   MONGODB_URI=your_mongodb_connection_string
    JWT_SECRET=your_jwt_secret
    IMAGEKIT_PUBLIC_KEY=your_imagekit_public_key
    IMAGEKIT_PRIVATE_KEY=your_imagekit_private_key
    IMAGEKIT_URL_ENDPOINT=your_imagekit_url_endpoint
+   FOUNDER_EMAIL=udayshankarpandey.03@gmail.com
+
+   # Run founder seed check (optional)
+   node scripts/seed-founder.js
 
    # Start the backend server
    npm run dev
