@@ -26,3 +26,5 @@ This document outlines potential enhancements and long-term roadmap items identi
 - **WebP Image Compression**: Automatically convert uploaded cover and profile images to WebP format on the backend before sending to ImageKit.
 - **Redis Caching for Feed & Hovercards**: Cache author hovercard data and trending creator feeds in Redis to minimize database lookups.
 - **Service Worker / PWA Support**: Enable offline caching of viewed feed items and progressive web app installability.
+- **Database Migration (Legacy Likes to Unified Reactions)**: After sufficient production usage, migrate all legacy `Post.likes` documents into the unified `reactions` model. Remove `likes` field, compatibility hook, and legacy compatibility queries to use `Post.reactions` as the single canonical engagement model.
+

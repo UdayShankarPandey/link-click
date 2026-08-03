@@ -52,9 +52,12 @@ const Profile = () => {
       if (activeTab === 'posts') {
         const response = await api.get(`/posts/user/${user.id || user._id}`);
         setPosts(response.data.posts || response.data);
-      } else {
+      } else if (activeTab === 'liked') {
         const response = await api.get(`/posts/user/${user.id || user._id}/liked`);
         setLikedPosts(response.data.posts || response.data);
+      } else if (activeTab === 'saved') {
+        const response = await api.get('/posts/bookmarked');
+        setBookmarkedPosts(response.data.posts || []);
       }
     } catch {
       toast.error('Failed to load posts');
@@ -167,7 +170,7 @@ const Profile = () => {
 
   if (!user) return null;
 
-  const currentPosts = activeTab === 'posts' ? posts : likedPosts;
+  const currentPosts = activeTab === 'posts' ? posts : activeTab === 'liked' ? likedPosts : bookmarkedPosts;
   const totalLikesReceived = posts.reduce((acc, p) => acc + (p.likes?.length || 0), 0);
 
   const renderCoverBanner = () => (
@@ -631,6 +634,15 @@ const Profile = () => {
           }`}
         >
           Liked Posts ({likedPosts.length})
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('saved')}
+          className={`pb-3 px-1 text-sm font-bold border-b-2 transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber rounded-t ${
+            activeTab === 'saved' ? 'border-amber text-amber' : 'border-transparent text-text-secondary hover:text-text-primary'
+          }`}
+        >
+          Saved Posts ({user.bookmarks?.length || bookmarkedPosts.length})
         </button>
       </div>
 
