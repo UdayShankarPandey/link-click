@@ -1,11 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Users, Activity, FileText, Sparkles, ShieldCheck, TrendingUp, UserPlus } from 'lucide-react';
+import { Users, Activity, FileText, Sparkles, ShieldCheck, TrendingUp, UserPlus, Hash } from 'lucide-react';
+import FounderBadge from './FounderBadge';
 
-/**
- * Isolated default placeholder data
- * Can be easily replaced by backend API props in future phases
- */
 const DEFAULT_STATS = {
   totalMembers: 128,
   activeMembers: 42,
@@ -86,9 +83,12 @@ export const RecentlyJoinedCard = ({ members = DEFAULT_RECENT_MEMBERS }) => {
               {member.name ? member.name.charAt(0).toUpperCase() : '?'}
             </div>
             <div className="flex-1 min-w-0">
-              <span className="text-xs font-semibold text-text-primary truncate block group-hover:text-amber transition-colors">
-                {member.name}
-              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-semibold text-text-primary truncate block group-hover:text-amber transition-colors">
+                  {member.name}
+                </span>
+                {member.role === 'founder' && <FounderBadge size="xs" />}
+              </div>
               <span className="text-[11px] text-text-tertiary block">
                 {member.joinedAt || 'Joined recently'}
               </span>
@@ -101,7 +101,144 @@ export const RecentlyJoinedCard = ({ members = DEFAULT_RECENT_MEMBERS }) => {
 };
 
 /**
- * Card 3: Community Guidelines
+ * Card 3: Trending Posts Widget
+ */
+export const TrendingPostsCard = ({ posts = [] }) => {
+  if (!posts || posts.length === 0) return null;
+
+  return (
+    <div className="bg-surface border border-border rounded-2xl p-5 hover:border-surface-overlay transition-colors duration-200">
+      <div className="flex items-center gap-2 mb-4">
+        <TrendingUp className="h-4 w-4 text-amber shrink-0" />
+        <h2 className="text-sm font-bold text-text-primary uppercase tracking-wider">
+          Trending Posts
+        </h2>
+      </div>
+
+      <div className="space-y-3">
+        {posts.slice(0, 5).map((post) => (
+          <Link
+            key={post._id}
+            to={`/post/${post._id}`}
+            className="flex items-start gap-3 p-2 rounded-xl hover:bg-surface-raised transition-colors group"
+          >
+            {post.imageUrl && (
+              <img
+                src={post.imageUrl}
+                alt={post.title}
+                className="w-10 h-10 rounded-lg object-cover bg-canvas border border-border/50 shrink-0"
+              />
+            )}
+            <div className="min-w-0 flex-1">
+              <span className="text-xs font-semibold text-text-primary truncate block group-hover:text-amber transition-colors line-clamp-1">
+                {post.title}
+              </span>
+              <span className="text-[11px] text-text-tertiary block">
+                By {post.user?.name || 'Anonymous'}
+              </span>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+/**
+ * Card 4: Suggested Users Widget (Founder First)
+ */
+export const SuggestedUsersCard = ({ users = [] }) => {
+  if (!users || users.length === 0) return null;
+
+  return (
+    <div className="bg-surface border border-border rounded-2xl p-5 hover:border-surface-overlay transition-colors duration-200">
+      <div className="flex items-center gap-2 mb-4">
+        <Users className="h-4 w-4 text-amber shrink-0" />
+        <h2 className="text-sm font-bold text-text-primary uppercase tracking-wider">
+          Suggested Creators
+        </h2>
+      </div>
+
+      <div className="space-y-3">
+        {users.slice(0, 5).map((user) => (
+          <Link
+            key={user._id || user.id}
+            to={`/user/${user._id || user.id}`}
+            className="flex items-center justify-between p-2 rounded-xl hover:bg-surface-raised transition-colors group"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              {user.profilePicUrl ? (
+                <img
+                  src={user.profilePicUrl}
+                  alt={user.name}
+                  className="w-8 h-8 rounded-lg object-cover shrink-0 border border-border"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-lg bg-surface-raised border border-border flex items-center justify-center text-xs font-bold text-amber shrink-0 group-hover:border-amber/30 transition-colors">
+                  {user.name?.charAt(0).toUpperCase() || '?'}
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-semibold text-text-primary truncate block group-hover:text-amber transition-colors">
+                    {user.name}
+                  </span>
+                  {user.role === 'founder' && <FounderBadge size="xs" />}
+                </div>
+                {user.bio ? (
+                  <span className="text-[11px] text-text-tertiary truncate block">
+                    {user.bio}
+                  </span>
+                ) : (
+                  <span className="text-[11px] text-text-tertiary block">
+                    Member
+                  </span>
+                )}
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+/**
+ * Card 5: Popular Hashtags Widget
+ */
+export const PopularHashtagsCard = ({ hashtags = [], onSelectHashtag }) => {
+  if (!hashtags || hashtags.length === 0) return null;
+
+  return (
+    <div className="bg-surface border border-border rounded-2xl p-5 hover:border-surface-overlay transition-colors duration-200">
+      <div className="flex items-center gap-2 mb-4">
+        <Hash className="h-4 w-4 text-amber shrink-0" />
+        <h2 className="text-sm font-bold text-text-primary uppercase tracking-wider">
+          Popular Hashtags
+        </h2>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {hashtags.slice(0, 10).map((item) => (
+          <button
+            key={item.tag}
+            type="button"
+            onClick={() => onSelectHashtag && onSelectHashtag(item.tag)}
+            className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-canvas border border-border/80 text-xs font-medium text-text-secondary hover:text-amber hover:border-amber/40 transition-colors cursor-pointer"
+          >
+            <span>{item.tag}</span>
+            <span className="text-[10px] text-text-tertiary bg-surface-raised px-1.5 py-0.5 rounded-md">
+              {item.count}
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+/**
+ * Card 6: Community Guidelines
  */
 export const CommunityGuidelinesCard = () => {
   return (
@@ -124,58 +261,26 @@ export const CommunityGuidelinesCard = () => {
 };
 
 /**
- * Card 4: Conditional Trending Creators
- * Rendered ONLY if valid creator data is provided
- */
-export const TrendingCreatorsCard = ({ creators }) => {
-  if (!creators || creators.length === 0) return null;
-
-  return (
-    <div className="bg-surface border border-border rounded-2xl p-5 hover:border-surface-overlay transition-colors duration-200">
-      <div className="flex items-center gap-2 mb-4">
-        <TrendingUp className="h-4 w-4 text-amber shrink-0" />
-        <h2 className="text-sm font-bold text-text-primary uppercase tracking-wider">
-          Trending Creators
-        </h2>
-      </div>
-
-      <div className="space-y-3">
-        {creators.map((creator) => (
-          <Link
-            key={creator.id || creator._id}
-            to={`/user/${creator._id || creator.id}`}
-            className="flex items-center justify-between p-2 rounded-xl hover:bg-surface-raised transition-colors group"
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-8 h-8 rounded-lg bg-surface-raised border border-border flex items-center justify-center text-xs font-bold text-amber shrink-0 group-hover:border-amber/30 transition-colors">
-                {creator.name?.charAt(0).toUpperCase() || '?'}
-              </div>
-              <div className="min-w-0">
-                <span className="text-xs font-semibold text-text-primary truncate block group-hover:text-amber transition-colors">
-                  {creator.name}
-                </span>
-                <span className="text-[11px] text-text-tertiary block">
-                  {creator.postsCount || 0} posts
-                </span>
-              </div>
-            </div>
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-/**
  * Main Composed Sidebar Container
  */
-const SidebarWidgets = ({ stats, recentMembers, trendingCreators }) => {
+const SidebarWidgets = ({
+  stats,
+  recentMembers,
+  trendingPosts = [],
+  suggestedUsers = [],
+  popularHashtags = [],
+  onSelectHashtag
+}) => {
   return (
     <div className="space-y-5">
       <PlatformStatsCard stats={stats} />
+      {trendingPosts.length > 0 && <TrendingPostsCard posts={trendingPosts} />}
+      {suggestedUsers.length > 0 && <SuggestedUsersCard users={suggestedUsers} />}
+      {popularHashtags.length > 0 && (
+        <PopularHashtagsCard hashtags={popularHashtags} onSelectHashtag={onSelectHashtag} />
+      )}
       <RecentlyJoinedCard members={recentMembers} />
       <CommunityGuidelinesCard />
-      <TrendingCreatorsCard creators={trendingCreators} />
     </div>
   );
 };

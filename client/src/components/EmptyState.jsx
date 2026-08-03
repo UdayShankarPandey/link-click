@@ -1,7 +1,49 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { TrendingUp, Sparkles, Hash, Bookmark, MessageSquare } from 'lucide-react';
 
-const EmptyState = ({ icon: Icon, title, description, actionLabel, actionTo, suggestions = [] }) => {
+const PRESETS = {
+  'empty-trending': {
+    icon: TrendingUp,
+    title: 'No trending posts',
+    description: 'No trending posts in the last 7 days.',
+    actionLabel: 'Create a Post',
+    actionTo: '/create'
+  },
+  'empty-popular': {
+    icon: Sparkles,
+    title: 'No popular posts',
+    description: 'No popular posts found.',
+    actionLabel: 'Create a Post',
+    actionTo: '/create'
+  },
+  'empty-hashtags': {
+    icon: Hash,
+    title: 'No popular hashtags',
+    description: 'No popular hashtags found.'
+  },
+  'empty-bookmarks': {
+    icon: Bookmark,
+    title: 'No saved posts',
+    description: "You haven't saved any posts yet.",
+    actionLabel: 'Explore Feed',
+    actionTo: '/'
+  },
+  'empty-replies': {
+    icon: MessageSquare,
+    title: 'No replies',
+    description: 'No replies yet.'
+  }
+};
+
+const EmptyState = ({ preset, icon: IconProp, title: titleProp, description: descriptionProp, actionLabel: actionLabelProp, actionTo: actionToProp, suggestions = [] }) => {
+  const presetConfig = preset ? PRESETS[preset] : null;
+  const Icon = IconProp || presetConfig?.icon;
+  const title = titleProp || presetConfig?.title || 'No data found';
+  const description = descriptionProp || presetConfig?.description || '';
+  const actionLabel = actionLabelProp || presetConfig?.actionLabel;
+  const actionTo = actionToProp || presetConfig?.actionTo;
+
   return (
     <div className="bg-surface/40 border border-border/60 rounded-2xl flex flex-col items-center justify-center py-12 sm:py-16 px-6 text-center animate-fade-in my-2">
       {Icon && (
