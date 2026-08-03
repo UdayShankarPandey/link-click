@@ -14,10 +14,17 @@
 - [🔌 API Routes & Endpoints](#-api-routes--endpoints)
 - [🎨 Design System Specification](#-design-system-specification)
 - [🐳 Docker & Deployment Architecture](#-docker--deployment-architecture)
-- [🏆 Engineering Sprint Reports](#-engineering-sprint-reports)
-  - [Sprint 8: Branding & UI Polish](#sprint-8-branding--ui-polish)
-  - [Sprint 9: Founder Platform & Social Identity](#sprint-9-founder-platform--social-identity)
-  - [Sprint 10: Community Discovery, Rich Content & Social Engagement](#sprint-10-community-discovery-rich-content--social-engagement)
+- [🏆 Engineering Sprint Reports & Project Evolution](#-engineering-sprint-reports--project-evolution)
+  - [Sprint 1 — Project Foundation & Initial Setup](#sprint-1--project-foundation--initial-setup)
+  - [Sprint 2 — Authentication & User Management](#sprint-2--authentication--user-management)
+  - [Sprint 3 — Core Posting System](#sprint-3--core-posting-system)
+  - [Sprint 4 — Comments & User Interaction](#sprint-4--comments--user-interaction)
+  - [Sprint 5 — Media Upload & Content Management](#sprint-5--media-upload--content-management)
+  - [Sprint 6 — Deployment, CI/CD & DevOps](#sprint-6--deployment-cicd--devops)
+  - [Sprint 7 — Email Verification & Security Hardening](#sprint-7--email-verification--security-hardening)
+  - [Sprint 8 — Branding & UI Polish](#sprint-8--branding--ui-polish)
+  - [Sprint 9 — Social Experience & Founder Platform](#sprint-9--social-experience--founder-platform)
+  - [Sprint 10 — Community Discovery & Rich Social Engagement](#sprint-10--community-discovery--rich-social-engagement)
 - [📐 Sprint 10 Implementation & Architectural Specification](#-sprint-10-implementation--architectural-specification)
 - [📋 Pre-Release Checklist & Quality Gates](#-pre-release-checklist--quality-gates)
 - [🧪 Testing & Quality Assurance](#-testing--quality-assurance)
@@ -478,17 +485,45 @@ docker run -d -p 3000:3000 --env-file .env --name link-click-container link-clic
 
 ---
 
-## 🏆 Engineering Sprint Reports
+## 🏆 Engineering Sprint Reports & Project Evolution
 
-### Sprint 8: Branding & UI Polish
+### Sprint 1 — Project Foundation & Initial Setup
+- **Objective**: Establish core repository architecture, Express server framework, MongoDB connection manager, and React 18 SPA template.
+- **Achievements**: Configured Node 22 ESM structure, Express application setup, Mongoose schema integration, initial React 18 + Vite scaffolding, and base CSS design variables.
+
+### Sprint 2 — Authentication & User Management
+- **Objective**: Implement secure authentication pipeline with JWT tokens, password hashing, user registration, and login flows.
+- **Achievements**: Built `/api/auth/register`, `/api/auth/login`, HttpOnly auth cookies, password encryption via `bcryptjs`, Zod input validation schemas, and global `AuthContext.jsx`.
+
+### Sprint 3 — Core Posting System
+- **Objective**: Build fundamental post creation, feed retrieval, pagination, and post CRUD controller APIs.
+- **Achievements**: Designed `Post` schema, created `POST /api/posts`, `GET /api/posts` with pagination controls, post deletion authorization, and base `PostCard.jsx` UI layout.
+
+### Sprint 4 — Comments & User Interaction
+- **Objective**: Enable user interaction through post likes, real-time comments, user profiles, and follower connections ("Linking").
+- **Achievements**: Implemented post liking, comment creation/deletion endpoints, user profile inspection (`Profile.jsx`, `UserProfile.jsx`), and user linking (`/api/users/link/:id`).
+
+### Sprint 5 — Media Upload & Content Management
+- **Objective**: Integrate cloud media management with ImageKit SDK for user avatars, post attachments, and client upload signing.
+- **Achievements**: Built `/api/upload/auth` for signed client uploads, avatar image picker, image attachments in posts, and responsive URL transformations.
+
+### Sprint 6 — Deployment, CI/CD & DevOps
+- **Objective**: Containerize backend API with Docker, set up Azure App Service environment, and configure automated GitHub Actions CI/CD workflows.
+- **Achievements**: Authored Alpine `Dockerfile`, established GitHub Actions pipelines (`backend-ci.yml`, `main_link-click-frontend.yml`), configured Azure App Service (`link-click-api`), and defined health probes (`/health/liveness`, `/health/readiness`).
+
+### Sprint 7 — Email Verification & Security Hardening
+- **Objective**: Add user email verification tokens via Resend API, enforce security headers (`helmet`), rate limiting, and NoSQL sanitization.
+- **Achievements**: Built `/verify-email` pipeline with Resend integration, rate limiters (`express-rate-limit`), NoSQL injection protection (`mongoSanitize`), unique request UUID tracking (`requestIdMiddleware`), and legacy migration scripts.
+
+### Sprint 8 — Branding & UI Polish
 - **Objective**: Establish a systematic design token architecture, standardize UI components, enforce mobile touch ergonomics (44px touch targets), and verify production build stability.
 - **Achievements**: Refactored 20 client components/pages, centralized CSS variables in `index.css`, built accessible pagination and navigation, verified zero linter errors, and validated 57/57 Jest test suites passing.
 
-### Sprint 9: Founder Platform & Social Identity
+### Sprint 9 — Social Experience & Founder Platform
 - **Objective**: Introduce a single-Founder platform model, social identity profile headers, and administrative governance.
 - **Achievements**: Implemented single Founder role architecture (`FOUNDER_EMAIL`), hardened backend Founder immutability safeguards (403 Forbidden on suspend/delete), created widescreen profile cover banners, profile completion strength meter (`ProfileCompletionBar.jsx`), pinned post support (`📌 Pinned`), security audit logging (`AuditLog`), and code-split route architecture (`React.lazy`/`<Suspense>`). 63/63 Jest tests passing.
 
-### Sprint 10: Community Discovery, Rich Content & Social Engagement
+### Sprint 10 — Community Discovery & Rich Social Engagement
 - **Objective**: Transform Link Click into a community-driven platform with intelligent discovery, rich content creation, and interactive social engagement.
 - **Achievements**:
   - **Phase 1**: 7-day weighted trending formula ($w_{\text{react}}=3, w_{\text{comment}}=2, w_{\text{view}}=0.5$), suggested users ranking, popular hashtags aggregation, feed tabs (`Latest`, `Trending`, `Popular`), dynamic sidebar widgets.
