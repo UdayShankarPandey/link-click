@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, Maximize2, X, ZoomIn, ZoomOut } from 'lucide-react';
 import { getOptimizedImageUrl } from '../utils/imageKit';
 
@@ -13,19 +13,19 @@ const ImageCarousel = ({ images = [], className = '' }) => {
     ? images.map(img => (typeof img === 'string' ? { url: img } : img))
     : [];
 
-  const handleNext = (e) => {
+  const handleNext = useCallback((e) => {
     if (e) e.stopPropagation();
     if (imageList.length <= 1) return;
     setCurrentIndex((prev) => (prev + 1) % imageList.length);
     setZoomLevel(1);
-  };
+  }, [imageList.length]);
 
-  const handlePrev = (e) => {
+  const handlePrev = useCallback((e) => {
     if (e) e.stopPropagation();
     if (imageList.length <= 1) return;
     setCurrentIndex((prev) => (prev - 1 + imageList.length) % imageList.length);
     setZoomLevel(1);
-  };
+  }, [imageList.length]);
 
   useEffect(() => {
     if (!isFullscreen) return;
@@ -43,7 +43,7 @@ const ImageCarousel = ({ images = [], className = '' }) => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isFullscreen, imageList.length]);
+  }, [isFullscreen, handlePrev, handleNext]);
 
   const handleTouchStart = (e) => {
     touchStartX.current = e.targetTouches[0].clientX;

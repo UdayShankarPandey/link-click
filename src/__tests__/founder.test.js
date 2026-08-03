@@ -5,9 +5,7 @@ import jwt from 'jsonwebtoken';
 const mockCreate = jest.fn();
 const mockFindOne = jest.fn();
 const mockFindById = jest.fn();
-const mockSelect = jest.fn();
 const mockCountDocuments = jest.fn();
-const mockSave = jest.fn();
 
 jest.unstable_mockModule('../models/User.js', () => ({
   default: {
@@ -153,7 +151,7 @@ describe('Founder Platform & Security Architecture', () => {
         save: jest.fn().mockResolvedValue({}),
       };
 
-      mockFindById.mockImplementation((id) => {
+      mockFindById.mockImplementation((_id) => {
         const queryObj = Promise.resolve(founderUser);
         queryObj.select = jest.fn().mockResolvedValue(founderUser);
         return queryObj;
@@ -180,7 +178,7 @@ describe('Founder Platform & Security Architecture', () => {
         save: jest.fn().mockResolvedValue({}),
       };
 
-      mockFindById.mockImplementation((id) => {
+      mockFindById.mockImplementation((_id) => {
         const queryObj = Promise.resolve(founderUser);
         queryObj.select = jest.fn().mockResolvedValue(founderUser);
         return queryObj;

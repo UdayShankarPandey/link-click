@@ -1,7 +1,6 @@
 import { jest } from '@jest/globals';
 import request from 'supertest';
 import crypto from 'node:crypto';
-import AppError from '../errors/AppError.js';
 
 // ── Mock setup ──────────────────────────────────────────────────────────────
 

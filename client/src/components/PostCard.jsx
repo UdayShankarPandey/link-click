@@ -38,10 +38,11 @@ const PostCard = ({ post: initialPost, onLikeUpdate }) => {
     setViewsCount(initialPost.views || 0);
   }, [initialPost]);
 
+  const authorId = author?._id?.toString() || author?.id?.toString() || null;
+
   // View Counter IntersectionObserver (50% visibility for 2.5 seconds)
   useEffect(() => {
     if (!post._id) return;
-    const authorId = author._id ? author._id.toString() : author.id ? author.id.toString() : null;
 
     if (currentUserId && authorId && currentUserId === authorId) return;
 
@@ -83,7 +84,7 @@ const PostCard = ({ post: initialPost, onLikeUpdate }) => {
       if (timerRef.current) clearTimeout(timerRef.current);
       if (currentCard) observer.unobserve(currentCard);
     };
-  }, [post._id, post.user?._id, currentUserId, author._id, author.id]);
+  }, [post._id, authorId, currentUserId]);
 
   const handlePostActionUpdate = (updatedPost) => {
     setPost(updatedPost);
