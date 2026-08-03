@@ -112,7 +112,7 @@ const PostEditor = ({ value = '', onChange, placeholder = 'Write your thoughts..
         aria-multiline="true"
         aria-label="Rich text post content editor"
         data-placeholder={placeholder}
-        className="p-4 min-h-[140px] text-sm text-text-primary focus:outline-none leading-relaxed prose prose-invert max-w-none empty:before:content-[attr(data-placeholder)] empty:before:text-text-tertiary"
+        className="p-4 min-h-35 text-sm text-text-primary focus:outline-none leading-relaxed prose prose-invert max-w-none empty:before:content-[attr(data-placeholder)] empty:before:text-text-tertiary"
       />
     </div>
   );

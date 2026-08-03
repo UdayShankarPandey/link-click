@@ -1,6 +1,6 @@
-# Future Improvements & Backlog — Post Sprint 9
+# Future Improvements & Backlog — Post Sprint 9 & 10
 
-This document outlines potential enhancements and long-term roadmap items identified during Sprint 9 planning and execution.
+This document outlines potential enhancements and long-term roadmap items identified during Sprint 9 and Sprint 10 planning and execution.
 
 ---
 
@@ -8,8 +8,7 @@ This document outlines potential enhancements and long-term roadmap items identi
 
 - **Direct Member Messaging**: Lightweight private messaging / DMs between linked members.
 - **Activity Stream / Notifications Feed**: In-app notifications panel for post likes, comments, and links.
-- **Rich Post Formatting**: Support for lightweight Markdown formatting in post content.
-- **Media Lightbox**: Expanded full-screen viewer for post images and cover banners.
+- **Media Lightbox Enhancements**: Expanded full-screen viewer for post images and cover banners with full EXIF data overlays.
 
 ---
 
@@ -37,5 +36,3 @@ This document outlines potential enhancements and long-term roadmap items identi
 - **Backend Draft Auto-Saving**: Sync draft posts to MongoDB backend for cross-device draft access (currently handled via client-side `localStorage`).
 - **Multi-Level Comment Threads**: Extend 1-level nested comment replies into multi-level tree threading with collapse controls.
 - **Push & Web Notification Infrastructure**: Real-time push notifications for post reactions, poll expiration alerts, and comment replies.
-
-
