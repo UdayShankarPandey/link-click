@@ -493,7 +493,7 @@ export const getPopularHashtags = async (req, res) => {
     const tagCounts = {};
     for (const post of posts) {
       const combinedText = `${post.title || ''} ${post.content || ''}`;
-      const hashtagRegex = /#[\w_]+/g;
+      const hashtagRegex = /#\w+/g;
       let match;
       while ((match = hashtagRegex.exec(combinedText)) !== null) {
         const normalizedTag = match[0].toLowerCase();
@@ -636,7 +636,6 @@ export const reactToPost = async (req, res) => {
       if (existingReaction.type === type) {
         // Remove reaction if same emoji selected again
         post.reactions.splice(existingIndex, 1);
-        activeReaction = null;
       } else {
         // Replace with new reaction type
         post.reactions[existingIndex].type = type;
@@ -693,7 +692,6 @@ export const toggleBookmark = async (req, res) => {
 
     if (index > -1) {
       user.bookmarks.splice(index, 1);
-      isBookmarked = false;
     } else {
       user.bookmarks.push(postId);
       isBookmarked = true;
@@ -754,7 +752,7 @@ export const updateComment = async (req, res) => {
     const { text } = req.body;
     const { id: postId, commentId } = req.params;
 
-    if (!text || !text.trim()) {
+    if (!text?.trim()) {
       return res.status(400).json({ message: 'Comment text is required.' });
     }
 

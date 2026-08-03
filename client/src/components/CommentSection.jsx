@@ -124,7 +124,7 @@ const CommentItem = ({
             {user && !comment.parentCommentId && (
               <button
                 type="button"
-                onClick={() => onReplyClick && onReplyClick(comment._id)}
+                onClick={() => onReplyClick?.(comment._id)}
                 className="hover:text-amber transition-colors flex items-center gap-1 cursor-pointer"
               >
                 <Reply className="h-3 w-3" />

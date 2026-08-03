@@ -179,7 +179,7 @@ postSchema.pre('save', function (next) {
   }
 
   // Calculate total votes for poll if present
-  if (this.poll && this.poll.options) {
+  if (this.poll?.options) {
     let votesCount = 0;
     this.poll.options.forEach((opt) => {
       votesCount += opt.votes ? opt.votes.length : 0;

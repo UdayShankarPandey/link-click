@@ -223,7 +223,7 @@ export const PopularHashtagsCard = ({ hashtags = [], onSelectHashtag }) => {
           <button
             key={item.tag}
             type="button"
-            onClick={() => onSelectHashtag && onSelectHashtag(item.tag)}
+            onClick={() => onSelectHashtag?.(item.tag)}
             className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-canvas border border-border/80 text-xs font-medium text-text-secondary hover:text-amber hover:border-amber/40 transition-colors cursor-pointer"
           >
             <span>{item.tag}</span>

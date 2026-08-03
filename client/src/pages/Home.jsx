@@ -177,9 +177,13 @@ const Home = () => {
     );
   };
 
-  const subtitleText = totalPosts > 0
-    ? `${totalPosts} ${totalPosts === 1 ? 'post' : 'posts'} in ${activeTab}`
-    : 'Visual stories from the Link Click community';
+  const getSubtitleText = (count, tab) => {
+    if (count <= 0) return 'Visual stories from the Link Click community';
+    const noun = count === 1 ? 'post' : 'posts';
+    return `${count} ${noun} in ${tab}`;
+  };
+
+  const subtitleText = getSubtitleText(totalPosts, activeTab);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
@@ -217,6 +221,7 @@ const Home = () => {
             return (
               <button
                 key={`tab-${tab.id}`}
+                type="button"
                 role="tab"
                 aria-selected={isActive}
                 aria-controls={`panel-${tab.id}`}

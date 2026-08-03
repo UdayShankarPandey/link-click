@@ -149,11 +149,10 @@ const ImageCarousel = ({ images = [], className = '' }) => {
 
       {/* Fullscreen Lightbox Modal */}
       {isFullscreen && (
-        <div
-          role="dialog"
-          aria-modal="true"
+        <dialog
+          open
           aria-label="Fullscreen image gallery preview"
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
+          className="fixed inset-0 z-50 w-full h-full max-w-none max-h-none m-0 p-4 bg-black/90 backdrop-blur-md flex items-center justify-center border-none animate-fade-in"
           onClick={() => {
             setIsFullscreen(false);
             setZoomLevel(1);
@@ -188,25 +187,22 @@ const ImageCarousel = ({ images = [], className = '' }) => {
               </button>
             </div>
 
-            {/* Image Container with Double Tap / Click / Keyboard Zoom */}
+            {/* Image Container with Native Button Zoom */}
             <div className="overflow-auto max-h-[80vh] flex items-center justify-center">
-              <img
-                src={currentImage.url}
-                alt={`Zoom view ${currentIndex + 1}`}
+              <button
+                type="button"
                 onClick={toggleZoom}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    toggleZoom();
-                  }
-                }}
-                tabIndex={0}
-                role="button"
                 aria-label="Toggle zoom view"
-                className={`max-h-[85vh] object-contain transition-transform duration-200 cursor-zoom-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber ${
-                  zoomLevel === 2 ? 'scale-150 cursor-zoom-out' : 'scale-100'
-                }`}
-              />
+                className="p-0 border-none bg-transparent cursor-zoom-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber rounded-xl"
+              >
+                <img
+                  src={currentImage.url}
+                  alt={`Zoom view ${currentIndex + 1}`}
+                  className={`max-h-[85vh] object-contain transition-transform duration-200 ${
+                    zoomLevel === 2 ? 'scale-150 cursor-zoom-out' : 'scale-100'
+                  }`}
+                />
+              </button>
             </div>
 
             {/* Navigation for Lightbox */}
@@ -231,7 +227,7 @@ const ImageCarousel = ({ images = [], className = '' }) => {
               </>
             )}
           </div>
-        </div>
+        </dialog>
       )}
     </>
   );

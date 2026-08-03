@@ -80,9 +80,17 @@ const PostDetail = () => {
   const isOwner = userId && author._id === userId;
   const canDelete = isOwner || user?.role === 'founder';
 
-  const imagesList = post.images && post.images.length > 0
-    ? post.images
-    : post.imageUrl ? [{ url: post.imageUrl }] : [];
+  const getPostImages = (postData) => {
+    if (postData.images && postData.images.length > 0) {
+      return postData.images;
+    }
+    if (postData.imageUrl) {
+      return [{ url: postData.imageUrl }];
+    }
+    return [];
+  };
+
+  const imagesList = getPostImages(post);
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 sm:py-8 animate-fade-in">

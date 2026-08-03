@@ -8,7 +8,7 @@ const PollCard = ({ postId, poll, onVoteUpdate }) => {
   const { user } = useAuth();
   const [submittingOption, setSubmittingOption] = useState(null);
 
-  if (!poll || !poll.options) return null;
+  if (!poll?.options) return null;
 
   const currentUserId = user?._id?.toString() || user?.id?.toString();
   const isExpired = poll.expiresAt && new Date(poll.expiresAt) < new Date();
@@ -16,10 +16,20 @@ const PollCard = ({ postId, poll, onVoteUpdate }) => {
   // Find if user has voted in any option
   let userVotedOptionId = null;
   poll.options.forEach((opt) => {
-    if (opt.votes && opt.votes.some((v) => (v._id ? v._id.toString() : v.toString()) === currentUserId)) {
+    if (opt.votes?.some((v) => (v._id ? v._id.toString() : v.toString()) === currentUserId)) {
       userVotedOptionId = opt.optionId || opt._id;
     }
   });
+
+  const getOptionButtonClass = (isUserChoice, userHasVoted) => {
+    if (isUserChoice) {
+      return 'border-amber bg-amber/10 text-text-primary font-semibold';
+    }
+    if (userHasVoted) {
+      return 'border-border/60 bg-surface/50 text-text-primary';
+    }
+    return 'border-border bg-surface hover:border-amber/40 hover:bg-surface-raised cursor-pointer';
+  };
 
   const hasVoted = Boolean(userVotedOptionId) || isExpired;
   const totalVotes = poll.totalVotes || 0;
@@ -77,13 +87,10 @@ const PollCard = ({ postId, poll, onVoteUpdate }) => {
               type="button"
               disabled={hasVoted || submittingOption === optId}
               onClick={() => handleVote(optId)}
-              className={`w-full relative overflow-hidden rounded-xl border p-3 text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber ${
-                isUserChoice
-                  ? 'border-amber bg-amber/10 text-text-primary font-semibold'
-                  : hasVoted
-                  ? 'border-border/60 bg-surface/50 text-text-primary'
-                  : 'border-border bg-surface hover:border-amber/40 hover:bg-surface-raised cursor-pointer'
-              }`}
+              className={`w-full relative overflow-hidden rounded-xl border p-3 text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber ${getOptionButtonClass(
+                isUserChoice,
+                hasVoted
+              )}`}
             >
               {/* Animated Progress Bar Fill (visible after voting or if expired) */}
               {hasVoted && (

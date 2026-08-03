@@ -63,11 +63,9 @@ const PostCard = ({ post: initialPost, onLikeUpdate }) => {
             }
           }, 2500);
         }
-      } else {
-        if (timerRef.current) {
-          clearTimeout(timerRef.current);
-          timerRef.current = null;
-        }
+      } else if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
       }
     };
 
@@ -107,9 +105,17 @@ const PostCard = ({ post: initialPost, onLikeUpdate }) => {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
-  const imagesList = post.images && post.images.length > 0
-    ? post.images
-    : post.imageUrl ? [{ url: post.imageUrl }] : [];
+  const getPostImages = (postData) => {
+    if (postData.images && postData.images.length > 0) {
+      return postData.images;
+    }
+    if (postData.imageUrl) {
+      return [{ url: postData.imageUrl }];
+    }
+    return [];
+  };
+
+  const imagesList = getPostImages(post);
 
   return (
     <article

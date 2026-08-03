@@ -47,7 +47,7 @@ const PostActions = ({ post, onPostUpdate, onCommentClick }) => {
   const totalReactions = Object.values(reactionCounts).reduce((a, b) => a + b, 0);
 
   // Bookmark state
-  const isBookmarked = user && user.bookmarks?.some(
+  const isBookmarked = user?.bookmarks?.some(
     (bId) => (bId._id ? bId._id.toString() : bId.toString()) === post._id.toString()
   );
 
