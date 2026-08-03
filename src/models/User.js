@@ -74,6 +74,12 @@ const userSchema = new mongoose.Schema(
         ref: 'User'
       }
     ],
+    bookmarks: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Post'
+      }
+    ],
     emailVerified: {
       type: Boolean,
       default: false,

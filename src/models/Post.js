@@ -12,6 +12,18 @@ const commentSchema = new mongoose.Schema(
       required: [true, 'Comment text is required'],
       trim: true,
       maxlength: [2000, 'Comment cannot exceed 2000 characters']
+    },
+    parentCommentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      default: null
+    },
+    isEdited: {
+      type: Boolean,
+      default: false
+    },
+    editedAt: {
+      type: Date,
+      default: null
     }
   },
   {
@@ -59,6 +71,19 @@ const pollSchema = new mongoose.Schema({
   totalVotes: {
     type: Number,
     default: 0
+  }
+});
+
+const reactionSchema = new mongoose.Schema({
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  type: {
+    type: String,
+    enum: ['heart', 'thumbs_up', 'laugh', 'surprised', 'sad'],
+    required: true
   }
 });
 
@@ -123,6 +148,7 @@ const postSchema = new mongoose.Schema(
       default: 0,
       min: 0
     },
+    reactions: [reactionSchema],
     likes: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -159,6 +185,13 @@ postSchema.pre('save', function (next) {
       votesCount += opt.votes ? opt.votes.length : 0;
     });
     this.poll.totalVotes = votesCount;
+  }
+
+  // Sync heart reactions with likes array for backward compatibility
+  if (this.reactions && this.reactions.length > 0) {
+    this.likes = this.reactions
+      .filter(r => r.type === 'heart')
+      .map(r => r.user);
   }
 
   next();

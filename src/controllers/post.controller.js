@@ -1,6 +1,7 @@
 import { logger } from '../utils/logger.js';
 import imagekit from '../config/imagekit.js';
 import Post from '../models/Post.js';
+import User from '../models/User.js';
 import {
   TRENDING_REACTION_WEIGHT,
   TRENDING_COMMENT_WEIGHT,
@@ -240,6 +241,8 @@ export const deletePost = async (req, res) => {
     }
 
     await post.deleteOne();
+    // Cascade purge deleted post from all user bookmarks
+    await User.updateMany({}, { $pull: { bookmarks: req.params.id } });
     res.status(200).json({ message: 'Post deleted successfully.' });
   } catch (error) {
     logger.error(`Delete Post Error: ${error.message}`);
@@ -362,7 +365,12 @@ export const getLikedPostsByUser = async (req, res) => {
     const startIndex = (page - 1) * limit;
     const userId = req.params.userId;
 
-    const query = { likes: userId };
+    const query = {
+      $or: [
+        { 'reactions.user': userId, 'reactions.type': 'heart' },
+        { likes: userId }
+      ]
+    };
 
     const total = await Post.countDocuments(query);
     const posts = await Post.find(query)
@@ -602,5 +610,186 @@ export const incrementPostViews = async (req, res) => {
     res.status(500).json({ message: 'Failed to record post view.' });
   }
 };
+
+// Unified emoji reactions endpoint
+export const reactToPost = async (req, res) => {
+  try {
+    const { type } = req.body;
+    const allowedTypes = ['heart', 'thumbs_up', 'laugh', 'surprised', 'sad'];
+    if (!type || !allowedTypes.includes(type)) {
+      return res.status(400).json({ message: 'Invalid or missing reaction type.' });
+    }
+
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found.' });
+    }
+
+    const userId = req.user._id;
+    if (!post.reactions) post.reactions = [];
+
+    const existingIndex = post.reactions.findIndex(
+      r => r.user.toString() === userId.toString()
+    );
+
+    let activeReaction = null;
+
+    if (existingIndex > -1) {
+      const existingReaction = post.reactions[existingIndex];
+      if (existingReaction.type === type) {
+        // Remove reaction if same emoji selected again
+        post.reactions.splice(existingIndex, 1);
+        activeReaction = null;
+      } else {
+        // Replace with new reaction type
+        post.reactions[existingIndex].type = type;
+        activeReaction = type;
+      }
+    } else {
+      // Add new reaction
+      post.reactions.push({ user: userId, type });
+      activeReaction = type;
+    }
+
+    await post.save();
+
+    const groupedCounts = {
+      heart: 0,
+      thumbs_up: 0,
+      laugh: 0,
+      surprised: 0,
+      sad: 0
+    };
+    post.reactions.forEach(r => {
+      if (groupedCounts[r.type] !== undefined) {
+        groupedCounts[r.type]++;
+      }
+    });
+
+    res.status(200).json({
+      message: 'Reaction updated successfully.',
+      reactions: post.reactions,
+      likes: post.likes,
+      userReaction: activeReaction,
+      groupedCounts
+    });
+  } catch (error) {
+    logger.error(`React To Post Error: ${error.message}`);
+    res.status(500).json({ message: 'Failed to update reaction.' });
+  }
+};
+
+// Toggle bookmark status for authenticated user
+export const toggleBookmark = async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found.' });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user.bookmarks) user.bookmarks = [];
+
+    const index = user.bookmarks.indexOf(postId);
+    let isBookmarked = false;
+
+    if (index > -1) {
+      user.bookmarks.splice(index, 1);
+      isBookmarked = false;
+    } else {
+      user.bookmarks.push(postId);
+      isBookmarked = true;
+    }
+
+    await user.save();
+
+    res.status(200).json({
+      message: isBookmarked ? 'Post bookmarked.' : 'Bookmark removed.',
+      isBookmarked,
+      bookmarks: user.bookmarks
+    });
+  } catch (error) {
+    logger.error(`Toggle Bookmark Error: ${error.message}`);
+    res.status(500).json({ message: 'Failed to update bookmark.' });
+  }
+};
+
+// Get bookmarked posts for authenticated user
+export const getBookmarkedPosts = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    const bookmarkedIds = user?.bookmarks || [];
+
+    if (bookmarkedIds.length === 0) {
+      return res.status(200).json({
+        success: true,
+        count: 0,
+        posts: []
+      });
+    }
+
+    let posts = await Post.find({ _id: { $in: bookmarkedIds } })
+      .populate({
+        path: 'user',
+        select: 'name email role profilePicUrl bio status',
+        match: { status: { $ne: 'deleted' } }
+      })
+      .populate('comments.user', 'name email role')
+      .sort({ createdAt: -1 });
+
+    posts = posts.filter(post => post.user && post.user.status !== 'deleted');
+
+    res.status(200).json({
+      success: true,
+      count: posts.length,
+      posts
+    });
+  } catch (error) {
+    logger.error(`Get Bookmarked Posts Error: ${error.message}`);
+    res.status(500).json({ message: 'Failed to retrieve saved posts.' });
+  }
+};
+
+// Update comment text (inline editing)
+export const updateComment = async (req, res) => {
+  try {
+    const { text } = req.body;
+    const { id: postId, commentId } = req.params;
+
+    if (!text || !text.trim()) {
+      return res.status(400).json({ message: 'Comment text is required.' });
+    }
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found.' });
+    }
+
+    const comment = post.comments.id(commentId);
+    if (!comment) {
+      return res.status(404).json({ message: 'Comment not found.' });
+    }
+
+    if (comment.user.toString() !== req.user._id.toString() && req.user.role !== 'founder') {
+      return res.status(403).json({ message: 'Not authorized to edit this comment.' });
+    }
+
+    comment.text = text.trim();
+    comment.isEdited = true;
+    comment.editedAt = new Date();
+
+    await post.save();
+
+    res.status(200).json({
+      message: 'Comment updated successfully.',
+      comments: post.comments
+    });
+  } catch (error) {
+    logger.error(`Update Comment Error: ${error.message}`);
+    res.status(500).json({ message: 'Failed to update comment.' });
+  }
+};
+
 
 
