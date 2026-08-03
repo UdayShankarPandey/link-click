@@ -19,6 +19,13 @@ export const FeedHeaderSkeleton = () => (
   </div>
 );
 
+const SKELETON_PROFILE_KEYS = [
+  'skel-profile-card-alpha',
+  'skel-profile-card-beta',
+  'skel-profile-card-gamma',
+  'skel-profile-card-delta'
+];
+
 const Skeleton = ({ variant = 'post', count = 1 }) => {
   if (variant === 'widget') {
     return <WidgetSkeleton />;
@@ -29,8 +36,9 @@ const Skeleton = ({ variant = 'post', count = 1 }) => {
   }
 
   if (variant === 'post') {
-    return Array.from({ length: count }).map((_, i) => (
-      <div key={`skeleton-post-card-item-${i}`} className="bg-surface rounded-2xl overflow-hidden border border-border">
+    const postKeys = Array.from({ length: count }, (_, idx) => `skel-post-card-token-${idx + 1}`);
+    return postKeys.map((keyId) => (
+      <div key={keyId} className="bg-surface rounded-2xl overflow-hidden border border-border">
         {/* Image skeleton */}
         <div className="skeleton w-full aspect-16/10"></div>
         {/* Content skeleton */}
@@ -108,8 +116,8 @@ const Skeleton = ({ variant = 'post', count = 1 }) => {
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={`skeleton-profile-card-item-${i}`} className="bg-surface rounded-2xl overflow-hidden border border-border">
+          {SKELETON_PROFILE_KEYS.map((keyId) => (
+            <div key={keyId} className="bg-surface rounded-2xl overflow-hidden border border-border">
               <div className="skeleton w-full aspect-video"></div>
               <div className="p-4 space-y-2">
                 <div className="skeleton h-4 w-3/4"></div>

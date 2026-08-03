@@ -153,15 +153,19 @@ const ImageCarousel = ({ images = [], className = '' }) => {
           open
           aria-label="Fullscreen image gallery preview"
           className="fixed inset-0 z-50 w-full h-full max-w-none max-h-none m-0 p-4 bg-black/90 backdrop-blur-md flex items-center justify-center border-none animate-fade-in"
-          onClick={() => {
-            setIsFullscreen(false);
-            setZoomLevel(1);
-          }}
         >
-          <div
-            className="relative max-w-5xl w-full max-h-[90vh] flex flex-col items-center justify-center"
-            onClick={(e) => e.stopPropagation()}
-          >
+          {/* Backdrop Close Trigger */}
+          <button
+            type="button"
+            aria-label="Close fullscreen gallery backdrop"
+            onClick={() => {
+              setIsFullscreen(false);
+              setZoomLevel(1);
+            }}
+            className="absolute inset-0 w-full h-full bg-transparent cursor-default border-none p-0 focus:outline-none"
+          />
+
+          <div className="relative z-10 max-w-5xl w-full max-h-[90vh] flex flex-col items-center justify-center">
             {/* Top Toolbar */}
             <div className="absolute -top-12 right-0 flex items-center gap-2">
               <button

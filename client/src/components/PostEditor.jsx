@@ -109,7 +109,6 @@ const PostEditor = ({ value = '', onChange, placeholder = 'Write your thoughts..
         ref={editorRef}
         contentEditable
         onInput={handleInput}
-        role="textbox"
         aria-multiline="true"
         aria-label="Rich text post content editor"
         data-placeholder={placeholder}
