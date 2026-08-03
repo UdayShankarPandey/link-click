@@ -28,3 +28,14 @@ This document outlines potential enhancements and long-term roadmap items identi
 - **Service Worker / PWA Support**: Enable offline caching of viewed feed items and progressive web app installability.
 - **Database Migration (Legacy Likes to Unified Reactions)**: After sufficient production usage, migrate all legacy `Post.likes` documents into the unified `reactions` model. Remove `likes` field, compatibility hook, and legacy compatibility queries to use `Post.reactions` as the single canonical engagement model.
 
+---
+
+## 4. Sprint 10 Postponed Items & Roadmap Backlog
+
+- **Global Search System (`Search.jsx`)**: Comprehensive full-text search across posts, creators, hashtags, and polls (postponed until social graph reaches higher volume).
+- **GIF Integration**: Native Giphy/Tenor GIF search and inline embedding in post creation and comment replies.
+- **Backend Draft Auto-Saving**: Sync draft posts to MongoDB backend for cross-device draft access (currently handled via client-side `localStorage`).
+- **Multi-Level Comment Threads**: Extend 1-level nested comment replies into multi-level tree threading with collapse controls.
+- **Push & Web Notification Infrastructure**: Real-time push notifications for post reactions, poll expiration alerts, and comment replies.
+
+
