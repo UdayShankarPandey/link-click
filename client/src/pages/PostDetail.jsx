@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { Heart, ArrowLeft, Edit3, Trash2, Calendar, Eye } from 'lucide-react';
+import { ArrowLeft, Edit3, Trash2, Calendar, Eye } from 'lucide-react';
 import toast from 'react-hot-toast';
 import CommentSection from '../components/CommentSection';
 import FounderBadge from '../components/FounderBadge';
@@ -10,6 +10,7 @@ import Skeleton from '../components/Skeleton';
 import ConfirmDialog from '../components/ConfirmDialog';
 import ImageCarousel from '../components/ImageCarousel';
 import PollCard from '../components/PollCard';
+import PostActions from '../components/PostActions';
 
 const PostDetail = () => {
   const { id } = useParams();
@@ -19,7 +20,6 @@ const PostDetail = () => {
   const [pollData, setPollData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [likeAnimating, setLikeAnimating] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
 
   useEffect(() => {
@@ -40,22 +40,6 @@ const PostDetail = () => {
     };
     fetchPost();
   }, [id]);
-
-  const handleLike = async () => {
-    if (!user) {
-      toast.error('Log in to like posts');
-      return;
-    }
-    try {
-      setLikeAnimating(true);
-      const response = await api.post(`/posts/${id}/like`);
-      setPost((prev) => ({ ...prev, likes: response.data.likes }));
-      setTimeout(() => setLikeAnimating(false), 300);
-    } catch {
-      toast.error('Failed to toggle like');
-      setLikeAnimating(false);
-    }
-  };
 
   const handleDelete = async () => {
     try {
@@ -95,9 +79,6 @@ const PostDetail = () => {
   const userId = user?.id || user?._id;
   const isOwner = userId && author._id === userId;
   const canDelete = isOwner || user?.role === 'founder';
-  const isLiked = user && post.likes?.some(
-    (likeId) => likeId === userId || likeId?._id === userId
-  );
 
   const imagesList = post.images && post.images.length > 0
     ? post.images
@@ -198,28 +179,27 @@ const PostDetail = () => {
           />
         )}
 
-        {/* Like bar */}
-        <div className="flex items-center gap-4 py-3 border-y border-border">
-          <button
-            type="button"
-            onClick={handleLike}
-            className={`flex items-center gap-2 text-sm font-medium transition-colors cursor-pointer ${
-              isLiked ? 'text-coral' : 'text-text-tertiary hover:text-coral'
-            }`}
-            aria-label={isLiked ? 'Unlike' : 'Like'}
-          >
-            <Heart className={`h-5 w-5 ${isLiked ? 'fill-coral' : ''} ${likeAnimating ? 'animate-like-pop' : ''}`} />
-            <span>{post.likes?.length || 0} {post.likes?.length === 1 ? 'like' : 'likes'}</span>
-          </button>
+        {/* Reusable PostActions Bar */}
+        <div className="py-2 border-y border-border">
+          <PostActions
+            post={post}
+            onPostUpdate={setPost}
+            onCommentClick={() => {
+              const el = document.getElementById('comments-section');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }}
+          />
         </div>
 
         {/* Comments */}
-        <CommentSection
-          postId={post._id}
-          postOwnerId={author._id}
-          comments={post.comments || []}
-          onCommentsUpdate={handleCommentsUpdate}
-        />
+        <div id="comments-section">
+          <CommentSection
+            postId={post._id}
+            postOwnerId={author._id}
+            comments={post.comments || []}
+            onCommentsUpdate={handleCommentsUpdate}
+          />
+        </div>
       </div>
 
       <ConfirmDialog

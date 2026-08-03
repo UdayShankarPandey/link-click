@@ -1,28 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import { Heart, MessageSquare, Eye } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Eye } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import toast from 'react-hot-toast';
 import AuthorHovercard from './AuthorHovercard';
 import FounderBadge from './FounderBadge';
 import ImageCarousel from './ImageCarousel';
 import PollCard from './PollCard';
+import PostActions from './PostActions';
 
-const PostCard = ({ post, onLikeUpdate }) => {
+const PostCard = ({ post: initialPost, onLikeUpdate }) => {
   const { user } = useAuth();
-  const [likeAnimating, setLikeAnimating] = useState(false);
-  const [pollData, setPollData] = useState(post.poll);
-  const [viewsCount, setViewsCount] = useState(post.views || 0);
+  const navigate = useNavigate();
+  const [post, setPost] = useState(initialPost);
+  const [pollData, setPollData] = useState(initialPost.poll);
+  const [viewsCount, setViewsCount] = useState(initialPost.views || 0);
 
   const cardRef = useRef(null);
   const timerRef = useRef(null);
 
   const author = post.user || {};
   const currentUserId = user?._id?.toString() || user?.id?.toString();
-  const isLiked = user && post.likes?.some(
-    (likeId) => (likeId._id ? likeId._id.toString() : likeId.toString()) === currentUserId
-  );
 
   const wordCount = ((post.title || '') + ' ' + (post.content || '')).trim().split(/\s+/).filter(Boolean).length;
   const readingTimeMinutes = Math.max(1, Math.ceil(wordCount / 200));
@@ -33,12 +31,18 @@ const PostCard = ({ post, onLikeUpdate }) => {
     new Date(post.updatedAt) - new Date(post.createdAt) > 60000
   );
 
+  // Synchronize state if props update
+  useEffect(() => {
+    setPost(initialPost);
+    setPollData(initialPost.poll);
+    setViewsCount(initialPost.views || 0);
+  }, [initialPost]);
+
   // View Counter IntersectionObserver (50% visibility for 2.5 seconds)
   useEffect(() => {
     if (!post._id) return;
     const authorId = author._id ? author._id.toString() : author.id ? author.id.toString() : null;
 
-    // Author views are never counted
     if (currentUserId && authorId && currentUserId === authorId) return;
 
     const storageKey = `viewed_post_${post._id}`;
@@ -54,12 +58,11 @@ const PostCard = ({ post, onLikeUpdate }) => {
               const res = await api.post(`/posts/${post._id}/view`);
               setViewsCount(res.data.views);
             } catch {
-              // Ignore silent view increment error
+              // Ignore silent view error
             }
           }, 2500);
         }
       } else {
-        // Reset timer if visibility drops below 50%
         if (timerRef.current) {
           clearTimeout(timerRef.current);
           timerRef.current = null;
@@ -80,27 +83,12 @@ const PostCard = ({ post, onLikeUpdate }) => {
       if (timerRef.current) clearTimeout(timerRef.current);
       if (currentCard) observer.unobserve(currentCard);
     };
-  }, [post._id, post.user?._id, currentUserId]);
+  }, [post._id, post.user?._id, currentUserId, author._id, author.id]);
 
-  const handleLike = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (!user) {
-      toast.error('Log in to like posts');
-      return;
-    }
-
-    try {
-      setLikeAnimating(true);
-      const response = await api.post(`/posts/${post._id}/like`);
-      if (onLikeUpdate) {
-        onLikeUpdate(post._id, response.data.likes);
-      }
-      setTimeout(() => setLikeAnimating(false), 300);
-    } catch {
-      toast.error('Failed to toggle like');
-      setLikeAnimating(false);
+  const handlePostActionUpdate = (updatedPost) => {
+    setPost(updatedPost);
+    if (onLikeUpdate) {
+      onLikeUpdate(updatedPost._id, updatedPost.likes);
     }
   };
 
@@ -204,34 +192,14 @@ const PostCard = ({ post, onLikeUpdate }) => {
         )}
       </div>
 
-      {/* Engagement Bar */}
-      <div className="px-4 sm:px-5 pb-4 pt-2 flex items-center justify-between border-t border-border/40">
-        <div className="flex items-center gap-5">
-          <button
-            type="button"
-            onClick={handleLike}
-            className={`flex items-center gap-1.5 text-sm font-medium transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral/50 rounded-md active:scale-95 ${
-              isLiked ? 'text-coral' : 'text-text-tertiary hover:text-coral'
-            }`}
-            aria-label={isLiked ? 'Unlike this post' : 'Like this post'}
-          >
-            <Heart
-              className={`h-4.5 w-4.5 ${isLiked ? 'fill-coral' : ''} ${likeAnimating ? 'animate-like-pop' : ''}`}
-            />
-            <span>{post.likes?.length || 0}</span>
-          </button>
-
-          <Link
-            to={`/post/${post._id}`}
-            className="flex items-center gap-1.5 text-sm font-medium text-text-tertiary hover:text-amber transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber/50 rounded-md active:scale-95"
-          >
-            <MessageSquare className="h-4.5 w-4.5" />
-            <span>{post.comments?.length || 0}</span>
-          </Link>
-        </div>
-
-        {/* View Count Display */}
-        <div className="flex items-center gap-1 text-xs text-text-tertiary font-mono">
+      {/* Reusable PostActions Bar */}
+      <div className="px-4 sm:px-5 pb-2">
+        <PostActions
+          post={post}
+          onPostUpdate={handlePostActionUpdate}
+          onCommentClick={() => navigate(`/post/${post._id}`)}
+        />
+        <div className="flex items-center justify-end gap-1 text-xs text-text-tertiary font-mono pt-1">
           <Eye className="h-3.5 w-3.5" />
           <span>{viewsCount}</span>
         </div>
