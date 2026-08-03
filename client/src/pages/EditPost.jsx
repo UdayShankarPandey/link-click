@@ -182,7 +182,7 @@ const EditPost = () => {
 
           {/* Image */}
           <div>
-            <label className="flex items-center gap-1.5 text-sm font-medium text-text-secondary mb-1.5">
+            <label htmlFor="edit-cover-image" className="flex items-center gap-1.5 text-sm font-medium text-text-secondary mb-1.5">
               <ImageIcon className="h-3.5 w-3.5 text-amber" />
               Cover Image
             </label>
@@ -211,6 +211,7 @@ const EditPost = () => {
               {currentImageUrl ? 'Replace image' : 'Upload image'}
             </button>
             <input
+              id="edit-cover-image"
               type="file"
               ref={fileInputRef}
               onChange={handleImageChange}

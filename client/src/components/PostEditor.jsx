@@ -49,6 +49,7 @@ const PostEditor = ({ value = '', onChange, placeholder = 'Write your thoughts..
     }
   };
 
+  // TECHNICAL DEBT NOTE: document.execCommand is deprecated in modern web standards but intentionally preserved for lightweight rich text formatting compatibility without introducing heavy external RTE dependencies.
   const applyFormat = (command, val = null) => {
     document.execCommand(command, false, val);
     if (editorRef.current) {
@@ -60,7 +61,7 @@ const PostEditor = ({ value = '', onChange, placeholder = 'Write your thoughts..
   const handleAddLink = () => {
     const url = prompt('Enter link URL (http:// or https://):');
     if (url) {
-      const formattedUrl = url.match(/^https?:\/\//i) ? url : `https://${url}`;
+      const formattedUrl = /^https?:\/\//i.test(url) ? url : `https://${url}`;
       applyFormat('createLink', formattedUrl);
     }
   };

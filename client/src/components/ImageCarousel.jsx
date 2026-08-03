@@ -132,9 +132,9 @@ const ImageCarousel = ({ images = [], className = '' }) => {
         {/* Indicators Dots */}
         {imageList.length > 1 && (
           <div className="flex items-center justify-center gap-1.5 py-2.5 bg-surface/60 border-t border-border/40">
-            {imageList.map((_, i) => (
+            {imageList.map((img, i) => (
               <button
-                key={`dot-${i}`}
+                key={`dot-slide-${i}-${img.url || i}`}
                 type="button"
                 onClick={() => setCurrentIndex(i)}
                 aria-label={`Go to slide ${i + 1}`}
@@ -150,6 +150,9 @@ const ImageCarousel = ({ images = [], className = '' }) => {
       {/* Fullscreen Lightbox Modal */}
       {isFullscreen && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Fullscreen image gallery preview"
           className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
           onClick={() => {
             setIsFullscreen(false);
@@ -165,7 +168,8 @@ const ImageCarousel = ({ images = [], className = '' }) => {
               <button
                 type="button"
                 onClick={toggleZoom}
-                className="p-2 rounded-xl bg-surface/80 text-text-primary hover:text-amber transition-colors"
+                className="p-2 rounded-xl bg-surface/80 text-text-primary hover:text-amber transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber"
+                aria-label={zoomLevel === 1 ? 'Zoom 2x' : 'Reset Zoom'}
                 title={zoomLevel === 1 ? 'Zoom 2x' : 'Reset Zoom'}
               >
                 {zoomLevel === 1 ? <ZoomIn className="h-5 w-5" /> : <ZoomOut className="h-5 w-5" />}
@@ -176,20 +180,30 @@ const ImageCarousel = ({ images = [], className = '' }) => {
                   setIsFullscreen(false);
                   setZoomLevel(1);
                 }}
-                className="p-2 rounded-xl bg-surface/80 text-text-primary hover:text-amber transition-colors"
+                className="p-2 rounded-xl bg-surface/80 text-text-primary hover:text-amber transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber"
+                aria-label="Close fullscreen gallery"
                 title="Close (Esc)"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            {/* Image Container with Double Tap / Click Zoom */}
+            {/* Image Container with Double Tap / Click / Keyboard Zoom */}
             <div className="overflow-auto max-h-[80vh] flex items-center justify-center">
               <img
                 src={currentImage.url}
                 alt={`Zoom view ${currentIndex + 1}`}
                 onClick={toggleZoom}
-                className={`max-h-[85vh] object-contain transition-transform duration-200 cursor-zoom-in ${
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggleZoom();
+                  }
+                }}
+                tabIndex={0}
+                role="button"
+                aria-label="Toggle zoom view"
+                className={`max-h-[85vh] object-contain transition-transform duration-200 cursor-zoom-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber ${
                   zoomLevel === 2 ? 'scale-150 cursor-zoom-out' : 'scale-100'
                 }`}
               />
@@ -201,14 +215,16 @@ const ImageCarousel = ({ images = [], className = '' }) => {
                 <button
                   type="button"
                   onClick={handlePrev}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-surface/80 text-white hover:bg-amber hover:text-black transition-colors"
+                  aria-label="Previous fullscreen image"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-surface/80 text-white hover:bg-amber hover:text-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber"
                 >
                   <ChevronLeft className="h-6 w-6" />
                 </button>
                 <button
                   type="button"
                   onClick={handleNext}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-surface/80 text-white hover:bg-amber hover:text-black transition-colors"
+                  aria-label="Next fullscreen image"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-surface/80 text-white hover:bg-amber hover:text-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber"
                 >
                   <ChevronRight className="h-6 w-6" />
                 </button>

@@ -170,7 +170,41 @@ const Profile = () => {
 
   if (!user) return null;
 
-  const currentPosts = activeTab === 'posts' ? posts : activeTab === 'liked' ? likedPosts : bookmarkedPosts;
+  const getTabPosts = (tab, postsList, likedList, bookmarkedList) => {
+    if (tab === 'posts') return postsList;
+    if (tab === 'liked') return likedList;
+    return bookmarkedList;
+  };
+
+  const getEmptyStateProps = (tab) => {
+    if (tab === 'posts') {
+      return {
+        icon: Camera,
+        title: 'No posts yet',
+        description: 'Your published visual stories will appear here.',
+        actionLabel: 'Create your first post',
+        actionTo: '/create'
+      };
+    }
+    if (tab === 'liked') {
+      return {
+        icon: Heart,
+        title: 'No liked posts',
+        description: 'Posts you like will appear here.',
+        actionLabel: 'Explore feed',
+        actionTo: '/'
+      };
+    }
+    return {
+      icon: Bookmark,
+      title: 'No saved posts',
+      description: 'Posts you bookmark will appear here for easy access.',
+      actionLabel: 'Explore feed',
+      actionTo: '/'
+    };
+  };
+
+  const currentPosts = getTabPosts(activeTab, posts, likedPosts, bookmarkedPosts);
   const totalLikesReceived = posts.reduce((acc, p) => acc + (p.likes?.length || 0), 0);
 
   const renderCoverBanner = () => (
@@ -328,13 +362,14 @@ const Profile = () => {
       return <Skeleton variant="profile" />;
     }
     if (currentPosts.length === 0) {
+      const emptyProps = getEmptyStateProps(activeTab);
       return (
         <EmptyState
-          icon={activeTab === 'posts' ? Camera : Heart}
-          title={activeTab === 'posts' ? "No posts yet" : "No liked posts"}
-          description={activeTab === 'posts' ? "Your published visual stories will appear here." : "Posts you like will appear here."}
-          actionLabel={activeTab === 'posts' ? "Create your first post" : "Explore feed"}
-          actionTo={activeTab === 'posts' ? "/create" : "/"}
+          icon={emptyProps.icon}
+          title={emptyProps.title}
+          description={emptyProps.description}
+          actionLabel={emptyProps.actionLabel}
+          actionTo={emptyProps.actionTo}
         />
       );
     }

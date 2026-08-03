@@ -491,17 +491,14 @@ export const getPopularHashtags = async (req, res) => {
     const posts = await Post.find({}, 'title content');
 
     const tagCounts = {};
-    const hashtagRegex = /#[\w_]+/g;
-
     for (const post of posts) {
       const combinedText = `${post.title || ''} ${post.content || ''}`;
-      const matches = combinedText.match(hashtagRegex);
-      if (matches) {
-        for (const rawTag of matches) {
-          const normalizedTag = rawTag.toLowerCase();
-          if (normalizedTag.length <= 30) {
-            tagCounts[normalizedTag] = (tagCounts[normalizedTag] || 0) + 1;
-          }
+      const hashtagRegex = /#[\w_]+/g;
+      let match;
+      while ((match = hashtagRegex.exec(combinedText)) !== null) {
+        const normalizedTag = match[0].toLowerCase();
+        if (normalizedTag.length <= 30) {
+          tagCounts[normalizedTag] = (tagCounts[normalizedTag] || 0) + 1;
         }
       }
     }

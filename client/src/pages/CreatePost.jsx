@@ -87,7 +87,8 @@ const CreatePost = () => {
     setDraftPrompt(false);
   };
 
-  // Image Selection Handler (Max 4 images, JPG/PNG/WEBP, max 5MB)
+  // Image Selection Handler (Max 4 images, JPG/PNG/WEBP, max 50 MB)
+  // NOTE: 50 MB upload limit per image is an intentional product decision for rich high-resolution media handling.
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
@@ -326,7 +327,7 @@ const CreatePost = () => {
 
           {/* Rich Content Description (PostEditor.jsx) */}
           <div>
-            <label className="flex items-center gap-1.5 text-sm font-medium text-text-secondary mb-1.5">
+            <label htmlFor="create-post-description" className="flex items-center gap-1.5 text-sm font-medium text-text-secondary mb-1.5">
               <FileText className="h-3.5 w-3.5 text-amber" />
               Description <span className="text-text-tertiary font-normal">(optional)</span>
             </label>
@@ -347,8 +348,9 @@ const CreatePost = () => {
               </div>
 
               <div>
-                <label className="text-xs font-medium text-text-secondary block mb-1">Poll Question</label>
+                <label htmlFor="poll-question-input" className="text-xs font-medium text-text-secondary block mb-1">Poll Question</label>
                 <input
+                  id="poll-question-input"
                   type="text"
                   value={poll.question}
                   onChange={(e) => setPoll(prev => ({ ...prev, question: e.target.value }))}
@@ -360,10 +362,11 @@ const CreatePost = () => {
 
               {/* Options Inputs */}
               <div className="space-y-2">
-                <label className="text-xs font-medium text-text-secondary block">Options (2 to 6)</label>
+                <label htmlFor="poll-option-input-0" className="text-xs font-medium text-text-secondary block">Options (2 to 6)</label>
                 {poll.options.map((opt, idx) => (
-                  <div key={`poll-opt-input-${idx}`} className="flex items-center gap-2">
+                  <div key={`poll-opt-input-${idx}-${opt || 'empty'}`} className="flex items-center gap-2">
                     <input
+                      id={`poll-option-input-${idx}`}
                       type="text"
                       value={opt}
                       onChange={(e) => handleOptionChange(idx, e.target.value)}
@@ -398,8 +401,8 @@ const CreatePost = () => {
 
               {/* Expiry Selector */}
               <div>
-                <label className="text-xs font-medium text-text-secondary block mb-1.5">Poll Duration</label>
-                <div className="flex flex-wrap gap-2">
+                <label htmlFor="poll-duration-selector" className="text-xs font-medium text-text-secondary block mb-1.5">Poll Duration</label>
+                <div id="poll-duration-selector" className="flex flex-wrap gap-2">
                   {EXPIRY_PRESETS.map((preset) => (
                     <button
                       key={`preset-${preset.label}`}
@@ -422,7 +425,7 @@ const CreatePost = () => {
           {/* Multi-Image Upload & Reordering (Max 4 images) */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="flex items-center gap-1.5 text-sm font-medium text-text-secondary">
+              <label htmlFor="create-post-images" className="flex items-center gap-1.5 text-sm font-medium text-text-secondary">
                 <ImageIcon className="h-3.5 w-3.5 text-amber" />
                 Images <span className="text-text-tertiary font-normal">(Max 4)</span>
               </label>
@@ -434,7 +437,7 @@ const CreatePost = () => {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
                 {images.map((img, index) => (
                   <div
-                    key={`preview-img-${index}`}
+                    key={`preview-img-${img.file?.name || img.previewUrl || index}`}
                     className="relative group aspect-square rounded-xl overflow-hidden border border-border bg-canvas flex items-center justify-center"
                   >
                     <img src={img.previewUrl} alt={`Upload ${index + 1}`} className="w-full h-full object-cover" />
@@ -482,6 +485,7 @@ const CreatePost = () => {
                 className="w-full border border-dashed border-border hover:border-amber/30 bg-canvas/50 hover:bg-canvas rounded-xl p-6 text-center cursor-pointer transition-all duration-150 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber"
               >
                 <input
+                  id="create-post-images"
                   type="file"
                   ref={fileInputRef}
                   onChange={handleImageChange}

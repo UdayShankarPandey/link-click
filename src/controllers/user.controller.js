@@ -204,7 +204,7 @@ export const getSuggestedUsers = async (req, res) => {
 
     const founders = filteredUsers.filter(user => user.role === 'founder');
     const nonFounders = filteredUsers.filter(user => user.role !== 'founder');
-
+    // NOTE: Math.random() is intentionally used here for lightweight UI presentation randomization of suggested users and is not used for security-sensitive operations.
     nonFounders.sort(() => Math.random() - 0.5);
 
     const founder = founders.slice(0, 1);

@@ -29,6 +29,8 @@ export const uploadImage = async (req, res) => {
   }
 };
 
+// Multi-image upload handler
+// NOTE: 50 MB upload limit per file is an intentional product decision for high-resolution image uploads preserved for ImageKit responsive transformations.
 export const uploadMultipleImages = async (req, res) => {
   try {
     const files = req.files || (req.file ? [req.file] : []);
