@@ -19,6 +19,49 @@ const commentSchema = new mongoose.Schema(
   }
 );
 
+const pollOptionSchema = new mongoose.Schema({
+  optionId: {
+    type: String,
+    required: true
+  },
+  text: {
+    type: String,
+    required: [true, 'Option text is required'],
+    trim: true,
+    maxlength: [200, 'Option text cannot exceed 200 characters']
+  },
+  votes: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }
+  ]
+});
+
+const pollSchema = new mongoose.Schema({
+  question: {
+    type: String,
+    required: [true, 'Poll question is required'],
+    trim: true,
+    maxlength: [300, 'Poll question cannot exceed 300 characters']
+  },
+  options: {
+    type: [pollOptionSchema],
+    validate: [
+      (opts) => opts.length >= 2 && opts.length <= 6,
+      'Poll must have between 2 and 6 options'
+    ]
+  },
+  expiresAt: {
+    type: Date,
+    default: null
+  },
+  totalVotes: {
+    type: Number,
+    default: 0
+  }
+});
+
 const postSchema = new mongoose.Schema(
   {
     user: {
@@ -35,17 +78,45 @@ const postSchema = new mongoose.Schema(
     content: {
       type: String,
       trim: true,
-      maxlength: [10000, 'Content cannot exceed 10000 characters']
+      maxlength: [5000, 'Content cannot exceed 5000 characters']
     },
-    imageUrl: {
+    postType: {
       type: String,
-      required: [true, 'Post image URL is required']
+      enum: ['standard', 'poll'],
+      default: 'standard'
+    },
+    status: {
+      type: String,
+      enum: ['published', 'draft'],
+      default: 'published'
+    },
+    images: {
+      type: [
+        {
+          url: { type: String, required: true },
+          thumbnailUrl: { type: String },
+          fileId: { type: String }
+        }
+      ],
+      validate: [
+        (imgs) => imgs.length <= 4,
+        'Maximum 4 images allowed per post'
+      ],
+      default: []
+    },
+    // Legacy single image fields preserved for backward compatibility
+    imageUrl: {
+      type: String
     },
     imageThumbnailUrl: {
       type: String
     },
     imageFileId: {
       type: String
+    },
+    poll: {
+      type: pollSchema,
+      default: null
     },
     views: {
       type: Number,
@@ -65,10 +136,39 @@ const postSchema = new mongoose.Schema(
   }
 );
 
+// Backward compatibility & multi-image synchronization pre-save hook
+postSchema.pre('save', function (next) {
+  if (this.images && this.images.length > 0) {
+    this.imageUrl = this.images[0].url;
+    this.imageThumbnailUrl = this.images[0].thumbnailUrl || this.images[0].url;
+    this.imageFileId = this.images[0].fileId || '';
+  } else if (this.imageUrl && (!this.images || this.images.length === 0)) {
+    this.images = [
+      {
+        url: this.imageUrl,
+        thumbnailUrl: this.imageThumbnailUrl || this.imageUrl,
+        fileId: this.imageFileId || ''
+      }
+    ];
+  }
+
+  // Calculate total votes for poll if present
+  if (this.poll && this.poll.options) {
+    let votesCount = 0;
+    this.poll.options.forEach((opt) => {
+      votesCount += opt.votes ? opt.votes.length : 0;
+    });
+    this.poll.totalVotes = votesCount;
+  }
+
+  next();
+});
+
 // Indexes for query performance
 postSchema.index({ user: 1 });
 postSchema.index({ createdAt: -1 });
 postSchema.index({ createdAt: -1, views: -1 });
+postSchema.index({ postType: 1, status: 1 });
 
 const Post = mongoose.model('Post', postSchema);
 

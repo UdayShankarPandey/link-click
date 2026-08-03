@@ -13,7 +13,9 @@ import {
   getLikedPostsByUser,
   getTrendingPosts,
   getPopularPosts,
-  getPopularHashtags
+  getPopularHashtags,
+  votePoll,
+  incrementPostViews
 } from '../controllers/post.controller.js';
 import { protect } from '../middleware/auth.middleware.js';
 
@@ -24,7 +26,7 @@ const storage = multer.memoryStorage();
 const upload = multer({
   storage,
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB limit
+    fileSize: 50 * 1024 * 1024 // 50MB limit
   },
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
@@ -52,6 +54,12 @@ router.get('/user/:userId/liked', getLikedPostsByUser);
 router.get('/:id', getPostById);
 router.put('/:id', protect, upload.single('image'), updatePost);
 router.delete('/:id', protect, deletePost);
+
+// Poll voting route
+router.post('/:id/vote', protect, votePoll);
+
+// Post view increment route
+router.post('/:id/view', protect, incrementPostViews);
 
 // Like routes
 router.post('/:id/like', protect, likePost);

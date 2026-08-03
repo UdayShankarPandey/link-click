@@ -13,16 +13,18 @@ const MAX_LIMIT = 50;
 // Create a new post
 export const createPost = async (req, res) => {
   try {
-    const { title, content } = req.body;
+    const { title, content, postType = 'standard', poll } = req.body;
     if (!title) {
       return res.status(400).json({ message: 'Title is required.' });
     }
 
+    let images = req.body.images || [];
+
+    // Legacy single image fields or single file upload
     let imageUrl = req.body.imageUrl;
     let imageThumbnailUrl = req.body.imageThumbnailUrl;
     let imageFileId = req.body.imageFileId;
 
-    // Handle direct image file upload via multer
     if (req.file) {
       const result = await imagekit.files.upload({
         file: req.file.buffer.toString('base64'),
@@ -32,19 +34,48 @@ export const createPost = async (req, res) => {
       imageUrl = result.url;
       imageThumbnailUrl = result.thumbnailUrl;
       imageFileId = result.fileId;
+
+      images = [{ url: imageUrl, thumbnailUrl: imageThumbnailUrl, fileId: imageFileId }];
+    } else if (imageUrl && images.length === 0) {
+      images = [{ url: imageUrl, thumbnailUrl: imageThumbnailUrl || imageUrl, fileId: imageFileId || '' }];
     }
 
-    if (!imageUrl) {
-      return res.status(400).json({ message: 'Post image is required. Please upload an image file or provide a valid imageUrl.' });
+    // Require image ONLY for standard posts when poll is not attached
+    if (postType === 'standard' && images.length === 0 && !imageUrl) {
+      return res.status(400).json({ message: 'Post image is required. Please upload at least one image.' });
+    }
+
+    // Process poll if postType is 'poll'
+    let pollData = null;
+    if (postType === 'poll' && poll) {
+      if (!poll.question || !Array.isArray(poll.options) || poll.options.length < 2 || poll.options.length > 6) {
+        return res.status(400).json({ message: 'Polls must contain a question and 2 to 6 options.' });
+      }
+
+      const formattedOptions = poll.options.map((opt, index) => ({
+        optionId: opt.optionId || `opt_${Date.now()}_${index}`,
+        text: typeof opt === 'string' ? opt : opt.text,
+        votes: []
+      }));
+
+      pollData = {
+        question: poll.question.trim(),
+        options: formattedOptions,
+        expiresAt: poll.expiresAt ? new Date(poll.expiresAt) : null,
+        totalVotes: 0
+      };
     }
 
     const post = await Post.create({
       user: req.user._id,
       title,
       content,
-      imageUrl,
-      imageThumbnailUrl,
-      imageFileId
+      postType,
+      images,
+      imageUrl: images[0]?.url || imageUrl || '',
+      imageThumbnailUrl: images[0]?.thumbnailUrl || imageThumbnailUrl || '',
+      imageFileId: images[0]?.fileId || imageFileId || '',
+      poll: pollData
     });
 
     res.status(201).json({
@@ -53,7 +84,7 @@ export const createPost = async (req, res) => {
     });
   } catch (error) {
     logger.error("Create Post Error:", { error });
-    res.status(500).json({ message: 'Failed to create post.' });
+    res.status(500).json({ message: error.message || 'Failed to create post.' });
   }
 };
 
@@ -481,4 +512,95 @@ export const getPopularHashtags = async (req, res) => {
     res.status(500).json({ message: 'Failed to retrieve popular hashtags.' });
   }
 };
+
+// Cast vote on a poll post
+export const votePoll = async (req, res) => {
+  try {
+    const { optionId } = req.body;
+    const postId = req.params.id;
+    const userId = req.user._id;
+
+    if (!optionId) {
+      return res.status(400).json({ message: 'Option ID is required.' });
+    }
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found.' });
+    }
+
+    if (post.postType !== 'poll' || !post.poll) {
+      return res.status(400).json({ message: 'This post is not a poll.' });
+    }
+
+    if (post.poll.expiresAt && new Date(post.poll.expiresAt) < new Date()) {
+      return res.status(400).json({ message: 'This poll has expired.' });
+    }
+
+    // Single vote check across all options
+    let alreadyVoted = false;
+    post.poll.options.forEach(opt => {
+      if (opt.votes.some(v => v.toString() === userId.toString())) {
+        alreadyVoted = true;
+      }
+    });
+
+    if (alreadyVoted) {
+      return res.status(400).json({ message: 'You have already voted in this poll.' });
+    }
+
+    const targetOption = post.poll.options.find(
+      opt => opt.optionId === optionId || opt._id.toString() === optionId
+    );
+    if (!targetOption) {
+      return res.status(404).json({ message: 'Poll option not found.' });
+    }
+
+    targetOption.votes.push(userId);
+
+    let total = 0;
+    post.poll.options.forEach(opt => {
+      total += opt.votes.length;
+    });
+    post.poll.totalVotes = total;
+
+    await post.save();
+
+    res.status(200).json({
+      message: 'Vote recorded successfully.',
+      poll: post.poll
+    });
+  } catch (error) {
+    logger.error(`Vote Poll Error: ${error.message}`);
+    res.status(500).json({ message: 'Failed to record vote.' });
+  }
+};
+
+// Increment post view count (Author views excluded)
+export const incrementPostViews = async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found.' });
+    }
+
+    // Do not count author's own views
+    if (req.user && post.user.toString() === req.user._id.toString()) {
+      return res.status(200).json({ message: 'Author view ignored.', views: post.views });
+    }
+
+    post.views = (post.views || 0) + 1;
+    await post.save();
+
+    res.status(200).json({
+      message: 'View counted.',
+      views: post.views
+    });
+  } catch (error) {
+    logger.error(`Increment Post Views Error: ${error.message}`);
+    res.status(500).json({ message: 'Failed to record post view.' });
+  }
+};
+
 
