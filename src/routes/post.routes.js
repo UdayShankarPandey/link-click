@@ -10,7 +10,10 @@ import {
   likePost,
   commentPost,
   deleteComment,
-  getLikedPostsByUser
+  getLikedPostsByUser,
+  getTrendingPosts,
+  getPopularPosts,
+  getPopularHashtags
 } from '../controllers/post.controller.js';
 import { protect } from '../middleware/auth.middleware.js';
 
@@ -31,6 +34,11 @@ const upload = multer({
     }
   }
 });
+
+// Discovery routes (must be defined before /:id)
+router.get('/trending', getTrendingPosts);
+router.get('/popular', getPopularPosts);
+router.get('/hashtags/popular', getPopularHashtags);
 
 // Post routes
 router.post('/', protect, upload.single('image'), createPost);

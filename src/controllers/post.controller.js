@@ -1,6 +1,11 @@
 import { logger } from '../utils/logger.js';
 import imagekit from '../config/imagekit.js';
 import Post from '../models/Post.js';
+import {
+  TRENDING_REACTION_WEIGHT,
+  TRENDING_COMMENT_WEIGHT,
+  TRENDING_VIEW_WEIGHT
+} from '../config/constants.js';
 
 // Max pagination limit to prevent abuse
 const MAX_LIMIT = 50;
@@ -349,3 +354,131 @@ export const getLikedPostsByUser = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch liked posts.' });
   }
 };
+
+// Get trending posts based on weighted engagement score (last 7 days)
+export const getTrendingPosts = async (req, res) => {
+  try {
+    const limit = Math.min(20, Math.max(1, Number.parseInt(req.query.limit) || 5));
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    let posts = await Post.find({ createdAt: { $gte: sevenDaysAgo } })
+      .populate({
+        path: 'user',
+        select: 'name email role profilePicUrl bio status',
+        match: { status: { $ne: 'deleted' } }
+      })
+      .populate('comments.user', 'name email role');
+
+    posts = posts.filter(post => post.user && post.user.status !== 'deleted');
+
+    // Fallback: If fewer than 5 qualifying posts exist in last 7 days, fetch all available qualifying posts
+    if (posts.length < 5) {
+      const fallbackPosts = await Post.find()
+        .populate({
+          path: 'user',
+          select: 'name email role profilePicUrl bio status',
+          match: { status: { $ne: 'deleted' } }
+        })
+        .populate('comments.user', 'name email role');
+
+      posts = fallbackPosts.filter(post => post.user && post.user.status !== 'deleted');
+    }
+
+    const scoredPosts = posts.map(post => {
+      const reactionsCount = (post.reactions?.length || post.likes?.length || 0);
+      const commentsCount = (post.comments?.length || 0);
+      const viewsCount = (post.views || 0);
+
+      const score =
+        reactionsCount * TRENDING_REACTION_WEIGHT +
+        commentsCount * TRENDING_COMMENT_WEIGHT +
+        viewsCount * TRENDING_VIEW_WEIGHT;
+
+      return { post, score };
+    });
+
+    scoredPosts.sort((a, b) => b.score - a.score);
+    const trendingPosts = scoredPosts.slice(0, limit).map(item => item.post);
+
+    res.status(200).json({
+      success: true,
+      count: trendingPosts.length,
+      posts: trendingPosts
+    });
+  } catch (error) {
+    logger.error(`Get Trending Posts Error: ${error.message}`);
+    res.status(500).json({ message: 'Failed to retrieve trending posts.' });
+  }
+};
+
+// Get popular posts sorted by reaction/like count DESC
+export const getPopularPosts = async (req, res) => {
+  try {
+    const limit = Math.min(50, Math.max(1, Number.parseInt(req.query.limit) || 10));
+
+    let posts = await Post.find()
+      .populate({
+        path: 'user',
+        select: 'name email role profilePicUrl bio status',
+        match: { status: { $ne: 'deleted' } }
+      })
+      .populate('comments.user', 'name email role');
+
+    posts = posts.filter(post => post.user && post.user.status !== 'deleted');
+
+    posts.sort((a, b) => {
+      const countA = (a.reactions?.length || a.likes?.length || 0);
+      const countB = (b.reactions?.length || b.likes?.length || 0);
+      return countB - countA;
+    });
+
+    const popularPosts = posts.slice(0, limit);
+
+    res.status(200).json({
+      success: true,
+      count: popularPosts.length,
+      posts: popularPosts
+    });
+  } catch (error) {
+    logger.error(`Get Popular Posts Error: ${error.message}`);
+    res.status(500).json({ message: 'Failed to retrieve popular posts.' });
+  }
+};
+
+// Get popular hashtags aggregated from post titles and content
+export const getPopularHashtags = async (req, res) => {
+  try {
+    const limit = Math.min(20, Math.max(1, Number.parseInt(req.query.limit) || 10));
+    const posts = await Post.find({}, 'title content');
+
+    const tagCounts = {};
+    const hashtagRegex = /#[\w_]+/g;
+
+    for (const post of posts) {
+      const combinedText = `${post.title || ''} ${post.content || ''}`;
+      const matches = combinedText.match(hashtagRegex);
+      if (matches) {
+        for (const rawTag of matches) {
+          const normalizedTag = rawTag.toLowerCase();
+          if (normalizedTag.length <= 30) {
+            tagCounts[normalizedTag] = (tagCounts[normalizedTag] || 0) + 1;
+          }
+        }
+      }
+    }
+
+    const popularHashtags = Object.entries(tagCounts)
+      .map(([tag, count]) => ({ tag, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, limit);
+
+    res.status(200).json({
+      success: true,
+      hashtags: popularHashtags
+    });
+  } catch (error) {
+    logger.error(`Get Popular Hashtags Error: ${error.message}`);
+    res.status(500).json({ message: 'Failed to retrieve popular hashtags.' });
+  }
+};
+

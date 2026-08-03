@@ -7,7 +7,8 @@ import {
   updateUser,
   deleteUser,
   getUserProfile,
-  toggleLinkUser
+  toggleLinkUser,
+  getSuggestedUsers
 } from '../controllers/user.controller.js';
 
 const router = Router();
@@ -15,7 +16,8 @@ const router = Router();
 // Protect all user routes
 router.use(protect);
 
-// Public user routes (for logged in users)
+// User discovery and profile routes (for logged in users)
+router.get('/suggested', getSuggestedUsers);
 router.get('/:id/profile', getUserProfile);
 router.post('/:id/link', toggleLinkUser);
 

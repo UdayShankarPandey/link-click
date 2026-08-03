@@ -47,6 +47,11 @@ const postSchema = new mongoose.Schema(
     imageFileId: {
       type: String
     },
+    views: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
     likes: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -63,6 +68,7 @@ const postSchema = new mongoose.Schema(
 // Indexes for query performance
 postSchema.index({ user: 1 });
 postSchema.index({ createdAt: -1 });
+postSchema.index({ createdAt: -1, views: -1 });
 
 const Post = mongoose.model('Post', postSchema);
 

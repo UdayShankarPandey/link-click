@@ -185,3 +185,39 @@ export const toggleLinkUser = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+// Get suggested users (Founder first, excluding self/suspended/deleted, max 5, randomized)
+export const getSuggestedUsers = async (req, res) => {
+  try {
+    const currentUserId = req.user?._id?.toString();
+
+    const activeUsers = await User.find(
+      {
+        status: { $nin: ['suspended', 'deleted'] }
+      },
+      'name email role profilePicUrl bio coverPicUrl createdAt updatedAt'
+    ).lean();
+
+    const filteredUsers = activeUsers.filter(
+      user => user._id.toString() !== currentUserId
+    );
+
+    const founders = filteredUsers.filter(user => user.role === 'founder');
+    const nonFounders = filteredUsers.filter(user => user.role !== 'founder');
+
+    nonFounders.sort(() => Math.random() - 0.5);
+
+    const founder = founders.slice(0, 1);
+    const suggested = [...founder, ...nonFounders].slice(0, 5);
+
+    res.status(200).json({
+      success: true,
+      count: suggested.length,
+      users: suggested
+    });
+  } catch (error) {
+    logger.error(`Get Suggested Users Error: ${error.message}`);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+

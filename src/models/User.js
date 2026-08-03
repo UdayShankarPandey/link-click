@@ -108,6 +108,9 @@ const userSchema = new mongoose.Schema(
   }
 );
 
+// Indexes for query performance
+userSchema.index({ role: 1, status: 1, updatedAt: -1 });
+
 // Hash the password before saving it to the database
 userSchema.pre('save', async function () {
   if (!this.isModified('password')) {
