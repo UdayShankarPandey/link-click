@@ -1,7 +1,7 @@
 import { logger } from './utils/logger.js';
 import mongoose from 'mongoose';
 import env from './config/env.js';
-import { seedFounder } from '../scripts/seed-founder.js';
+import { seedFounder } from './utils/seedFounder.js';
 
 const connectDB = async () => {
   const MONGODB_URI = env.MONGODB_URI;

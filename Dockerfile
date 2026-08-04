@@ -13,8 +13,9 @@ COPY package*.json ./
 # Install only production dependencies without running lifecycle scripts
 RUN npm ci --omit=dev --ignore-scripts
 
-# Copy only the backend application source required at runtime
+# Copy backend application source and scripts required at runtime
 COPY src ./src
+COPY scripts ./scripts
 
 # Create writable logs directory for the non-root Node.js user
 RUN mkdir -p /usr/src/app/logs && chown -R node:node /usr/src/app/logs
