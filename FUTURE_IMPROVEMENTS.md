@@ -36,3 +36,11 @@ This document outlines potential enhancements and long-term roadmap items identi
 - **Backend Draft Auto-Saving**: Sync draft posts to MongoDB backend for cross-device draft access (currently handled via client-side `localStorage`).
 - **Multi-Level Comment Threads**: Extend 1-level nested comment replies into multi-level tree threading with collapse controls.
 - **Push & Web Notification Infrastructure**: Real-time push notifications for post reactions, poll expiration alerts, and comment replies.
+
+---
+
+## 5. SonarQube Accepted Technical Debt & Refactoring Roadmap
+
+- **Rich Text Editor Modernization (`PostEditor.jsx`)**: Replace deprecated `document.execCommand()` formatting calls with a modern headless editor framework (e.g., Tiptap or Slate.js) for enhanced cross-browser rich text editing capabilities.
+- **Cryptographic Shuffling (`user.controller.js`)**: Upgrade `Math.random()` array sorting in Suggested Users (`nonFounders.sort(() => Math.random() - 0.5)`) to Fisher-Yates shuffle utilizing Node.js `crypto.getRandomValues()` or `crypto.randomInt()`.
+- **API Gateway Payload Protection (`post.routes.js` & `upload.routes.js`)**: Supplement the intentional 50 MB rich media upload limit with reverse-proxy payload streaming validation (NGINX `client_max_body_size 50m`) and `express-rate-limit` middleware on file upload endpoints.

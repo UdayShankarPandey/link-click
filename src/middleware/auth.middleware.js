@@ -61,3 +61,23 @@ export const checkFounder = (req, res, next) => {
   }
   next();
 };
+
+// Optional authentication middleware for public endpoints
+export const optionalAuth = async (req, res, next) => {
+  let token = req.cookies?.token;
+  if (!token && req.headers.authorization?.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, env.JWT_SECRET);
+      const user = await User.findById(decoded.id).select('-password');
+      if (user && user.status !== 'suspended' && user.status !== 'deleted') {
+        req.user = user;
+      }
+    } catch {
+      // Token verification errors ignored for optional auth
+    }
+  }
+  next();
+};

@@ -12,7 +12,7 @@ const REACTION_EMOJIS = [
   { type: 'sad', emoji: '😢', label: 'Sad' },
 ];
 
-const PostActions = ({ post, onPostUpdate, onCommentClick }) => {
+const PostActions = ({ post, onPostUpdate, onCommentClick, showLabels = false }) => {
   const { user } = useAuth();
   const [showPicker, setShowPicker] = useState(false);
   const [isBookmarking, setIsBookmarking] = useState(false);
@@ -135,9 +135,9 @@ const PostActions = ({ post, onPostUpdate, onCommentClick }) => {
   };
 
   return (
-    <div className="flex items-center justify-between gap-4 py-2 border-t border-border/40">
+    <div className="flex items-center justify-between gap-1 sm:gap-2 py-2 border-t border-border/40 min-w-0">
       {/* Reaction Picker Button & Popover */}
-      <div className="relative">
+      <div className="relative shrink-0">
         <button
           type="button"
           onClick={() => setShowPicker((prev) => !prev)}
@@ -147,6 +147,7 @@ const PostActions = ({ post, onPostUpdate, onCommentClick }) => {
               : 'text-text-tertiary hover:text-text-primary hover:bg-surface-raised'
           }`}
           aria-label="React to post"
+          title="React to post"
         >
           <span>{activeReactionType ? REACTION_EMOJIS.find(r => r.type === activeReactionType)?.emoji || '❤️' : '❤️'}</span>
           <span>{totalReactions > 0 ? totalReactions : 'React'}</span>
@@ -177,9 +178,10 @@ const PostActions = ({ post, onPostUpdate, onCommentClick }) => {
       <button
         type="button"
         onClick={onCommentClick}
-        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium text-text-tertiary hover:text-amber hover:bg-surface-raised transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber"
+        title="View comments"
+        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium text-text-tertiary hover:text-amber hover:bg-surface-raised transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber shrink-0"
       >
-        <MessageSquare className="h-4 w-4" />
+        <MessageSquare className="h-4 w-4 shrink-0" />
         <span>{post.comments?.length || 0}</span>
       </button>
 
@@ -188,26 +190,28 @@ const PostActions = ({ post, onPostUpdate, onCommentClick }) => {
         type="button"
         onClick={handleBookmarkToggle}
         disabled={isBookmarking}
-        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber ${
+        title={isBookmarked ? 'Remove bookmark' : 'Bookmark post'}
+        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber shrink-0 ${
           isBookmarked
             ? 'text-amber bg-amber/10 border border-amber/30'
             : 'text-text-tertiary hover:text-amber hover:bg-surface-raised'
         }`}
         aria-label={isBookmarked ? 'Remove bookmark' : 'Bookmark post'}
       >
-        <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-amber' : ''}`} />
-        <span className="hidden sm:inline">{isBookmarked ? 'Saved' : 'Save'}</span>
+        <Bookmark className={`h-4 w-4 shrink-0 ${isBookmarked ? 'fill-amber' : ''}`} />
+        {showLabels && <span className="hidden sm:inline">{isBookmarked ? 'Saved' : 'Save'}</span>}
       </button>
 
       {/* Share Button */}
       <button
         type="button"
         onClick={handleShare}
-        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium text-text-tertiary hover:text-amber hover:bg-surface-raised transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber"
+        title="Share post"
+        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium text-text-tertiary hover:text-amber hover:bg-surface-raised transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber shrink-0"
         aria-label="Share post"
       >
-        <Share2 className="h-4 w-4" />
-        <span className="hidden sm:inline">Share</span>
+        <Share2 className="h-4 w-4 shrink-0" />
+        {showLabels && <span className="hidden sm:inline">Share</span>}
       </button>
     </div>
   );

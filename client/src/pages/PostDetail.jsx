@@ -192,6 +192,7 @@ const PostDetail = () => {
           <PostActions
             post={post}
             onPostUpdate={setPost}
+            showLabels={true}
             onCommentClick={() => {
               const el = document.getElementById('comments-section');
               if (el) el.scrollIntoView({ behavior: 'smooth' });

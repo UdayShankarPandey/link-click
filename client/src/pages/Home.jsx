@@ -38,6 +38,8 @@ const Home = () => {
   const [trendingPosts, setTrendingPosts] = useState([]);
   const [suggestedUsers, setSuggestedUsers] = useState([]);
   const [popularHashtags, setPopularHashtags] = useState([]);
+  const [platformStats, setPlatformStats] = useState(null);
+  const [recentMembers, setRecentMembers] = useState([]);
 
   // Fetch feed posts according to active tab
   const fetchPosts = useCallback(async (tab, currentPage) => {
@@ -82,9 +84,12 @@ const Home = () => {
   const fetchSidebarData = useCallback(async () => {
     setSidebarLoading(true);
     try {
-      const [trendingRes, hashtagsRes] = await Promise.allSettled([
+      const [trendingRes, hashtagsRes, statsRes, recentRes, suggestedRes] = await Promise.allSettled([
         api.get('/posts/trending?limit=5'),
-        api.get('/posts/hashtags/popular?limit=10')
+        api.get('/posts/hashtags/popular?limit=10'),
+        api.get('/users/public-stats'),
+        api.get('/users/recently-joined'),
+        api.get('/users/suggested')
       ]);
 
       if (trendingRes.status === 'fulfilled') {
@@ -93,22 +98,21 @@ const Home = () => {
       if (hashtagsRes.status === 'fulfilled') {
         setPopularHashtags(hashtagsRes.value.data.hashtags || []);
       }
-
-      // Fetch suggested users if authenticated
-      if (user) {
-        try {
-          const suggestedRes = await api.get('/users/suggested');
-          setSuggestedUsers(suggestedRes.data.users || []);
-        } catch {
-          // Non-critical endpoint error fallback
-        }
+      if (statsRes.status === 'fulfilled') {
+        setPlatformStats(statsRes.value.data.stats || null);
+      }
+      if (recentRes.status === 'fulfilled') {
+        setRecentMembers(recentRes.value.data.users || []);
+      }
+      if (suggestedRes.status === 'fulfilled') {
+        setSuggestedUsers(suggestedRes.value.data.users || []);
       }
     } catch {
       // Non-critical sidebar error fallback
     } finally {
       setSidebarLoading(false);
     }
-  }, [user]);
+  }, []);
 
   useEffect(() => {
     fetchPosts(activeTab, page);
@@ -256,7 +260,8 @@ const Home = () => {
             </div>
           ) : (
             <SidebarWidgets
-              stats={{ totalMembers: 128, activeMembers: 42, postsToday: totalPosts }}
+              stats={platformStats || { totalMembers: 0, activeMembers: 0, postsToday: totalPosts }}
+              recentMembers={recentMembers}
               trendingPosts={trendingPosts}
               suggestedUsers={suggestedUsers}
               popularHashtags={popularHashtags}

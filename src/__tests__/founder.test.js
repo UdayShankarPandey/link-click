@@ -57,7 +57,7 @@ describe('Founder Platform & Security Architecture', () => {
       await authService.registerUser({
         name: 'Standard User',
         email: 'user@example.com',
-        password: 'Password123',
+        password: 'Password123!',
       });
 
       expect(mockCreate).toHaveBeenCalledWith(
@@ -77,7 +77,7 @@ describe('Founder Platform & Security Architecture', () => {
       await authService.registerUser({
         name: 'Platform Founder',
         email: founderEmail,
-        password: 'Password123',
+        password: 'Password123!',
       });
 
       expect(mockCreate).toHaveBeenCalledWith(

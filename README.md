@@ -619,6 +619,17 @@ The frontend Single Page Application is built with **React 18** and **Vite**:
 
 ---
 
+## 🔮 Future Improvements & Accepted Technical Debt
+
+For comprehensive details on postponed features and long-term backlog items, see [FUTURE_IMPROVEMENTS.md](file:///c:/Users/Uday%20Shankar%20Pandey/Downloads/PEP%20Project/FUTURE_IMPROVEMENTS.md).
+
+### SonarQube Accepted Technical Debt & Refactoring Roadmap
+- **Rich Text Editor Modernization (`PostEditor.jsx`)**: Replace deprecated `document.execCommand()` formatting calls with a modern headless editor framework (e.g., Tiptap or Slate.js) for enhanced cross-browser rich text editing capabilities.
+- **Cryptographic Shuffling (`user.controller.js`)**: Upgrade `Math.random()` array sorting in Suggested Users (`nonFounders.sort(() => Math.random() - 0.5)`) to Fisher-Yates shuffle utilizing Node.js `crypto.getRandomValues()` or `crypto.randomInt()`.
+- **API Gateway Payload Protection (`post.routes.js` & `upload.routes.js`)**: Supplement the intentional 50 MB rich media upload limit with reverse-proxy payload streaming validation (NGINX `client_max_body_size 50m`) and `express-rate-limit` middleware on file upload endpoints.
+
+---
+
 ## 🤝 Contributing & License
 
 Contributions, bug reports, and feature requests are welcome!

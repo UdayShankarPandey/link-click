@@ -47,7 +47,7 @@ describe('HttpOnly Cookie Authentication', () => {
         .send({
           name: 'New User',
           email: 'newuser@domain.com',
-          password: 'securePassword123',
+          password: 'Password123!',
         });
 
       expect(response.statusCode).toBe(201);

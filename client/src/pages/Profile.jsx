@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { Mail, Calendar, Heart, MessageSquare, Trash2, Edit3, Camera, Image, X, Pin, Globe, Code2, Share2, Save } from 'lucide-react';
+import { Mail, Calendar, Heart, MessageSquare, Trash2, Edit3, Camera, Image, X, Pin, Globe, Code2, Share2, Save, Bookmark } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Skeleton from '../components/Skeleton';
 import EmptyState from '../components/EmptyState';
@@ -14,6 +14,7 @@ const Profile = () => {
   const { user } = useAuth();
   const [posts, setPosts] = useState([]);
   const [likedPosts, setLikedPosts] = useState([]);
+  const [bookmarkedPosts, setBookmarkedPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [activeTab, setActiveTab] = useState('posts');

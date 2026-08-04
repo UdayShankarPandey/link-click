@@ -3,26 +3,30 @@ import { Link } from 'react-router-dom';
 import { Users, Activity, FileText, Sparkles, ShieldCheck, TrendingUp, UserPlus, Hash } from 'lucide-react';
 import FounderBadge from './FounderBadge';
 
-const DEFAULT_STATS = {
-  totalMembers: 128,
-  activeMembers: 42,
-  postsToday: 15,
+const formatJoinedTime = (dateString) => {
+  if (!dateString) return 'Joined recently';
+  const now = new Date();
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return dateString;
+  const diffMs = now - date;
+  const diffMins = Math.floor(diffMs / 60000);
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours < 24) return `${diffHours}h ago`;
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 30) return `${diffDays}d ago`;
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 };
-
-const DEFAULT_RECENT_MEMBERS = [
-  { id: '1', name: 'Alex Rivera', role: 'user', joinedAt: 'Recently' },
-  { id: '2', name: 'Sarah Chen', role: 'user', joinedAt: '2h ago' },
-  { id: '3', name: 'Marcus Vance', role: 'founder', joinedAt: '1d ago' },
-];
 
 /**
  * Card 1: Platform Statistics
  */
-export const PlatformStatsCard = ({ stats = DEFAULT_STATS }) => {
+export const PlatformStatsCard = ({ stats = {} }) => {
   const statItems = [
-    { label: 'Total Members', value: stats.totalMembers, icon: Users, color: 'text-amber' },
-    { label: 'Active Members', value: stats.activeMembers, icon: Activity, color: 'text-emerald-400' },
-    { label: 'Posts Today', value: stats.postsToday, icon: FileText, color: 'text-sky-400' },
+    { label: 'Total Members', value: stats.totalMembers ?? 0, icon: Users, color: 'text-amber' },
+    { label: 'Active Members', value: stats.activeMembers ?? 0, icon: Activity, color: 'text-emerald-400' },
+    { label: 'Total Posts', value: stats.totalPosts ?? stats.postsToday ?? 0, icon: FileText, color: 'text-sky-400' },
   ];
 
   return (
@@ -44,7 +48,7 @@ export const PlatformStatsCard = ({ stats = DEFAULT_STATS }) => {
             >
               <Icon className={`h-4 w-4 ${item.color} mb-1.5`} />
               <span className="text-base font-extrabold text-text-primary leading-none mb-1">
-                {item.value ?? 0}
+                {item.value}
               </span>
               <span className="text-[10px] font-medium text-text-tertiary uppercase tracking-tight line-clamp-1">
                 {item.label}
@@ -60,7 +64,7 @@ export const PlatformStatsCard = ({ stats = DEFAULT_STATS }) => {
 /**
  * Card 2: Recently Joined Members
  */
-export const RecentlyJoinedCard = ({ members = DEFAULT_RECENT_MEMBERS }) => {
+export const RecentlyJoinedCard = ({ members = [] }) => {
   if (!members || members.length === 0) return null;
 
   return (
@@ -75,13 +79,21 @@ export const RecentlyJoinedCard = ({ members = DEFAULT_RECENT_MEMBERS }) => {
       <div className="space-y-3">
         {members.map((member) => (
           <Link
-            key={member.id || member._id}
+            key={member._id || member.id}
             to={member._id || member.id ? `/user/${member._id || member.id}` : '#'}
             className="flex items-center gap-3 p-2 rounded-xl hover:bg-surface-raised transition-colors group"
           >
-            <div className="w-8 h-8 rounded-lg bg-surface-raised border border-border flex items-center justify-center text-xs font-bold text-amber shrink-0 group-hover:border-amber/30 transition-colors">
-              {member.name ? member.name.charAt(0).toUpperCase() : '?'}
-            </div>
+            {member.profilePicUrl ? (
+              <img
+                src={member.profilePicUrl}
+                alt={member.name}
+                className="w-8 h-8 rounded-lg object-cover border border-border shrink-0"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-lg bg-surface-raised border border-border flex items-center justify-center text-xs font-bold text-amber shrink-0 group-hover:border-amber/30 transition-colors">
+                {member.name ? member.name.charAt(0).toUpperCase() : '?'}
+              </div>
+            )}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
                 <span className="text-xs font-semibold text-text-primary truncate block group-hover:text-amber transition-colors">
@@ -89,8 +101,8 @@ export const RecentlyJoinedCard = ({ members = DEFAULT_RECENT_MEMBERS }) => {
                 </span>
                 {member.role === 'founder' && <FounderBadge size="xs" />}
               </div>
-              <span className="text-[11px] text-text-tertiary block">
-                {member.joinedAt || 'Joined recently'}
+              <span className="text-[11px] text-text-tertiary truncate block">
+                {member.email ? `${member.email.split('@')[0]} • ` : ''}{formatJoinedTime(member.createdAt || member.joinedAt)}
               </span>
             </div>
           </Link>
@@ -185,15 +197,9 @@ export const SuggestedUsersCard = ({ users = [] }) => {
                   </span>
                   {user.role === 'founder' && <FounderBadge size="xs" />}
                 </div>
-                {user.bio ? (
-                  <span className="text-[11px] text-text-tertiary truncate block">
-                    {user.bio}
-                  </span>
-                ) : (
-                  <span className="text-[11px] text-text-tertiary block">
-                    Member
-                  </span>
-                )}
+                <span className="text-[11px] text-text-tertiary truncate block">
+                  {user.bio || user.email || 'Member'}
+                </span>
               </div>
             </div>
           </Link>

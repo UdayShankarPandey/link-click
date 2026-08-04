@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { UserPlus, User, Mail, Lock, AlertCircle } from 'lucide-react';
+import { UserPlus, User, Mail, Lock, AlertCircle, Eye, EyeOff, Check, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Register = () => {
@@ -9,11 +9,21 @@ const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
   const { register } = useAuth();
   const navigate = useNavigate();
+
+  const passwordRequirements = [
+    { id: 'length', label: '8+ characters', met: password.length >= 8 },
+    { id: 'upper', label: 'Uppercase letter (A-Z)', met: /[A-Z]/.test(password) },
+    { id: 'lower', label: 'Lowercase letter (a-z)', met: /[a-z]/.test(password) },
+    { id: 'number', label: 'Number (0-9)', met: /[0-9]/.test(password) },
+    { id: 'special', label: 'Special character (!@#$%^&*)', met: /[^a-zA-Z0-9]/.test(password) },
+  ];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,10 +31,28 @@ const Register = () => {
       setError('All fields are required.');
       return;
     }
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters.');
+
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters long.');
       return;
     }
+    if (!/[A-Z]/.test(password)) {
+      setError('Password must contain at least one uppercase letter (A-Z).');
+      return;
+    }
+    if (!/[a-z]/.test(password)) {
+      setError('Password must contain at least one lowercase letter (a-z).');
+      return;
+    }
+    if (!/[0-9]/.test(password)) {
+      setError('Password must contain at least one number (0-9).');
+      return;
+    }
+    if (!/[^a-zA-Z0-9]/.test(password)) {
+      setError('Password must contain at least one special character (e.g. !@#$%^&*).');
+      return;
+    }
+
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
       return;
@@ -112,15 +140,49 @@ const Register = () => {
               </span>
               <input
                 id="reg-password"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-amber/40 focus:ring-2 focus:ring-amber/20 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full pl-10 pr-10 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-amber/40 focus:ring-2 focus:ring-amber/20 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="At least 6 characters"
                 required
                 autoComplete="new-password"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-text-tertiary hover:text-text-primary focus:outline-none cursor-pointer"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
             </div>
+
+            {/* Live Password Strength Requirements Checklist */}
+            {password.length > 0 && (
+              <div className="mt-2.5 p-2.5 bg-canvas border border-border/70 rounded-xl space-y-1.5 text-xs">
+                <span className="font-semibold text-text-secondary block mb-1 text-[11px] uppercase tracking-wider">
+                  Password Requirements
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                  {passwordRequirements.map((req) => (
+                    <div
+                      key={req.id}
+                      className={`flex items-center gap-1.5 text-[11px] font-medium transition-colors ${
+                        req.met ? 'text-emerald-400' : 'text-text-tertiary'
+                      }`}
+                    >
+                      {req.met ? (
+                        <Check className="h-3 w-3 text-emerald-400 shrink-0" />
+                      ) : (
+                        <X className="h-3 w-3 text-text-tertiary/60 shrink-0" />
+                      )}
+                      <span>{req.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <div>
@@ -131,14 +193,22 @@ const Register = () => {
               </span>
               <input
                 id="reg-confirm"
-                type="password"
+                type={showConfirmPassword ? 'text' : 'password'}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-amber/40 focus:ring-2 focus:ring-amber/20 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full pl-10 pr-10 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-amber/40 focus:ring-2 focus:ring-amber/20 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="Repeat password"
                 required
                 autoComplete="new-password"
               />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-text-tertiary hover:text-text-primary focus:outline-none cursor-pointer"
+                aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+              >
+                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
             </div>
           </div>
 
