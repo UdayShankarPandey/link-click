@@ -35,9 +35,20 @@ app.use(cookieParser());
 // Helmet — sets secure HTTP headers (XSS, clickjacking, MIME sniffing, etc.)
 app.use(helmet());
 
-// CORS — restrict browser access to configured frontend origin with credentials support
+// CORS — restrict browser access to configured frontend origin(s) with credentials support
+const allowedOrigins = (env.CORS_ORIGIN || '').split(',').map((o) => o.trim()).filter(Boolean);
+
 app.use(cors({
-  origin: env.CORS_ORIGIN,
+  origin: (origin, callback) => {
+    // Allow non-browser requests (Postman, server-to-server, health checks)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin) || (env.NODE_ENV === 'production' && origin.endsWith('.vercel.app'))) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`CORS origin not allowed: ${origin}`));
+  },
   credentials: true,
 }));
 
