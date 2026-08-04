@@ -74,6 +74,12 @@ const userSchema = new mongoose.Schema(
         ref: 'User'
       }
     ],
+    bookmarks: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Post'
+      }
+    ],
     emailVerified: {
       type: Boolean,
       default: false,
@@ -107,6 +113,9 @@ const userSchema = new mongoose.Schema(
     }
   }
 );
+
+// Indexes for query performance
+userSchema.index({ role: 1, status: 1, updatedAt: -1 });
 
 // Hash the password before saving it to the database
 userSchema.pre('save', async function () {

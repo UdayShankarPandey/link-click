@@ -6,24 +6,57 @@ import api from '../services/api';
 
 const CheckEmail = () => {
   const location = useLocation();
-  const email = location.state?.email || '';
-
+  const [emailInput, setEmailInput] = useState(location.state?.email || '');
   const [isResending, setIsResending] = useState(false);
+  const [cooldownEndTime, setCooldownEndTime] = useState(() => {
+    const target = emailInput.trim().toLowerCase();
+    if (!target) return null;
+    const saved = sessionStorage.getItem(`resend_cooldown_${target}`);
+    if (saved) {
+      const endTime = parseInt(saved, 10);
+      if (endTime > Date.now()) return endTime;
+    }
+    return null;
+  });
   const [cooldown, setCooldown] = useState(0);
   const [resendStatus, setResendStatus] = useState(null); // { success: boolean, message: string } | null
 
-  // 60-second cooldown timer effect
+  // Timestamp-based countdown timer effect (immune to interval drift / tab throttling)
   useEffect(() => {
-    if (cooldown <= 0) return;
-    const timer = setInterval(() => {
-      setCooldown((prev) => prev - 1);
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [cooldown]);
+    if (!cooldownEndTime) {
+      setCooldown(0);
+      return;
+    }
+
+    const updateTimer = () => {
+      const now = Date.now();
+      const remaining = Math.max(0, Math.ceil((cooldownEndTime - now) / 1000));
+      setCooldown(remaining);
+      if (remaining <= 0) {
+        setCooldownEndTime(null);
+        const target = emailInput.trim().toLowerCase();
+        if (target) sessionStorage.removeItem(`resend_cooldown_${target}`);
+      }
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    return () => clearInterval(interval);
+  }, [cooldownEndTime, emailInput]);
+
+  const startCooldown = (seconds = 60) => {
+    const endTime = Date.now() + seconds * 1000;
+    setCooldownEndTime(endTime);
+    const target = emailInput.trim().toLowerCase();
+    if (target) {
+      sessionStorage.setItem(`resend_cooldown_${target}`, endTime.toString());
+    }
+  };
 
   const handleResend = async () => {
-    if (!email) {
-      toast.error('Please enter your email on the sign in page to resend verification.');
+    const targetEmail = emailInput.trim();
+    if (!targetEmail) {
+      toast.error('Please enter your registered email address.');
       return;
     }
 
@@ -33,11 +66,11 @@ const CheckEmail = () => {
     setResendStatus(null);
 
     try {
-      const response = await api.post('/auth/resend-verification', { email });
+      const response = await api.post('/auth/resend-verification', { email: targetEmail });
       const message = response.data?.message || 'Verification email sent.';
       toast.success(message);
       setResendStatus({ success: true, message });
-      setCooldown(60);
+      startCooldown(60);
     } catch (error) {
       const status = error.response?.status;
       const message = error.response?.data?.message || 'Failed to send verification email.';
@@ -45,7 +78,7 @@ const CheckEmail = () => {
       if (status === 429) {
         const retryAfter = error.response?.data?.retryAfter;
         const seconds = typeof retryAfter === 'number' && retryAfter > 0 ? retryAfter : 60;
-        setCooldown(seconds);
+        startCooldown(seconds);
       }
 
       toast.error(message);
@@ -69,15 +102,23 @@ const CheckEmail = () => {
           We've sent a verification link to
         </p>
 
-        {email ? (
+        {location.state?.email ? (
           <div className="my-3 px-4 py-2 bg-canvas border border-border rounded-xl font-medium text-amber text-sm inline-block break-all">
-            {email}
+            {location.state.email}
           </div>
         ) : (
-          <p className="text-xs text-text-tertiary mt-1 italic">your registered email address</p>
+          <div className="my-3 text-left">
+            <input
+              type="email"
+              value={emailInput}
+              onChange={(e) => setEmailInput(e.target.value)}
+              placeholder="Enter your registered email"
+              className="w-full px-3.5 py-2.5 bg-canvas border border-border rounded-xl text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-amber/40"
+            />
+          </div>
         )}
 
-        <p className="text-xs text-text-tertiary mt-2">
+        <p className="text-xs text-text-tertiary mt-1">
           Click the link inside the email to verify your account and activate your profile.
         </p>
 
@@ -114,7 +155,7 @@ const CheckEmail = () => {
               <button
                 type="button"
                 onClick={handleResend}
-                disabled={isResending || cooldown > 0 || !email}
+                disabled={isResending || cooldown > 0 || !emailInput.trim()}
                 className="w-full bg-surface-hover border border-border hover:border-amber/40 text-text-primary font-medium py-2.5 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 {isResending ? (

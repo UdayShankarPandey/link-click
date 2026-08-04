@@ -1,39 +1,131 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { Camera } from 'lucide-react';
+import { Camera, TrendingUp, Clock, Flame } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import PostCard from '../components/PostCard';
 import Pagination from '../components/Pagination';
-import Skeleton from '../components/Skeleton';
+import Skeleton, { WidgetSkeleton } from '../components/Skeleton';
 import EmptyState from '../components/EmptyState';
 import SidebarWidgets from '../components/SidebarWidgets';
 import toast from 'react-hot-toast';
 
+const TABS = [
+  { id: 'latest', label: 'Latest', icon: Clock },
+  { id: 'trending', label: 'Trending', icon: TrendingUp },
+  { id: 'popular', label: 'Popular', icon: Flame },
+];
+
 const Home = () => {
   const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState('latest');
+  const activeTabRef = useRef(activeTab);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [sidebarLoading, setSidebarLoading] = useState(true);
+
+  // Keep ref synchronized with activeTab
+  useEffect(() => {
+    activeTabRef.current = activeTab;
+  }, [activeTab]);
+
+  // Pagination state (primarily for 'latest' tab)
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalPosts, setTotalPosts] = useState(0);
 
-  useEffect(() => {
-    fetchPosts(page);
-  }, [page]);
+  // Sidebar widget data state
+  const [trendingPosts, setTrendingPosts] = useState([]);
+  const [suggestedUsers, setSuggestedUsers] = useState([]);
+  const [popularHashtags, setPopularHashtags] = useState([]);
+  const [platformStats, setPlatformStats] = useState(null);
+  const [recentMembers, setRecentMembers] = useState([]);
 
-  const fetchPosts = async (p) => {
+  // Fetch feed posts according to active tab
+  const fetchPosts = useCallback(async (tab, currentPage) => {
     setLoading(true);
     try {
-      const response = await api.get(`/posts?page=${p}&limit=12`);
-      setPosts(response.data.posts || []);
-      setTotalPages(response.data.totalPages || 1);
-      setTotalPosts(response.data.totalPosts || 0);
+      let endpoint = `/posts?page=${currentPage}&limit=12`;
+      if (tab === 'trending') {
+        endpoint = '/posts/trending?limit=12';
+      } else if (tab === 'popular') {
+        endpoint = '/posts/popular?limit=12';
+      }
+
+      const response = await api.get(endpoint);
+
+      // Guard against race conditions during rapid tab switching
+      if (tab !== activeTabRef.current) return;
+
+      const data = response.data;
+
+      if (tab === 'latest') {
+        setPosts(data.posts || []);
+        setTotalPages(data.totalPages || 1);
+        setTotalPosts(data.totalPosts || 0);
+      } else {
+        setPosts(data.posts || []);
+        setTotalPages(1);
+        setTotalPosts(data.count || data.posts?.length || 0);
+      }
     } catch {
-      toast.error('Failed to load posts');
+      if (tab === activeTabRef.current) {
+        toast.error('Failed to load feed posts');
+        setPosts([]);
+      }
     } finally {
-      setLoading(false);
+      if (tab === activeTabRef.current) {
+        setLoading(false);
+      }
     }
+  }, []);
+
+  // Fetch sidebar widget data
+  const fetchSidebarData = useCallback(async () => {
+    setSidebarLoading(true);
+    try {
+      const [trendingRes, hashtagsRes, statsRes, recentRes, suggestedRes] = await Promise.allSettled([
+        api.get('/posts/trending?limit=5'),
+        api.get('/posts/hashtags/popular?limit=10'),
+        api.get('/users/public-stats'),
+        api.get('/users/recently-joined'),
+        api.get('/users/suggested')
+      ]);
+
+      if (trendingRes.status === 'fulfilled') {
+        setTrendingPosts(trendingRes.value.data.posts || []);
+      }
+      if (hashtagsRes.status === 'fulfilled') {
+        setPopularHashtags(hashtagsRes.value.data.hashtags || []);
+      }
+      if (statsRes.status === 'fulfilled') {
+        setPlatformStats(statsRes.value.data.stats || null);
+      }
+      if (recentRes.status === 'fulfilled') {
+        setRecentMembers(recentRes.value.data.users || []);
+      }
+      if (suggestedRes.status === 'fulfilled') {
+        setSuggestedUsers(suggestedRes.value.data.users || []);
+      }
+    } catch {
+      // Non-critical sidebar error fallback
+    } finally {
+      setSidebarLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchPosts(activeTab, page);
+  }, [activeTab, page, fetchPosts]);
+
+  useEffect(() => {
+    fetchSidebarData();
+  }, [fetchSidebarData]);
+
+  const handleTabChange = (tabId) => {
+    if (tabId === activeTab) return;
+    setActiveTab(tabId);
+    setPage(1);
   };
 
   const handleLikeUpdate = (postId, newLikes) => {
@@ -47,11 +139,6 @@ const Home = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const postWord = totalPosts === 1 ? 'post' : 'posts';
-  const subtitleText = totalPosts > 0
-    ? `${totalPosts} ${postWord} shared by the community`
-    : 'Visual stories from the Link Click community';
-
   const renderFeedContent = () => {
     if (loading) {
       return (
@@ -60,7 +147,14 @@ const Home = () => {
         </div>
       );
     }
+
     if (posts.length === 0) {
+      if (activeTab === 'trending') {
+        return <EmptyState preset="empty-trending" />;
+      }
+      if (activeTab === 'popular') {
+        return <EmptyState preset="empty-popular" />;
+      }
       return (
         <EmptyState
           icon={Camera}
@@ -72,6 +166,7 @@ const Home = () => {
         />
       );
     }
+
     return (
       <>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 stagger-children">
@@ -79,15 +174,25 @@ const Home = () => {
             <PostCard key={post._id} post={post} onLikeUpdate={handleLikeUpdate} />
           ))}
         </div>
-        <Pagination page={page} totalPages={totalPages} onPageChange={handlePageChange} />
+        {activeTab === 'latest' && totalPages > 1 && (
+          <Pagination page={page} totalPages={totalPages} onPageChange={handlePageChange} />
+        )}
       </>
     );
   };
 
+  const getSubtitleText = (count, tab) => {
+    if (count <= 0) return 'Visual stories from the Link Click community';
+    const noun = count === 1 ? 'post' : 'posts';
+    return `${count} ${noun} in ${tab}`;
+  };
+
+  const subtitleText = getSubtitleText(totalPosts, activeTab);
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       {/* Header */}
-      <header className="mb-8 animate-fade-in">
+      <header className="mb-6 animate-fade-in">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-text-primary tracking-tight">
@@ -107,18 +212,61 @@ const Home = () => {
             </Link>
           )}
         </div>
+
+        {/* Feed Navigation Tabs (Latest, Trending, Popular) */}
+        <nav
+          role="tablist"
+          aria-label="Feed view navigation"
+          className="flex items-center gap-2 mt-6 border-b border-border pb-3 overflow-x-auto"
+        >
+          {TABS.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={`tab-${tab.id}`}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                aria-controls={`panel-${tab.id}`}
+                onClick={() => handleTabChange(tab.id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber focus-visible:ring-offset-2 focus-visible:ring-offset-canvas ${
+                  isActive
+                    ? 'bg-amber text-text-inverse shadow-sm'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-surface-raised'
+                }`}
+              >
+                <Icon className="h-4 w-4 shrink-0" />
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </nav>
       </header>
 
       {/* Main 2-Column Desktop Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 items-start">
         {/* Main Feed Column */}
-        <main className="min-w-0">
+        <main id={`panel-${activeTab}`} role="tabpanel" className="min-w-0">
           {renderFeedContent()}
         </main>
 
         {/* Desktop Sidebar Column */}
         <aside className="hidden lg:block sticky top-24">
-          <SidebarWidgets stats={{ totalMembers: 128, activeMembers: 42, postsToday: totalPosts }} />
+          {sidebarLoading ? (
+            <div className="space-y-5">
+              <WidgetSkeleton />
+              <WidgetSkeleton />
+            </div>
+          ) : (
+            <SidebarWidgets
+              stats={platformStats || { totalMembers: 0, activeMembers: 0, postsToday: totalPosts }}
+              recentMembers={recentMembers}
+              trendingPosts={trendingPosts}
+              suggestedUsers={suggestedUsers}
+              popularHashtags={popularHashtags}
+            />
+          )}
         </aside>
       </div>
     </div>

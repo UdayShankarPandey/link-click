@@ -2,31 +2,32 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { Heart, ArrowLeft, Edit3, Trash2, Calendar, X } from 'lucide-react';
+import { ArrowLeft, Edit3, Trash2, Calendar, Eye } from 'lucide-react';
 import toast from 'react-hot-toast';
 import CommentSection from '../components/CommentSection';
 import FounderBadge from '../components/FounderBadge';
 import Skeleton from '../components/Skeleton';
 import ConfirmDialog from '../components/ConfirmDialog';
+import ImageCarousel from '../components/ImageCarousel';
+import PollCard from '../components/PollCard';
+import PostActions from '../components/PostActions';
 
 const PostDetail = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [post, setPost] = useState(null);
+  const [pollData, setPollData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [likeAnimating, setLikeAnimating] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
-  const [showHeartOverlay, setShowHeartOverlay] = useState(false);
-  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
     const fetchPost = async () => {
       try {
         const response = await api.get(`/posts/${id}`);
         setPost(response.data);
+        setPollData(response.data.poll);
       } catch (error) {
         if (error.response?.status === 404) {
           setNotFound(true);
@@ -39,43 +40,6 @@ const PostDetail = () => {
     };
     fetchPost();
   }, [id]);
-
-  useEffect(() => {
-    if (!isLightboxOpen) return;
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') setIsLightboxOpen(false);
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isLightboxOpen]);
-
-  const handleLike = async () => {
-    if (!user) {
-      toast.error('Log in to like posts');
-      return;
-    }
-    try {
-      setLikeAnimating(true);
-      const response = await api.post(`/posts/${id}/like`);
-      setPost((prev) => ({ ...prev, likes: response.data.likes }));
-      setTimeout(() => setLikeAnimating(false), 300);
-    } catch {
-      toast.error('Failed to toggle like');
-      setLikeAnimating(false);
-    }
-  };
-
-  const handleDoubleTap = () => {
-    const userId = user?.id || user?._id;
-    const isLiked = user && post.likes?.some(
-      (likeId) => likeId === userId || likeId?._id === userId
-    );
-    if (!isLiked) {
-      handleLike();
-    }
-    setShowHeartOverlay(true);
-    setTimeout(() => setShowHeartOverlay(false), 800);
-  };
 
   const handleDelete = async () => {
     try {
@@ -115,9 +79,18 @@ const PostDetail = () => {
   const userId = user?.id || user?._id;
   const isOwner = userId && author._id === userId;
   const canDelete = isOwner || user?.role === 'founder';
-  const isLiked = user && post.likes?.some(
-    (likeId) => likeId === userId || likeId?._id === userId
-  );
+
+  const getPostImages = (postData) => {
+    if (postData.images && postData.images.length > 0) {
+      return postData.images;
+    }
+    if (postData.imageUrl) {
+      return [{ url: postData.imageUrl }];
+    }
+    return [];
+  };
+
+  const imagesList = getPostImages(post);
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 sm:py-8 animate-fade-in">
@@ -127,54 +100,10 @@ const PostDetail = () => {
         Feed
       </Link>
 
-      {/* Image */}
-      <button
-        type="button"
-        aria-label="View full image in lightbox"
-        className="w-full text-left p-0 rounded-2xl overflow-hidden bg-canvas border border-border mb-6 relative cursor-zoom-in group select-none block focus:outline-none focus:ring-2 focus:ring-amber/40"
-        onClick={() => setIsLightboxOpen(true)}
-        onDoubleClick={(e) => {
-          e.stopPropagation();
-          handleDoubleTap();
-        }}
-      >
-        <img
-          src={post.imageUrl}
-          alt={post.title}
-          className={`w-full max-h-125 object-contain mx-auto transition-all duration-500 ${imageLoaded ? 'opacity-100' : 'opacity-0 scale-95'}`}
-          onLoad={() => setImageLoaded(true)}
-        />
-        {showHeartOverlay && (
-          <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none animate-overlay-in">
-            <Heart className="h-24 w-24 fill-white text-white drop-shadow-2xl animate-like-pop" />
-          </div>
-        )}
-      </button>
-
-      {/* Lightbox Modal */}
-      {isLightboxOpen && (
-        <div className="fixed inset-0 z-100 flex items-center justify-center p-4 sm:p-8 animate-overlay-in overflow-hidden">
-          {/* Backdrop button */}
-          <button
-            type="button"
-            onClick={() => setIsLightboxOpen(false)}
-            aria-label="Close lightbox overlay"
-            className="fixed inset-0 bg-black/95 backdrop-blur-xl cursor-zoom-out w-full h-full border-none p-0 m-0"
-          />
-
-          <button
-            type="button"
-            onClick={() => setIsLightboxOpen(false)}
-            className="absolute top-4 right-4 p-2 rounded-full bg-surface-overlay/50 text-white hover:bg-surface-overlay transition-colors z-10 cursor-pointer"
-            aria-label="Close lightbox"
-          >
-            <X className="h-6 w-6" />
-          </button>
-          <img
-            src={post.imageUrl}
-            alt={post.title}
-            className="max-w-full max-h-full object-contain animate-fade-in-scale select-none drop-shadow-2xl z-10 pointer-events-none"
-          />
+      {/* Image Carousel */}
+      {imagesList.length > 0 && (
+        <div className="mb-6">
+          <ImageCarousel images={imagesList} />
         </div>
       )}
 
@@ -211,56 +140,75 @@ const PostDetail = () => {
         </div>
 
         {/* Author row */}
-        <div className="flex items-center gap-3">
-          <Link
-            to={`/user/${author._id}`}
-            className="w-10 h-10 rounded-lg bg-surface border border-border flex items-center justify-center text-sm font-bold text-amber hover:border-amber/30 transition-colors"
-          >
-            {author.name ? author.name.charAt(0).toUpperCase() : '?'}
-          </Link>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <Link to={`/user/${author._id}`} className="text-sm font-semibold text-text-primary hover:text-amber transition-colors">
-                {author.name || 'Unknown'}
-              </Link>
-              {author.role === 'founder' && <FounderBadge size="xs" />}
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-3">
+            <Link
+              to={`/user/${author._id}`}
+              className="w-10 h-10 rounded-lg bg-surface border border-border flex items-center justify-center text-sm font-bold text-amber hover:border-amber/30 transition-colors"
+            >
+              {author.name ? author.name.charAt(0).toUpperCase() : '?'}
+            </Link>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <Link to={`/user/${author._id}`} className="text-sm font-semibold text-text-primary hover:text-amber transition-colors">
+                  {author.name || 'Unknown'}
+                </Link>
+                {author.role === 'founder' && <FounderBadge size="xs" />}
+              </div>
+              <span className="text-xs text-text-tertiary flex items-center gap-1">
+                <Calendar className="h-3 w-3" />
+                {new Date(post.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+              </span>
             </div>
-            <span className="text-xs text-text-tertiary flex items-center gap-1">
-              <Calendar className="h-3 w-3" />
-              {new Date(post.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-            </span>
+          </div>
+
+          <div className="flex items-center gap-1 text-xs text-text-tertiary font-mono bg-surface border border-border/60 px-3 py-1.5 rounded-xl">
+            <Eye className="h-3.5 w-3.5" />
+            <span>{post.views || 0} views</span>
           </div>
         </div>
 
-        {/* Body text */}
-        {post.content && (
-          <p className="text-sm text-text-secondary leading-relaxed whitespace-pre-wrap">
-            {post.content}
-          </p>
+        {/* Optional Poll Widget */}
+        {(post.postType === 'poll' || pollData) && (
+          <div className="my-4">
+            <PollCard
+              postId={post._id}
+              poll={pollData}
+              onVoteUpdate={setPollData}
+            />
+          </div>
         )}
 
-        {/* Like bar */}
-        <div className="flex items-center gap-4 py-3 border-y border-border">
-          <button
-            type="button"
-            onClick={handleLike}
-            className={`flex items-center gap-2 text-sm font-medium transition-colors cursor-pointer ${
-              isLiked ? 'text-coral' : 'text-text-tertiary hover:text-coral'
-            }`}
-            aria-label={isLiked ? 'Unlike' : 'Like'}
-          >
-            <Heart className={`h-5 w-5 ${isLiked ? 'fill-coral' : ''} ${likeAnimating ? 'animate-like-pop' : ''}`} />
-            <span>{post.likes?.length || 0} {post.likes?.length === 1 ? 'like' : 'likes'}</span>
-          </button>
+        {/* Body text (HTML Sanitized) */}
+        {post.content && (
+          <div
+            className="text-sm text-text-secondary leading-relaxed prose prose-invert max-w-none"
+            dangerouslySetInnerHTML={{ __html: post.content }}
+          />
+        )}
+
+        {/* Reusable PostActions Bar */}
+        <div className="py-2 border-y border-border">
+          <PostActions
+            post={post}
+            onPostUpdate={setPost}
+            showLabels={true}
+            onCommentClick={() => {
+              const el = document.getElementById('comments-section');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }}
+          />
         </div>
 
         {/* Comments */}
-        <CommentSection
-          postId={post._id}
-          postOwnerId={author._id}
-          comments={post.comments || []}
-          onCommentsUpdate={handleCommentsUpdate}
-        />
+        <div id="comments-section">
+          <CommentSection
+            postId={post._id}
+            postOwnerId={author._id}
+            comments={post.comments || []}
+            onCommentsUpdate={handleCommentsUpdate}
+          />
+        </div>
       </div>
 
       <ConfirmDialog

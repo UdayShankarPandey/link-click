@@ -34,7 +34,7 @@ describe('Auth API with mocked service', () => {
         .send({
           name: 'Uday',
           email: 'uday@example.com',
-          password: 'secure123',
+          password: 'Password123!',
         });
 
       expect(response.statusCode).toBe(201);
@@ -45,7 +45,7 @@ describe('Auth API with mocked service', () => {
       expect(mockRegisterUser).toHaveBeenCalledWith({
         name: 'Uday',
         email: 'uday@example.com',
-        password: 'secure123',
+        password: 'Password123!',
       });
     });
 
@@ -59,7 +59,7 @@ describe('Auth API with mocked service', () => {
         .send({
           name: 'Uday',
           email: 'uday@example.com',
-          password: 'secure123',
+          password: 'Password123!',
         });
 
       expect(response.statusCode).toBe(400);
@@ -70,7 +70,7 @@ describe('Auth API with mocked service', () => {
       expect(mockRegisterUser).toHaveBeenCalledWith({
         name: 'Uday',
         email: 'uday@example.com',
-        password: 'secure123',
+        password: 'Password123!',
       });
     });
   });

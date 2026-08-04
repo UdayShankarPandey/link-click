@@ -1,5 +1,6 @@
 import { logger } from '../utils/logger.js';
 import User from '../models/User.js';
+import Post from '../models/Post.js';
 
 // Create a new user (Founder only)
 export const createUser = async (req, res) => {
@@ -185,3 +186,87 @@ export const toggleLinkUser = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+// Get suggested users (Founder first, excluding self/suspended/deleted, max 5, randomized)
+export const getSuggestedUsers = async (req, res) => {
+  try {
+    const currentUserId = req.user?._id?.toString();
+
+    const activeUsers = await User.find(
+      {
+        status: { $nin: ['suspended', 'deleted'] }
+      },
+      'name email role profilePicUrl bio coverPicUrl createdAt updatedAt'
+    ).lean();
+
+    const filteredUsers = activeUsers.filter(
+      user => user._id.toString() !== currentUserId
+    );
+
+    const founders = filteredUsers.filter(user => user.role === 'founder');
+    const nonFounders = filteredUsers.filter(user => user.role !== 'founder');
+    // NOTE: Math.random() is intentionally used here for lightweight UI presentation randomization of suggested users and is not used for security-sensitive operations.
+    nonFounders.sort(() => Math.random() - 0.5);
+
+    const founder = founders.slice(0, 1);
+    const suggested = [...founder, ...nonFounders].slice(0, 5);
+
+    res.status(200).json({
+      success: true,
+      count: suggested.length,
+      users: suggested
+    });
+  } catch (error) {
+    logger.error(`Get Suggested Users Error: ${error.message}`);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Get recently joined active users (sorted by createdAt descending)
+export const getRecentlyJoinedUsers = async (req, res) => {
+  try {
+    const recentUsers = await User.find(
+      { status: { $nin: ['suspended', 'deleted'] } },
+      'name email role profilePicUrl bio createdAt'
+    )
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .lean();
+
+    res.status(200).json({
+      success: true,
+      count: recentUsers.length,
+      users: recentUsers
+    });
+  } catch (error) {
+    logger.error(`Get Recently Joined Users Error: ${error.message}`);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Get public platform stats (Total Members, Active Members, Posts Today, Total Posts)
+export const getPublicPlatformStats = async (req, res) => {
+  try {
+    const totalMembers = await User.countDocuments({});
+    const activeMembers = await User.countDocuments({ status: { $nin: ['suspended', 'deleted'] } });
+
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const postsToday = await Post.countDocuments({ createdAt: { $gte: startOfDay } });
+    const totalPosts = await Post.countDocuments({});
+
+    res.status(200).json({
+      success: true,
+      stats: {
+        totalMembers,
+        activeMembers,
+        postsToday,
+        totalPosts
+      }
+    });
+  } catch (error) {
+    logger.error(`Get Public Platform Stats Error: ${error.message}`);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+

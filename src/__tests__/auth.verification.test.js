@@ -1,7 +1,6 @@
 import { jest } from '@jest/globals';
 import request from 'supertest';
 import crypto from 'node:crypto';
-import AppError from '../errors/AppError.js';
 
 // ── Mock setup ──────────────────────────────────────────────────────────────
 
@@ -54,7 +53,7 @@ describe('Email Verification Flow', () => {
         .send({
           name: 'Test User',
           email: 'test@example.com',
-          password: 'password123',
+          password: 'Password123!',
         });
 
       expect(response.statusCode).toBe(201);
@@ -94,7 +93,7 @@ describe('Email Verification Flow', () => {
         .send({
           name: 'Hash User',
           email: 'hash@example.com',
-          password: 'password123',
+          password: 'Password123!',
         });
 
       const createArgs = mockCreate.mock.calls[0][0];

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { Mail, Calendar, Heart, MessageSquare, Trash2, Edit3, Camera, Image, X, Pin, Globe, Code2, Share2, Save } from 'lucide-react';
+import { Mail, Calendar, Heart, MessageSquare, Trash2, Edit3, Camera, Image, X, Pin, Globe, Code2, Share2, Save, Bookmark } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Skeleton from '../components/Skeleton';
 import EmptyState from '../components/EmptyState';
@@ -14,6 +14,7 @@ const Profile = () => {
   const { user } = useAuth();
   const [posts, setPosts] = useState([]);
   const [likedPosts, setLikedPosts] = useState([]);
+  const [bookmarkedPosts, setBookmarkedPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [activeTab, setActiveTab] = useState('posts');
@@ -52,9 +53,12 @@ const Profile = () => {
       if (activeTab === 'posts') {
         const response = await api.get(`/posts/user/${user.id || user._id}`);
         setPosts(response.data.posts || response.data);
-      } else {
+      } else if (activeTab === 'liked') {
         const response = await api.get(`/posts/user/${user.id || user._id}/liked`);
         setLikedPosts(response.data.posts || response.data);
+      } else if (activeTab === 'saved') {
+        const response = await api.get('/posts/bookmarked');
+        setBookmarkedPosts(response.data.posts || []);
       }
     } catch {
       toast.error('Failed to load posts');
@@ -167,7 +171,41 @@ const Profile = () => {
 
   if (!user) return null;
 
-  const currentPosts = activeTab === 'posts' ? posts : likedPosts;
+  const getTabPosts = (tab, postsList, likedList, bookmarkedList) => {
+    if (tab === 'posts') return postsList;
+    if (tab === 'liked') return likedList;
+    return bookmarkedList;
+  };
+
+  const getEmptyStateProps = (tab) => {
+    if (tab === 'posts') {
+      return {
+        icon: Camera,
+        title: 'No posts yet',
+        description: 'Your published visual stories will appear here.',
+        actionLabel: 'Create your first post',
+        actionTo: '/create'
+      };
+    }
+    if (tab === 'liked') {
+      return {
+        icon: Heart,
+        title: 'No liked posts',
+        description: 'Posts you like will appear here.',
+        actionLabel: 'Explore feed',
+        actionTo: '/'
+      };
+    }
+    return {
+      icon: Bookmark,
+      title: 'No saved posts',
+      description: 'Posts you bookmark will appear here for easy access.',
+      actionLabel: 'Explore feed',
+      actionTo: '/'
+    };
+  };
+
+  const currentPosts = getTabPosts(activeTab, posts, likedPosts, bookmarkedPosts);
   const totalLikesReceived = posts.reduce((acc, p) => acc + (p.likes?.length || 0), 0);
 
   const renderCoverBanner = () => (
@@ -325,13 +363,14 @@ const Profile = () => {
       return <Skeleton variant="profile" />;
     }
     if (currentPosts.length === 0) {
+      const emptyProps = getEmptyStateProps(activeTab);
       return (
         <EmptyState
-          icon={activeTab === 'posts' ? Camera : Heart}
-          title={activeTab === 'posts' ? "No posts yet" : "No liked posts"}
-          description={activeTab === 'posts' ? "Your published visual stories will appear here." : "Posts you like will appear here."}
-          actionLabel={activeTab === 'posts' ? "Create your first post" : "Explore feed"}
-          actionTo={activeTab === 'posts' ? "/create" : "/"}
+          icon={emptyProps.icon}
+          title={emptyProps.title}
+          description={emptyProps.description}
+          actionLabel={emptyProps.actionLabel}
+          actionTo={emptyProps.actionTo}
         />
       );
     }
@@ -631,6 +670,15 @@ const Profile = () => {
           }`}
         >
           Liked Posts ({likedPosts.length})
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('saved')}
+          className={`pb-3 px-1 text-sm font-bold border-b-2 transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber rounded-t ${
+            activeTab === 'saved' ? 'border-amber text-amber' : 'border-transparent text-text-secondary hover:text-text-primary'
+          }`}
+        >
+          Saved Posts ({user.bookmarks?.length || bookmarkedPosts.length})
         </button>
       </div>
 

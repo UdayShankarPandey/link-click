@@ -1,16 +1,15 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { uploadImage } from '../controllers/upload.controller.js';
+import { uploadImage, uploadMultipleImages } from '../controllers/upload.controller.js';
 import { protect } from '../middleware/auth.middleware.js';
 
 const router = Router();
 
-// Configure multer with memory storage and image-only file filter
 const storage = multer.memoryStorage();
 const upload = multer({
   storage,
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB limit
+    fileSize: 50 * 1024 * 1024 // 50MB limit per file
   },
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
@@ -21,7 +20,7 @@ const upload = multer({
   }
 });
 
-// POST /api/upload - Secure route for image upload
 router.post('/', protect, upload.single('image'), uploadImage);
+router.post('/multiple', protect, upload.array('images', 4), uploadMultipleImages);
 
 export default router;

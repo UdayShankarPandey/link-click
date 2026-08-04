@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { protect, checkFounder } from '../middleware/auth.middleware.js';
+import { protect, checkFounder, optionalAuth } from '../middleware/auth.middleware.js';
 import {
   createUser,
   getUsers,
@@ -7,16 +7,23 @@ import {
   updateUser,
   deleteUser,
   getUserProfile,
-  toggleLinkUser
+  toggleLinkUser,
+  getSuggestedUsers,
+  getRecentlyJoinedUsers,
+  getPublicPlatformStats
 } from '../controllers/user.controller.js';
 
 const router = Router();
 
-// Protect all user routes
+// Public & Optional Auth User discovery routes
+router.get('/suggested', optionalAuth, getSuggestedUsers);
+router.get('/recently-joined', getRecentlyJoinedUsers);
+router.get('/public-stats', getPublicPlatformStats);
+router.get('/:id/profile', getUserProfile);
+
+// Protect remaining user routes requiring auth
 router.use(protect);
 
-// Public user routes (for logged in users)
-router.get('/:id/profile', getUserProfile);
 router.post('/:id/link', toggleLinkUser);
 
 // Founder only management routes
