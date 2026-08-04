@@ -30,7 +30,8 @@ const AdminUsers = () => {
   const fetchUsers = async () => {
     try {
       const response = await api.get('/users');
-      setUsers(response.data);
+      const usersData = response.data?.data || response.data;
+      setUsers(Array.isArray(usersData) ? usersData : []);
     } catch {
       toast.error('Failed to load users');
     } finally {

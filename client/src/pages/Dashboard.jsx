@@ -26,7 +26,8 @@ const Dashboard = () => {
     setLoadingStats(true);
     try {
       const response = await api.get('/dashboard/stats');
-      setStats(response.data);
+      const statsData = response.data?.data || response.data;
+      setStats(statsData || { totalMembers: 0, activeMembers: 0, postsToday: 0, platformHealth: 'operational' });
     } catch {
       toast.error('Failed to load dashboard statistics');
     } finally {
@@ -38,7 +39,8 @@ const Dashboard = () => {
     setLoadingLogs(true);
     try {
       const response = await api.get('/dashboard/logs');
-      setLogs(response.data);
+      const logsData = response.data?.data || response.data;
+      setLogs(Array.isArray(logsData) ? logsData : []);
     } catch {
       toast.error('Failed to load audit logs');
     } finally {
@@ -195,7 +197,7 @@ const Dashboard = () => {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <Link
                 to="/create"
-                className="flex flex-col items-center justify-center p-4 rounded-xl bg-canvas border border-border hover:border-amber/40 hover:text-amber transition-all text-center group"
+                className="flex flex-col items-center justify-center p-4 rounded-xl bg-canvas border border-border hover:border-amber/40 hover:text-amber transition-all text-center group cursor-pointer"
               >
                 <PlusCircle className="h-6 w-6 text-amber mb-2 group-hover:scale-110 transition-transform" />
                 <span className="text-xs font-semibold text-text-primary group-hover:text-amber">Create Post</span>
@@ -210,17 +212,18 @@ const Dashboard = () => {
                 <span className="text-xs font-semibold text-text-primary group-hover:text-amber">Manage Users</span>
               </button>
 
-              <Link
-                to="/profile"
-                className="flex flex-col items-center justify-center p-4 rounded-xl bg-canvas border border-border hover:border-amber/40 hover:text-amber transition-all text-center group"
+              <button
+                type="button"
+                onClick={() => setActiveTab('logs')}
+                className="flex flex-col items-center justify-center p-4 rounded-xl bg-canvas border border-border hover:border-amber/40 hover:text-amber transition-all text-center group cursor-pointer"
               >
-                <Users className="h-6 w-6 text-amber mb-2 group-hover:scale-110 transition-transform" />
-                <span className="text-xs font-semibold text-text-primary group-hover:text-amber">View Profile</span>
-              </Link>
+                <Clock className="h-6 w-6 text-amber mb-2 group-hover:scale-110 transition-transform" />
+                <span className="text-xs font-semibold text-text-primary group-hover:text-amber">Audit Logs</span>
+              </button>
 
               <Link
                 to="/"
-                className="flex flex-col items-center justify-center p-4 rounded-xl bg-canvas border border-border hover:border-amber/40 hover:text-amber transition-all text-center group"
+                className="flex flex-col items-center justify-center p-4 rounded-xl bg-canvas border border-border hover:border-amber/40 hover:text-amber transition-all text-center group cursor-pointer"
               >
                 <LayoutGrid className="h-6 w-6 text-amber mb-2 group-hover:scale-110 transition-transform" />
                 <span className="text-xs font-semibold text-text-primary group-hover:text-amber">Go to Feed</span>
