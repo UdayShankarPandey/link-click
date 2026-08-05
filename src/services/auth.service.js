@@ -5,6 +5,7 @@ import AppError from '../errors/AppError.js';
 import env from '../config/env.js';
 import { generateVerificationToken, hashToken } from '../utils/verificationToken.js';
 import { sendVerificationEmail } from './email.service.js';
+import { logger } from '../utils/logger.js';
 
 /**
  * Validates and canonicalizes an email input from user-controlled data.
