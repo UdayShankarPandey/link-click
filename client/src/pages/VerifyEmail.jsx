@@ -21,16 +21,14 @@ const VerifyEmail = () => {
       return;
     }
 
-    // Immediately remove raw token from visible URL to prevent URL exposure in history/copy-paste
-    if (window.history.replaceState) {
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-
     const verifyToken = async () => {
       try {
         const response = await api.post('/auth/verify-email', { token });
         setStatus('success');
         setMessage(response.data?.message || 'Email verified successfully. You can now log in.');
+        if (window.history.replaceState) {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
       } catch (error) {
         setStatus('error');
         setMessage(

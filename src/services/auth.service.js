@@ -58,11 +58,11 @@ export const authService = {
       emailVerificationSentAt: sentAt,
     });
 
-    let verificationUrl = null;
+    const verificationUrl = `${env.FRONTEND_URL}/verify-email?token=${rawToken}`;
+
     try {
       await sendVerificationEmail(email, rawToken);
     } catch (err) {
-      verificationUrl = `${env.FRONTEND_URL}/verify-email?token=${rawToken}`;
       logger.error(`[Auth Service] Verification email not delivered to ${email}: ${err.message}`);
       logger.info(`[Auth Fallback Link] Direct URL: ${verificationUrl}`);
     }
@@ -156,11 +156,11 @@ export const authService = {
     user.emailVerificationSentAt = sentAt;
     await user.save();
 
-    let verificationUrl = null;
+    const verificationUrl = `${env.FRONTEND_URL}/verify-email?token=${rawToken}`;
+
     try {
       await sendVerificationEmail(email, rawToken);
     } catch (err) {
-      verificationUrl = `${env.FRONTEND_URL}/verify-email?token=${rawToken}`;
       logger.error(`[Auth Service] Resend verification email not delivered to ${email}: ${err.message}`);
       logger.info(`[Auth Fallback Link] Direct URL: ${verificationUrl}`);
     }
