@@ -34,7 +34,11 @@ export const authService = {
     const email = sanitizeEmail(rawEmail);
     const userExists = await User.findOne({ email });
     if (userExists) {
-      throw new AppError('User already exists with this email.', 400);
+      if (userExists.emailVerified) {
+        throw new AppError('User already exists with this email.', 400);
+      }
+      // If user exists but is unverified, remove stale attempt to allow fresh registration
+      await User.deleteOne({ _id: userExists._id });
     }
 
     const { rawToken, tokenHash, expires, sentAt } = generateVerificationToken();

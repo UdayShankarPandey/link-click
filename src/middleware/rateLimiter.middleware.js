@@ -14,7 +14,7 @@ export const globalLimiter = rateLimit({
 // Strict rate limiter for auth routes (login, register) — brute-force protection
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20,                   // 20 attempts per windowMs per IP
+  max: process.env.NODE_ENV === 'test' ? 1000 : 20, // 20 attempts per windowMs per IP (1000 in test mode)
   standardHeaders: true,
   legacyHeaders: false,
   message: {

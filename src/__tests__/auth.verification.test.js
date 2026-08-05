@@ -10,12 +10,14 @@ const mockFindById = jest.fn(() => ({
 }));
 const mockFindOne = jest.fn();
 const mockCreate = jest.fn();
+const mockDeleteOne = jest.fn().mockResolvedValue({ deletedCount: 1 });
 
 jest.unstable_mockModule('../models/User.js', () => ({
   default: {
     findById: mockFindById,
     findOne: mockFindOne,
     create: mockCreate,
+    deleteOne: mockDeleteOne,
   },
 }));
 
@@ -103,6 +105,38 @@ describe('Email Verification Flow', () => {
       // The stored hash must be the SHA-256 of the raw token
       const expectedHash = crypto.createHash('sha256').update(rawTokenSentViaEmail).digest('hex');
       expect(storedHash).toBe(expectedHash);
+    });
+
+    it('should reject registration if email is already verified', async () => {
+      mockFindOne.mockResolvedValue({ _id: 'user-verified', email: 'verified@example.com', emailVerified: true });
+
+      const response = await request(app)
+        .post('/api/auth/register')
+        .send({
+          name: 'Verified User',
+          email: 'verified@example.com',
+          password: 'Password123!',
+        });
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body.message).toContain('User already exists');
+    });
+
+    it('should delete stale unverified registration and allow re-registration if email is not verified', async () => {
+      mockFindOne.mockResolvedValue({ _id: 'user-unverified', email: 'unverified@example.com', emailVerified: false });
+      mockCreate.mockResolvedValue({ _id: 'user-new-attempt', email: 'unverified@example.com', emailVerified: false });
+
+      const response = await request(app)
+        .post('/api/auth/register')
+        .send({
+          name: 'Unverified User',
+          email: 'unverified@example.com',
+          password: 'Password123!',
+        });
+
+      expect(mockDeleteOne).toHaveBeenCalledWith({ _id: 'user-unverified' });
+      expect(response.statusCode).toBe(201);
+      expect(response.body.message).toContain('check your email');
     });
   });
 
