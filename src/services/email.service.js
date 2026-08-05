@@ -8,7 +8,7 @@ const maskEmail = (email) => {
   const clean = email.replace(/[\r\n]/g, '');
   const [local, domain] = clean.split('@');
   if (local.length <= 2) return `*@${domain}`;
-  return `${local[0]}***${local[local.length - 1]}@${domain}`;
+  return `${local[0]}***${local.at(-1)}@${domain}`;
 };
 
 /**
