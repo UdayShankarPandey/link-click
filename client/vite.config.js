@@ -64,7 +64,7 @@ export default defineConfig({
             urlPattern: /^https:\/\/ik\.imagekit\.io\/.*/i,
             handler: 'CacheFirst',
             options: {
-              cacheName: 'imagekit-images-v1',
+              cacheName: 'imagekit-images-v0.11.0',
               expiration: {
                 maxEntries: 100,
                 maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
@@ -84,7 +84,7 @@ export default defineConfig({
             urlPattern: /\/api\/posts.*/i,
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'api-posts-cache-v1',
+              cacheName: 'api-posts-cache-v0.11.0',
               networkTimeoutSeconds: 3,
               expiration: {
                 maxEntries: 50,
@@ -100,7 +100,7 @@ export default defineConfig({
             urlPattern: /\.(?:png|jpg|jpeg|svg|gif|ico|webp)$/i,
             handler: 'StaleWhileRevalidate',
             options: {
-              cacheName: 'static-media-assets-v1',
+              cacheName: 'static-media-assets-v0.11.0',
               expiration: {
                 maxEntries: 50,
                 maxAgeSeconds: 60 * 60 * 24 * 30,

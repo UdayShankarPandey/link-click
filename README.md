@@ -33,6 +33,8 @@
   - [Sprint 8 — Branding & UI Polish](#sprint-8--branding--ui-polish)
   - [Sprint 9 — Social Experience & Founder Platform](#sprint-9--social-experience--founder-platform)
   - [Sprint 10 — Community Discovery & Rich Social Engagement](#sprint-10--community-discovery--rich-social-engagement)
+  - [Sprint 11 — Official Branding, Progressive Web App & Production Polish](#sprint-11--official-branding-progressive-web-app--production-polish)
+- [📐 Sprint 11 Implementation & Architectural Specification](#-sprint-11-implementation--architectural-specification)
 - [📐 Sprint 10 Implementation & Architectural Specification](#-sprint-10-implementation--architectural-specification)
 - [📋 Pre-Release Checklist & Quality Gates](#-pre-release-checklist--quality-gates)
 - [🧪 Testing & Quality Assurance](#-testing--quality-assurance)
@@ -644,8 +646,38 @@ For comprehensive details on postponed features and long-term backlog items, see
 
 ---
 
+## 📐 Sprint 11 Implementation & Architectural Specification
+
+Sprint 11 completes the **Official Branding, Progressive Web App (PWA) Integration, and Production Polish** for Link Click:
+
+### 🎨 Phase 1 & 1.5: Official Branding & Asset Keying
+- **Official Logomark**: Integrated 5-figure multicolor community vortex logomark into Navbar (`src/assets/branding/logomark.svg` / `logomark.png`).
+- **Transparency Keying**: Executed exact pixel transparency processing removing outer canvas and inner disc backgrounds while preserving coral red, amber, cream, purple, and teal gradients.
+- **Central Branding Config**: Established `src/config/branding.js` for single-source-of-truth brand constants, versioning (`0.11.0`), and URLs.
+- **Browser Icons**: Deployed complete icon set (`favicon.svg`, `favicon-32x32.png`, `favicon-16x16.png`, `favicon.ico`, `apple-touch-icon.png`, `android-chrome-*.png`, `og-image.png`).
+
+### 📱 Phase 2: Progressive Web App (PWA) & Workbox Caching
+- **Vite PWA Plugin**: Integrated `vite-plugin-pwa` generating `dist/sw.js` and `dist/workbox-*.js` with 36 precached assets.
+- **Workbox Caching Matrix**:
+  - `CacheFirst`: Google Fonts & ImageKit CDN media images (30-day expiration, max 100 entries).
+  - `NetworkFirst`: Public feed API requests (`/api/posts`, 3s timeout).
+  - `StaleWhileRevalidate`: Static media assets.
+  - `NetworkOnly`: All authentication routes (`/api/auth/*`) — **Never Cached for security**.
+- **In-App Install Experience**: Implemented `PWAInstallPrompt.jsx` capturing `beforeinstallprompt` with a 14-day persistent dismissal window in `localStorage`.
+- **Non-Disruptive Updates**: Implemented `PWAUpdateBanner.jsx` displaying a *"Reload to Update"* toast without interrupting active user sessions.
+- **Branded Offline Fallback**: Implemented `Offline.jsx` page at `/offline` with connection retry handler and auto-reload on network recovery.
+
+### 🛡️ Phase 3: Resilience, SEO & Production Polish
+- **Global Error Boundary**: Implemented `ErrorBoundary.jsx` wrapping `<App />` in `main.jsx` with branded fallback UI and dev-only Error ID debugging.
+- **SEO Assets**: Deployed `public/robots.txt` and `public/sitemap.xml`.
+- **HTML Metadata**: Added `<link rel="canonical">`, ImageKit preconnect hint, and Schema.org `SocialNetworkingApplication` JSON-LD structured data in `index.html`.
+- **Documentation**: Created `RELEASE_NOTES.md` for Version 0.11.0.
+
+---
+
 ## 🤝 Contributing & License
 
 Contributions, bug reports, and feature requests are welcome!
 
 This project is licensed under the **MIT License**.
+

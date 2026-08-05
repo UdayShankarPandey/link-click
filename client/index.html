@@ -42,10 +42,32 @@
     <meta name="twitter:image" content="https://link-click-six.vercel.app/og-image.png" />
     <meta name="twitter:image:alt" content="Link Click — Connect. Share. Discover. Belong." />
 
-    <!-- ─── Fonts ─────────────────────────────────────────────────────────── -->
+    <!-- ─── Canonical URL ────────────────────────────────────────────────── -->
+    <link rel="canonical" href="https://link-click-six.vercel.app/" />
+
+    <!-- ─── Fonts & Preconnect ────────────────────────────────────────────── -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://ik.imagekit.io" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <!-- ─── Schema.org Structured Data ────────────────────────────────────── -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SocialNetworkingApplication",
+        "name": "Link Click",
+        "description": "Link Click — Share visual stories, engage with your community through image-first posts, likes, and conversations.",
+        "url": "https://link-click-six.vercel.app/",
+        "operatingSystem": "All",
+        "applicationCategory": "SocialNetworkingApplication",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        }
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

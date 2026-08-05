@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { WifiOff, RefreshCw, Home } from 'lucide-react';
-import logomark from '../assets/branding/logomark.svg';
+import logomark from '../assets/branding/logomark.png';
 import BRAND from '../config/branding';
 
 const Offline = () => {

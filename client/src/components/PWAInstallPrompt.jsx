@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Download, X } from 'lucide-react';
-import logomark from '../assets/branding/logomark.svg';
+import logomark from '../assets/branding/logomark.png';
 import BRAND from '../config/branding';
 
 const DISMISSAL_KEY = 'link_click_pwa_dismissed';

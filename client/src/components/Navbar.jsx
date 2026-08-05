@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Home, PlusSquare, User, LogOut, LogIn, UserPlus, Menu, X, Shield } from 'lucide-react';
 import toast from 'react-hot-toast';
-import logomark from '../assets/branding/logomark.svg';
+import logomark from '../assets/branding/logomark.png';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
