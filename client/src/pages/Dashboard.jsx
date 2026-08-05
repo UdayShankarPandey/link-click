@@ -39,10 +39,12 @@ const Dashboard = () => {
     setLoadingLogs(true);
     try {
       const response = await api.get('/dashboard/logs');
-      const logsData = response.data?.data || response.data;
+      const logsData = response.data?.data !== undefined ? response.data.data : response.data;
       setLogs(Array.isArray(logsData) ? logsData : []);
-    } catch {
+    } catch (err) {
+      console.error('Failed to load audit logs:', err);
       toast.error('Failed to load audit logs');
+      setLogs([]);
     } finally {
       setLoadingLogs(false);
     }
@@ -58,7 +60,7 @@ const Dashboard = () => {
         </div>
       );
     }
-    if (logs.length === 0) {
+    if (!Array.isArray(logs) || logs.length === 0) {
       return <p className="text-xs text-text-tertiary text-center py-12">No audit log entries recorded yet.</p>;
     }
     return (
@@ -70,16 +72,24 @@ const Dashboard = () => {
           <span>Timestamp</span>
         </div>
 
-        {logs.map((log) => (
-          <div key={log._id} className="flex flex-col sm:grid sm:grid-cols-[140px_1fr_1.2fr_1.5fr] gap-2 sm:gap-4 items-start sm:items-center bg-canvas border border-border/60 rounded-xl p-3.5 text-xs text-text-secondary">
-            <span className="font-semibold text-amber uppercase text-[10px] tracking-wide px-2 py-0.5 rounded bg-amber-muted shrink-0">
-              {log.action}
-            </span>
-            <span className="font-medium text-text-primary truncate">{log.actor?.name || 'System'}</span>
-            <span className="truncate">{log.targetUser?.name || '-'}</span>
-            <span className="text-text-tertiary text-[11px]">{new Date(log.createdAt).toLocaleString()}</span>
-          </div>
-        ))}
+        {logs.map((log, index) => {
+          const logKey = log?._id || `log-${index}`;
+          const actionText = log?.action || 'AUDIT_LOG';
+          const actorName = (typeof log?.actor === 'object' && log?.actor?.name) ? log.actor.name : (log?.actor || 'System');
+          const targetName = (typeof log?.targetUser === 'object' && log?.targetUser?.name) ? log.targetUser.name : (log?.targetUser || '-');
+          const timestamp = log?.createdAt ? new Date(log.createdAt).toLocaleString() : 'N/A';
+
+          return (
+            <div key={logKey} className="flex flex-col sm:grid sm:grid-cols-[140px_1fr_1.2fr_1.5fr] gap-2 sm:gap-4 items-start sm:items-center bg-canvas border border-border/60 rounded-xl p-3.5 text-xs text-text-secondary">
+              <span className="font-semibold text-amber uppercase text-[10px] tracking-wide px-2 py-0.5 rounded bg-amber-muted shrink-0">
+                {actionText}
+              </span>
+              <span className="font-medium text-text-primary truncate">{actorName}</span>
+              <span className="truncate">{targetName}</span>
+              <span className="text-text-tertiary text-[11px]">{timestamp}</span>
+            </div>
+          );
+        })}
       </div>
     );
   };
