@@ -36,14 +36,14 @@ app.use(cookieParser());
 app.use(helmet());
 
 // CORS — restrict browser access to configured frontend origin(s) with credentials support
-const allowedOrigins = (env.CORS_ORIGIN || '').split(',').map((o) => o.trim()).filter(Boolean);
+const allowedOrigins = new Set((env.CORS_ORIGIN || '').split(',').map((o) => o.trim()).filter(Boolean));
 
 app.use(cors({
   origin: (origin, callback) => {
     // Allow non-browser requests (Postman, server-to-server, health checks)
     if (!origin) return callback(null, true);
 
-    if (allowedOrigins.includes(origin) || (env.NODE_ENV === 'production' && origin.endsWith('.vercel.app'))) {
+    if (allowedOrigins.has(origin) || (env.NODE_ENV === 'production' && origin.endsWith('.vercel.app'))) {
       return callback(null, true);
     }
 

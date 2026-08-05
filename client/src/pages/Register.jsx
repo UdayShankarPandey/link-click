@@ -21,8 +21,8 @@ const Register = () => {
     { id: 'length', label: '8+ characters', met: password.length >= 8 },
     { id: 'upper', label: 'Uppercase letter (A-Z)', met: /[A-Z]/.test(password) },
     { id: 'lower', label: 'Lowercase letter (a-z)', met: /[a-z]/.test(password) },
-    { id: 'number', label: 'Number (0-9)', met: /[0-9]/.test(password) },
-    { id: 'special', label: 'Special character (!@#$%^&*)', met: /[^a-zA-Z0-9]/.test(password) },
+    { id: 'number', label: 'Number (0-9)', met: /\d/.test(password) },
+    { id: 'special', label: 'Special character (!@#$%^&*)', met: /[^a-zA-Z\d]/.test(password) },
   ];
 
   const handleSubmit = async (e) => {
@@ -44,11 +44,11 @@ const Register = () => {
       setError('Password must contain at least one lowercase letter (a-z).');
       return;
     }
-    if (!/[0-9]/.test(password)) {
+    if (!/\d/.test(password)) {
       setError('Password must contain at least one number (0-9).');
       return;
     }
-    if (!/[^a-zA-Z0-9]/.test(password)) {
+    if (!/[^a-zA-Z\d]/.test(password)) {
       setError('Password must contain at least one special character (e.g. !@#$%^&*).');
       return;
     }

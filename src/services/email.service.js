@@ -3,6 +3,14 @@ import nodemailer from 'nodemailer';
 import env from '../config/env.js';
 import { logger } from '../utils/logger.js';
 
+const maskEmail = (email) => {
+  if (typeof email !== 'string' || !email.includes('@')) return '[sanitized-email]';
+  const clean = email.replace(/[\r\n]/g, '');
+  const [local, domain] = clean.split('@');
+  if (local.length <= 2) return `*@${domain}`;
+  return `${local[0]}***${local[local.length - 1]}@${domain}`;
+};
+
 /**
  * Sends the email verification link to a newly registered user.
  * Supports SMTP (e.g. Gmail App Password) for 100% unrestricted recipient delivery,
@@ -18,6 +26,8 @@ export const sendVerificationEmail = async (to, rawToken) => {
       <p style="font-size: 12px; color: #6A6A6E; margin: 24px 0 0;">This link expires in 24 hours. If you didn't create an account, you can safely ignore this email.</p>
     </div>
   `;
+
+  const targetEmail = maskEmail(to);
 
   // Option 1: SMTP / Gmail App Password (delivers to 100% of recipient email addresses without restrictions)
   if (env.SMTP_USER && env.SMTP_PASS) {
@@ -44,10 +54,10 @@ export const sendVerificationEmail = async (to, rawToken) => {
         html: htmlContent,
       });
 
-      logger.info(`[Email SMTP] Verification email sent successfully to ${to} (MessageId: ${info.messageId})`);
+      logger.info(`[Email SMTP] Verification email sent successfully to ${targetEmail} (MessageId: ${info.messageId})`);
       return;
     } catch (err) {
-      logger.error(`[Email SMTP Error] Failed to send email via SMTP to ${to}: ${err.message}`);
+      logger.error(`[Email SMTP Error] Failed to send email via SMTP to ${targetEmail}: ${err.message}`);
       if (!env.RESEND_API_KEY) throw err;
     }
   }
@@ -63,11 +73,11 @@ export const sendVerificationEmail = async (to, rawToken) => {
     });
 
     if (error) {
-      logger.error(`[Email Error] Resend API error sending to ${to}: ${error.message || JSON.stringify(error)}`);
+      logger.error(`[Email Error] Resend API error sending to ${targetEmail}: ${error.message || JSON.stringify(error)}`);
       throw new Error(error.message || 'Email delivery failed via Resend');
     }
 
-    logger.info(`[Email Resend] Verification email sent successfully to ${to} (ID: ${data?.id})`);
+    logger.info(`[Email Resend] Verification email sent successfully to ${targetEmail} (ID: ${data?.id})`);
     return;
   }
 

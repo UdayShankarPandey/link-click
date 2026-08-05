@@ -7,7 +7,7 @@ const formatJoinedTime = (dateString) => {
   if (!dateString) return 'Joined recently';
   const now = new Date();
   const date = new Date(dateString);
-  if (isNaN(date.getTime())) return dateString;
+  if (Number.isNaN(date.getTime())) return dateString;
   const diffMs = now - date;
   const diffMins = Math.floor(diffMs / 60000);
   if (diffMins < 1) return 'Just now';
