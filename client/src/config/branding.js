@@ -36,6 +36,12 @@ export const BRAND = {
 
   /** Primary brand accent color */
   accentColor: '#E8A838',
+
+  /** Application release version */
+  version: '1.1.0',
+
+  /** Service worker cache version tag */
+  cacheVersion: 'v1.1.0',
 };
 
 export default BRAND;

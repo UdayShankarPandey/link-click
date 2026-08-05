@@ -17,6 +17,11 @@ import Register from './pages/Register';
 import CheckEmail from './pages/CheckEmail';
 import VerifyEmail from './pages/VerifyEmail';
 import PostDetail from './pages/PostDetail';
+import Offline from './pages/Offline';
+
+// PWA Components
+import PWAInstallPrompt from './components/PWAInstallPrompt';
+import PWAUpdateBanner from './components/PWAUpdateBanner';
 
 // Lazy Loaded Pages (Code-split for performance)
 const Profile = lazy(() => import('./pages/Profile'));
@@ -43,6 +48,7 @@ const App = () => {
                 <Route path="/verify-email" element={<VerifyEmail />} />
                 <Route path="/post/:id" element={<PostDetail />} />
                 <Route path="/user/:id" element={<UserProfile />} />
+                <Route path="/offline" element={<Offline />} />
 
                 {/* Protected Routes */}
                 <Route
@@ -100,6 +106,8 @@ const App = () => {
             </Suspense>
           </main>
         </div>
+        <PWAInstallPrompt />
+        <PWAUpdateBanner />
         <Toaster
           position="bottom-right"
           toastOptions={{
