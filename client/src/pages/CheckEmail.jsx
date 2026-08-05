@@ -13,7 +13,7 @@ const CheckEmail = () => {
     if (!target) return null;
     const saved = sessionStorage.getItem(`resend_cooldown_${target}`);
     if (saved) {
-      const endTime = parseInt(saved, 10);
+      const endTime = Number.parseInt(saved, 10);
       if (endTime > Date.now()) return endTime;
     }
     return null;

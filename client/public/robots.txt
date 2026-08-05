@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /login
+Disallow: /register
+Disallow: /dashboard
+Disallow: /offline
+Disallow: /api/
+
+Sitemap: https://link-click-six.vercel.app/sitemap.xml

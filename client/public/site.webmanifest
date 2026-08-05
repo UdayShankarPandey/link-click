@@ -1,0 +1,28 @@
+{
+  "name": "Link Click",
+  "short_name": "Link Click",
+  "description": "Link Click — Share visual stories, engage with your community through image-first posts, likes, and conversations.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#111113",
+  "theme_color": "#111113",
+  "lang": "en",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "categories": ["social", "photo"],
+  "screenshots": []
+}
