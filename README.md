@@ -1,6 +1,6 @@
 # Link Click — Modern Full-Stack Social Platform
 
-**Link Click** is a modern, full-stack social media application built with Node.js, Express, MongoDB, React 18, Vite, and Tailwind CSS v4. Designed around a signature **"Lightbox" aesthetics design system** with warm amber accents, glassmorphism, and smooth micro-animations, Link Click offers a rich social experience with posts, media carousel lightbox, interactive polls, rich text editing, unified emoji reactions, nested comment replies, user bookmarks, user linking (follow system), email verification, community discovery feeds, and a dedicated single-Founder platform.
+**Link Click** is a modern, full-stack social media application built with Node.js, Express, MongoDB, React 18, Vite, and Tailwind CSS v4. Designed around a signature **"Lightbox" aesthetics design system** with warm amber accents, glassmorphism, and smooth micro-animations, Link Click offers a rich social experience with posts, media carousel lightbox, interactive polls, rich text editing, unified emoji reactions, nested comment replies, user bookmarks, user linking (follow system), email verification, community discovery feeds, a dedicated single-Founder platform, and an installable Progressive Web App (PWA) experience.
 
 ---
 
@@ -46,14 +46,24 @@
 
 ## ✨ Key Features
 
-### 🎨 Frontend & Design System
+### 📱 Progressive Web App (PWA) & Offline Shell
+- **Full Installability**: Desktop and mobile install support via `site.webmanifest` and custom `PWAInstallPrompt.jsx`.
+- **Intelligent Workbox Caching**: Service worker (`dist/sw.js`) precaching 36 static assets with runtime strategies (`CacheFirst` for fonts/media, `NetworkFirst` for public feeds, `NetworkOnly` for security-sensitive auth routes).
+- **Custom Install Experience**: Captures native `beforeinstallprompt` event with a **14-day persistent dismissal window** stored in `localStorage`.
+- **Non-Disruptive Updates**: `PWAUpdateBanner.jsx` displays a *"Reload to Update"* toast without interrupting active user sessions.
+- **Branded Offline Fallback**: Dedicated `/offline` route (`Offline.jsx`) featuring auto-reconnect detection, manual retry trigger, and return home navigation.
+
+### 🎨 Official Branding & Lightbox Aesthetics
+- **Official Brand Identity**: Centralized configuration (`src/config/branding.js`) and 5-person multicolor community vortex logomark with 100% transparent pixel keying.
+- **Complete Favicon & Icon Set**: `favicon.svg`, `favicon.ico`, `favicon-32x32.png`, `favicon-16x16.png`, `apple-touch-icon.png` (180×180), `android-chrome-192x192.png`, `android-chrome-512x512.png`, and `og-image.png` (1200×630).
 - **Lightbox Aesthetic**: Custom design language with high contrast dark backgrounds (`#111113` canvas, `#1a1a1f` surface), warm amber glows (`#E8A838`), glassmorphism, and sleek micro-interactions.
 - **Interactive Social Feed**: Real-time media feeds supporting `Latest` (newest first), `Trending` (7-day decay algorithm), and `Popular` (highest reactions) filters with skeleton loaders.
-- **Rich Content Creation**:
-  - `PostEditor.jsx`: Reusable rich text editor with strict `DOMPurify` HTML sanitization (bold `<b>`, italic `<i>`, hyperlinks `<a>` with `target="_blank"` and `rel="noopener noreferrer"`). Capped at 5,000 characters.
-  - `ImageCarousel.jsx`: Multi-image uploads (1 to 4 images) with desktop drag/drop and mobile reordering, touch swipe, keyboard navigation (`←`, `→`, `Escape`), backdrop close, and click/double-tap 1x/2x zoom. Serves ImageKit responsive variants (`w-800, q-80, f-auto`) for feeds while keeping high-res originals for full-screen lightbox presentation.
-  - `PollCard.jsx`: Interactive 2–6 option polls with expiry presets (`1 day`, `3 days`, `7 days`, `30 days`, `No expiry`), single-vote enforcement (creators included), real-time percentage bars, and read-only expired states.
-  - **Draft Auto-Saving**: Automatically saves post drafts to `localStorage` key `link_click_post_draft` every 20s. Features a restore/discard banner and automatic post-publish cleanup.
+
+### ✍️ Rich Content Creation & Profiles
+- **Rich Text Editor**: `PostEditor.jsx` with strict `DOMPurify` HTML sanitization (bold `<b>`, italic `<i>`, hyperlinks `<a>` with `target="_blank"` and `rel="noopener noreferrer"`). Capped at 5,000 characters.
+- **Image Lightbox & Zoom**: `ImageCarousel.jsx` multi-image uploads (1 to 4 images) with desktop drag/drop and mobile reordering, touch swipe, keyboard navigation (`←`, `→`, `Escape`), backdrop close, and click/double-tap 1x/2x zoom. Serves ImageKit responsive variants (`w-800, q-80, f-auto`).
+- **Interactive Polls**: `PollCard.jsx` 2–6 option polls with expiry presets (`1 day`, `3 days`, `7 days`, `30 days`, `No expiry`), single-vote enforcement, real-time percentage bars, and read-only expired states.
+- **Draft Auto-Saving**: Automatically saves post drafts to `localStorage` key `link_click_post_draft` every 20s. Features a restore/discard banner and automatic post-publish cleanup.
 - **Rich Profiles**: User profile headers with aspect 3:1 cover image banner, avatar upload, bio (max 280 chars), GitHub/Twitter/Portfolio social links, profile completion meter (`ProfileCompletionBar.jsx`), pinned post (`📌 Pinned`), and tabbed views for `My Posts`, `Liked Posts`, and `Saved Posts`.
 - **"Linking" Network**: Follower system allowing users to "Link" with each other, track mutual connections, and inspect author cards via hover previews (`AuthorHovercard.jsx`).
 
@@ -66,6 +76,10 @@
 - **Share Action**: Native `navigator.share()` API with fallback `navigator.clipboard.writeText()` + `"✓ Link copied"` toast.
 - **Hashtags**: `#[\w_]+` regex normalized to lowercase (max 30 chars) filtering feeds dynamically.
 - **View Counter**: `IntersectionObserver` counts non-author views after 50% visibility for 2.5s continuously, deduplicated per session via `sessionStorage`.
+
+### 🛡️ Resilience & SEO
+- **Global Error Boundary**: `ErrorBoundary.jsx` wraps `<App />` in `main.jsx` to catch uncaught rendering exceptions, providing branded fallback UI and dev-only Error ID debugging (`crypto.randomUUID()`).
+- **Complete SEO Suite**: Includes `robots.txt`, `sitemap.xml`, `<link rel="canonical">`, Open Graph cards, Twitter Cards, ImageKit preconnect hints, and Schema.org `SocialNetworkingApplication` JSON-LD structured data.
 
 ### 🔐 Security & Authentication
 - **Secure Auth Pipeline**: JWT-based session security with support for HttpOnly cookies and `Authorization: Bearer` headers.
@@ -82,8 +96,8 @@
   - `requestIdMiddleware`: Assigns unique `UUIDv4` request IDs attached to Morgan HTTP logs for end-to-end audit tracing.
 
 ### 👑 Single-Founder Platform & Governance
-- **Founder Dashboard**: High-level platform statistics (total users, active accounts, post counts, system health).
-- **User Governance**: Multi-select batch actions, user role management, account suspension/activation, and email verification toggles.
+- **Founder Dashboard**: High-level platform statistics (total members, active accounts, post counts, system health).
+- **User Governance**: Multi-select batch actions, user role management, account suspension/activation, and verified email filtering (`emailVerified: true`).
 - **Immutability Safeguards**: Core founder account matching `FOUNDER_EMAIL` cannot be edited, suspended, or deleted by any administrative operation.
 - **System Audit Logs**: Log of administrative actions saved to `AuditLog` collection.
 
@@ -98,18 +112,29 @@ pep-project/
 │       ├── backend-ci.yml             # Backend CI testing & security audit pipeline
 │       └── main_link-click-frontend.yml # Frontend Vite build & Azure Web App deployment
 ├── client/                            # Frontend Single Page Application (React 18 + Vite)
-│   ├── public/                        # Static web assets
+│   ├── public/                        # Static web assets, icons & webmanifest
+│   │   ├── android-chrome-*.png       # PWA android icons
+│   │   ├── apple-touch-icon.png       # iOS home screen icon
+│   │   ├── favicon.svg / .ico         # Browser tab icons
+│   │   ├── og-image.png               # Open Graph preview card
+│   │   ├── robots.txt                 # Search crawler rules
+│   │   ├── site.webmanifest           # PWA web app manifest
+│   │   └── sitemap.xml                # Search index sitemap
 │   ├── src/
+│   │   ├── assets/                    # Brand identity assets
+│   │   │   └── branding/
+│   │   │       └── logomark.png       # Official transparent community logomark
 │   │   ├── components/                # Modular UI components
 │   │   │   ├── AdminRoute.jsx         # Guard component for admin routes
 │   │   │   ├── AuthorHovercard.jsx    # User hovercard preview popup
 │   │   │   ├── CommentSection.jsx     # Post comments & 1-level nested replies interface
 │   │   │   ├── ConfirmDialog.jsx      # Modal confirmation dialog
 │   │   │   ├── EmptyState.jsx         # Reusable empty content placeholder presets
+│   │   │   ├── ErrorBoundary.jsx      # Global React Error Boundary with dev-only Error ID
 │   │   │   ├── FounderBadge.jsx       # Crown badge for founder user role
 │   │   │   ├── FounderRoute.jsx       # Guard component for founder-only routes
 │   │   │   ├── ImageCarousel.jsx      # Multi-image slider with lightbox & 1x/2x zoom
-│   │   │   ├── Navbar.jsx             # Top navigation bar with active links & user menu
+│   │   │   ├── Navbar.jsx             # Top navigation bar with official logomark & menu
 │   │   │   ├── Pagination.jsx         # Accessible pagination control
 │   │   │   ├── PollCard.jsx           # Interactive poll card with expiry handling
 │   │   │   ├── PostActions.jsx        # Shared action bar for reactions, bookmarks & share
@@ -117,8 +142,12 @@ pep-project/
 │   │   │   ├── PostEditor.jsx         # DOMPurify rich text editor
 │   │   │   ├── ProfileCompletionBar.jsx # User profile completion percentage meter
 │   │   │   ├── ProtectedRoute.jsx     # Authenticated user route guard
+│   │   │   ├── PWAInstallPrompt.jsx   # Custom 14-day persistent PWA install prompt
+│   │   │   ├── PWAUpdateBanner.jsx    # Non-disruptive Service Worker update toast
 │   │   │   ├── SidebarWidgets.jsx     # Home page sidebar (trending/hashtags/suggested users)
 │   │   │   └── Skeleton.jsx          # UI loading skeletons (feed & widget skeletons)
+│   │   ├── config/
+│   │   │   └── branding.js            # Central branding configuration & versioning
 │   │   ├── context/
 │   │   │   └── AuthContext.jsx        # Global state management for authentication
 │   │   ├── pages/                     # Application pages / views
@@ -129,6 +158,7 @@ pep-project/
 │   │   │   ├── EditPost.jsx           # Post editing screen
 │   │   │   ├── Home.jsx               # Main feed page (Latest, Trending, Popular tabs)
 │   │   │   ├── Login.jsx              # User sign-in page
+│   │   │   ├── Offline.jsx            # Branded offline fallback status page
 │   │   │   ├── PostDetail.jsx         # Dedicated single post page with full comments & actions
 │   │   │   ├── Profile.jsx            # Profile manager (My Posts, Liked Posts, Saved Posts)
 │   │   │   ├── Register.jsx           # User sign-up page
@@ -138,20 +168,14 @@ pep-project/
 │   │   │   └── api.js                 # Axios client instance with cookie & auth interceptors
 │   │   ├── utils/
 │   │   │   └── imageKit.js            # ImageKit responsive transformation helper
-│   │   ├── App.jsx                    # Main application router layout
+│   │   ├── App.jsx                    # Main application router layout & PWA handlers
 │   │   ├── index.css                  # Global Tailwind v4 styles & Lightbox design tokens
-│   │   └── main.jsx                   # React application entry point
+│   │   └── main.jsx                   # React entry point wrapped in ErrorBoundary
 │   ├── .oxlintrc.json                 # Oxlint configuration
 │   ├── package.json                   # Frontend dependencies & scripts
 │   ├── server.js                      # Production static server for client
-│   └── vite.config.js                 # Vite build configuration
+│   └── vite.config.js                 # Vite & VitePWA Workbox build configuration
 ├── docs/                              # Project documentation & sprint reports
-│   ├── deployment.md                  # Azure App Service & Docker deployment specs
-│   ├── design-system.md               # Visual design tokens & system guidelines
-│   ├── RELEASE_CHECKLIST.md           # Pre-launch production verification checklist
-│   ├── SPRINT-8-REPORT.md             # Sprint 8 technical deliverables & metrics
-│   ├── SPRINT-9-REPORT.md             # Sprint 9 security & founder platform report
-│   └── SPRINT-10-REPORT.md            # Sprint 10 discovery, rich content & engagement report
 ├── logs/                              # Server logs directory (winston transport outputs)
 ├── scripts/                           # Maintenance & utility scripts
 │   ├── migrate-email-verified.js      # One-time migration for legacy user accounts
@@ -206,7 +230,7 @@ pep-project/
 │   │   └── user.routes.js             # /api/users routes
 │   ├── services/                      # Business logic layer
 │   │   ├── auth.service.js            # Auth business rules, password verification, tokens
-│   │   ├── email.service.js           # Email sending service (Resend integration)
+│   │   ├── email.service.js           # Email sending service (Nodemailer SMTP & Resend integration)
 │   │   └── health.service.js          # DB health probe service
 │   ├── utils/                         # Helper utilities
 │   │   ├── apiResponse.js             # Standardized API JSON envelope responses
@@ -225,6 +249,7 @@ pep-project/
 ├── Dockerfile                         # Alpine Node 22 production container specification
 ├── FUTURE_IMPROVEMENTS.md             # Technical debt & roadmap backlog
 ├── package.json                       # Backend node package dependencies & scripts
+├── RELEASE_NOTES.md                   # Complete Version 0.11.0 release notes
 ├── requests.http                      # REST Client API request test file
 └── README.md                          # Master project documentation
 ```
@@ -238,7 +263,7 @@ pep-project/
 - **Framework**: Express.js v5
 - **Database**: MongoDB with Mongoose v9 ODM
 - **Authentication**: JSON Web Token (`jsonwebtoken`), `cookie-parser`, `bcryptjs`
-- **Email Service**: Resend (`resend`)
+- **Email Engines**: Nodemailer (Gmail App Password) & Resend (`resend`)
 - **Media Management**: ImageKit SDK (`@imagekit/nodejs`), Multer (`multer`)
 - **Input Validation**: Zod (`zod`)
 - **Sanitization & Security**: DOMPurify (`dompurify`), `helmet`, `express-rate-limit`, `cors`, `mongoSanitize`, `morgan`, `winston`
@@ -247,6 +272,7 @@ pep-project/
 ### Frontend Web Application
 - **Library**: React 18
 - **Build Tool**: Vite
+- **Progressive Web App**: `vite-plugin-pwa`, Workbox (`generateSW`), `site.webmanifest`
 - **Styling**: Tailwind CSS v4
 - **Routing**: React Router DOM v6
 - **HTTP Client**: Axios
@@ -547,6 +573,43 @@ docker run -d -p 3000:3000 --env-file .env --name link-click-container link-clic
   - **Phase 3**: Unified 5-emoji reactions (❤️, 👍, 😂, 😮, 😢), shared `PostActions.jsx`, Bookmarks system with automatic deletion cascade, Web Share API with clipboard fallback, 1-level nested comment replies, inline comment editing.
   - **Phase 4**: Production polish, useCallback memoization, WCAG 2.1 AA compliance, SonarQube quality audit, documentation, and 75/75 Jest unit tests passing across 13 test suites.
 
+### Sprint 11 — Official Branding, Progressive Web App & Production Polish
+- **Objective**: Transform Link Click into a fully installable, production-ready Progressive Web App (PWA) with official brand identity, offline shell resilience, error boundaries, SEO suite, and release polish.
+- **Achievements**:
+  - **Phase 1 & 1.5**: Integrated 5-figure multicolor community logomark with 100% transparent pixel keying, deployed browser favicons & icons (`favicon.svg`, `apple-touch-icon.png`, `android-chrome-*.png`), and created central `branding.js` configuration.
+  - **Phase 2**: Configured `vite-plugin-pwa` generating `dist/sw.js` with 36 precached assets, intelligent Workbox runtime caching matrix (`NetworkOnly` for auth, `CacheFirst` for fonts/media, `NetworkFirst` for feeds), custom `PWAInstallPrompt.jsx` (14-day dismissal window), non-disruptive `PWAUpdateBanner.jsx`, and branded `Offline.jsx` status page.
+  - **Phase 3**: Implemented global `ErrorBoundary.jsx` with dev-only Error ID debugging (`crypto.randomUUID()`), deployed SEO package (`robots.txt`, `sitemap.xml`, `<link rel="canonical">`, Schema.org JSON-LD structured data, ImageKit preconnect), created `RELEASE_NOTES.md`, and optimized master brand assets.
+  - **Quality & Governance**: Filtered user roster to verified email accounts (`emailVerified: true`), resolved SonarQube quality gate findings, and validated 75/75 Jest unit tests passing across 13 test suites.
+
+---
+
+## 📐 Sprint 11 Implementation & Architectural Specification
+
+Sprint 11 completes the **Official Branding, Progressive Web App (PWA) Integration, and Production Polish** for Link Click:
+
+### 🎨 Phase 1 & 1.5: Official Branding & Asset Keying
+- **Official Logomark**: Integrated 5-figure multicolor community vortex logomark into Navbar (`src/assets/branding/logomark.png`).
+- **Transparency Keying**: Executed exact pixel transparency processing removing outer canvas and inner disc backgrounds while preserving coral red, amber, cream, purple, and teal gradients.
+- **Central Branding Config**: Established `src/config/branding.js` for single-source-of-truth brand constants, versioning (`0.11.0`), and URLs.
+- **Browser Icons**: Deployed complete icon set (`favicon.svg`, `favicon-32x32.png`, `favicon-16x16.png`, `favicon.ico`, `apple-touch-icon.png`, `android-chrome-*.png`, `og-image.png`).
+
+### 📱 Phase 2: Progressive Web App (PWA) & Workbox Caching
+- **Vite PWA Plugin**: Integrated `vite-plugin-pwa` generating `dist/sw.js` and `dist/workbox-*.js` with 36 precached assets.
+- **Workbox Caching Matrix**:
+  - `CacheFirst`: Google Fonts & ImageKit CDN media images (30-day expiration, max 100 entries).
+  - `NetworkFirst`: Public feed API requests (`/api/posts`, 3s timeout).
+  - `StaleWhileRevalidate`: Static media assets.
+  - `NetworkOnly`: All authentication routes (`/api/auth/*`) — **Never Cached for security**.
+- **In-App Install Experience**: Implemented `PWAInstallPrompt.jsx` capturing `beforeinstallprompt` with a 14-day persistent dismissal window in `localStorage`.
+- **Non-Disruptive Updates**: Implemented `PWAUpdateBanner.jsx` displaying a *"Reload to Update"* toast without interrupting active user sessions.
+- **Branded Offline Fallback**: Implemented `Offline.jsx` page at `/offline` with connection retry handler and auto-reload on network recovery.
+
+### 🛡️ Phase 3: Resilience, SEO & Production Polish
+- **Global Error Boundary**: Implemented `ErrorBoundary.jsx` wrapping `<App />` in `main.jsx` with branded fallback UI and dev-only Error ID debugging (`crypto.randomUUID()`).
+- **SEO Assets**: Deployed `public/robots.txt` and `public/sitemap.xml`.
+- **HTML Metadata**: Added `<link rel="canonical">`, ImageKit preconnect hint, and Schema.org `SocialNetworkingApplication` JSON-LD structured data in `index.html`.
+- **Documentation**: Created `RELEASE_NOTES.md` for Version 0.11.0.
+
 ---
 
 ## 📐 Sprint 10 Implementation & Architectural Specification
@@ -568,13 +631,13 @@ docker run -d -p 3000:3000 --env-file .env --name link-click-container link-clic
 
 Version tag `v0.11.0` Quality Gates:
 
-- [x] **Vite Client Production Build**: Executed `cd client && npm run build`. Built cleanly in 1.25s with zero errors.
+- [x] **Vite Client Production Build**: Executed `cd client && npm run build`. Built cleanly in 763ms with zero errors.
 - [x] **Jest Test Suite**: Executed `npm test`. All 13 test suites passed (**75/75 individual unit tests passing**).
 - [x] **Linter & Static Analysis**: Executed `npx oxlint`. **0 errors**, **0 blocking warnings**.
-- [x] **Responsive Layout Verification**: Audited viewports 320px, 375px, 768px, 1024px, and 1440px+ across Feed, Profile, Saved Posts, Post Detail, Create Post, Polls, Lightbox Carousel, and Reaction Popovers. Zero content clipping or horizontal overflow.
-- [x] **Accessibility Audit (WCAG 2.1 AA)**: Verified keyboard navigation, visible focus states (`focus-visible:ring-2 focus-visible:ring-amber`), semantic HTML structure, proper heading hierarchy (`h1` per page), and ARIA attributes across all components.
-- [x] **SonarQube Quality Standards**: Cognitive complexity kept low, nested ternaries eliminated, array index keys avoided, optional chaining used, zero unused variables or imports.
-- [x] **Founder Platform Protections**: Verified Founder-first role security, single Founder account constraint, Founder protection against suspension/soft deletion, and audit logging.
+- [x] **Responsive Layout Verification**: Audited viewports 320px, 375px, 768px, 1024px, and 1440px+ across Feed, Profile, Saved Posts, Post Detail, Create Post, Polls, Lightbox Carousel, PWA Install Banner, Offline Status Page, and Reaction Popovers. Zero content clipping or horizontal overflow.
+- [x] **Accessibility Audit (WCAG 2.1 AA)**: Verified keyboard navigation, visible focus states (`focus-visible:ring-2 focus-visible:ring-amber`), semantic HTML structure (`<section>`, proper heading hierarchy `h1` per page), and ARIA attributes across all components.
+- [x] **SonarQube Quality Standards**: Cognitive complexity kept low, nested ternaries eliminated, array index keys avoided, optional chaining used, zero unused variables, cryptographically secure PRNG (`crypto.randomUUID()`), explicit `type="button"` attributes on buttons.
+- [x] **Founder Platform Protections**: Verified Founder-first role security, single Founder account constraint, Founder protection against suspension/soft deletion, verified email roster filtering (`emailVerified: true`), and audit logging.
 
 ---
 
@@ -631,7 +694,8 @@ The frontend Single Page Application is built with **React 18** and **Vite**:
 
 - **Fast HMR & Oxc**: Configured with `@vitejs/plugin-react` utilizing Oxc for development compilation speed.
 - **Oxlint Analysis**: Standardized static linting via `.oxlintrc.json` ensuring clean syntax and prop hygiene.
-- **Production Bundle**: Bundles assets cleanly into `dist/` in ~1.2s with code-split page chunks.
+- **PWA Service Worker**: `vite-plugin-pwa` generating Workbox service worker (`dist/sw.js`) with precached assets and custom update handling.
+- **Production Bundle**: Bundles assets cleanly into `dist/` in ~760ms with code-split page chunks.
 
 ---
 
@@ -646,38 +710,8 @@ For comprehensive details on postponed features and long-term backlog items, see
 
 ---
 
-## 📐 Sprint 11 Implementation & Architectural Specification
-
-Sprint 11 completes the **Official Branding, Progressive Web App (PWA) Integration, and Production Polish** for Link Click:
-
-### 🎨 Phase 1 & 1.5: Official Branding & Asset Keying
-- **Official Logomark**: Integrated 5-figure multicolor community vortex logomark into Navbar (`src/assets/branding/logomark.svg` / `logomark.png`).
-- **Transparency Keying**: Executed exact pixel transparency processing removing outer canvas and inner disc backgrounds while preserving coral red, amber, cream, purple, and teal gradients.
-- **Central Branding Config**: Established `src/config/branding.js` for single-source-of-truth brand constants, versioning (`0.11.0`), and URLs.
-- **Browser Icons**: Deployed complete icon set (`favicon.svg`, `favicon-32x32.png`, `favicon-16x16.png`, `favicon.ico`, `apple-touch-icon.png`, `android-chrome-*.png`, `og-image.png`).
-
-### 📱 Phase 2: Progressive Web App (PWA) & Workbox Caching
-- **Vite PWA Plugin**: Integrated `vite-plugin-pwa` generating `dist/sw.js` and `dist/workbox-*.js` with 36 precached assets.
-- **Workbox Caching Matrix**:
-  - `CacheFirst`: Google Fonts & ImageKit CDN media images (30-day expiration, max 100 entries).
-  - `NetworkFirst`: Public feed API requests (`/api/posts`, 3s timeout).
-  - `StaleWhileRevalidate`: Static media assets.
-  - `NetworkOnly`: All authentication routes (`/api/auth/*`) — **Never Cached for security**.
-- **In-App Install Experience**: Implemented `PWAInstallPrompt.jsx` capturing `beforeinstallprompt` with a 14-day persistent dismissal window in `localStorage`.
-- **Non-Disruptive Updates**: Implemented `PWAUpdateBanner.jsx` displaying a *"Reload to Update"* toast without interrupting active user sessions.
-- **Branded Offline Fallback**: Implemented `Offline.jsx` page at `/offline` with connection retry handler and auto-reload on network recovery.
-
-### 🛡️ Phase 3: Resilience, SEO & Production Polish
-- **Global Error Boundary**: Implemented `ErrorBoundary.jsx` wrapping `<App />` in `main.jsx` with branded fallback UI and dev-only Error ID debugging.
-- **SEO Assets**: Deployed `public/robots.txt` and `public/sitemap.xml`.
-- **HTML Metadata**: Added `<link rel="canonical">`, ImageKit preconnect hint, and Schema.org `SocialNetworkingApplication` JSON-LD structured data in `index.html`.
-- **Documentation**: Created `RELEASE_NOTES.md` for Version 0.11.0.
-
----
-
 ## 🤝 Contributing & License
 
 Contributions, bug reports, and feature requests are welcome!
 
 This project is licensed under the **MIT License**.
-
