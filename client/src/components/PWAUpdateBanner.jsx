@@ -49,6 +49,7 @@ const PWAUpdateBanner = () => {
 
           <div className="flex items-center gap-2 mt-3">
             <button
+              type="button"
               onClick={() => updateServiceWorker(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber hover:bg-amber-hover text-text-inverse font-semibold text-xs transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber"
               aria-label="Reload application to update to latest version"
@@ -57,6 +58,7 @@ const PWAUpdateBanner = () => {
             </button>
 
             <button
+              type="button"
               onClick={handleClose}
               className="px-3 py-1.5 rounded-lg bg-surface-raised hover:bg-surface-hover text-text-secondary hover:text-text-primary font-medium text-xs border border-border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber"
               aria-label="Dismiss update notification"
@@ -67,6 +69,7 @@ const PWAUpdateBanner = () => {
         </div>
 
         <button
+          type="button"
           onClick={handleClose}
           className="text-text-muted hover:text-text-primary p-1 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber"
           aria-label="Close update notification"

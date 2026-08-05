@@ -14,7 +14,7 @@ const PWAInstallPrompt = () => {
     // Check dismissal status in localStorage
     const dismissedAt = localStorage.getItem(DISMISSAL_KEY);
     if (dismissedAt) {
-      const daysPassed = (Date.now() - parseInt(dismissedAt, 10)) / (1000 * 60 * 60 * 24);
+      const daysPassed = (Date.now() - Number.parseInt(dismissedAt, 10)) / (1000 * 60 * 60 * 24);
       if (daysPassed < DISMISSAL_DAYS) {
         return; // Suppress prompt within 14-day window
       }
@@ -88,6 +88,7 @@ const PWAInstallPrompt = () => {
 
           <div className="flex items-center gap-2 mt-3">
             <button
+              type="button"
               onClick={handleInstall}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber hover:bg-amber-hover text-text-inverse font-semibold text-xs transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber"
               aria-label={`Install ${BRAND.name} application`}
@@ -97,6 +98,7 @@ const PWAInstallPrompt = () => {
             </button>
 
             <button
+              type="button"
               onClick={handleDismiss}
               className="px-3 py-1.5 rounded-lg bg-surface-raised hover:bg-surface-hover text-text-secondary hover:text-text-primary font-medium text-xs border border-border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber"
               aria-label="Dismiss installation prompt for 14 days"
@@ -107,6 +109,7 @@ const PWAInstallPrompt = () => {
         </div>
 
         <button
+          type="button"
           onClick={handleDismiss}
           className="text-text-muted hover:text-text-primary p-1 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber"
           aria-label="Close install dialog"

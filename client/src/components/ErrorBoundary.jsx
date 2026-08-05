@@ -14,7 +14,16 @@ class ErrorBoundary extends Component {
   }
 
   static getDerivedStateFromError(error) {
-    const errorId = `ERR-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
+    let errorId = '';
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      errorId = `ERR-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+    } else if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+      const array = new Uint32Array(1);
+      crypto.getRandomValues(array);
+      errorId = `ERR-${array[0].toString(36).toUpperCase().slice(0, 8)}`;
+    } else {
+      errorId = `ERR-${Date.now().toString(36).toUpperCase()}`;
+    }
     return {
       hasError: true,
       errorId,
@@ -86,6 +95,7 @@ class ErrorBoundary extends Component {
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <button
+                type="button"
                 onClick={this.handleReload}
                 className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-amber hover:bg-amber-hover text-text-inverse font-semibold text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber focus-visible:ring-offset-2 focus-visible:ring-offset-canvas"
                 aria-label="Reload application"
@@ -95,6 +105,7 @@ class ErrorBoundary extends Component {
               </button>
 
               <button
+                type="button"
                 onClick={this.handleGoHome}
                 className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-surface-raised hover:bg-surface-hover text-text-primary font-medium text-sm border border-border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber"
                 aria-label="Return to Home Feed"

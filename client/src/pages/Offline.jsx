@@ -39,9 +39,8 @@ const Offline = () => {
   };
 
   return (
-    <div
+    <section
       className="min-h-[75vh] flex flex-col items-center justify-center px-4 text-center animate-fade-in"
-      role="region"
       aria-label="Offline status page"
     >
       <div className="bg-surface border border-border p-8 rounded-2xl max-w-md w-full shadow-xl relative overflow-hidden">
@@ -77,6 +76,7 @@ const Offline = () => {
         {/* Actions */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <button
+            type="button"
             onClick={handleRetry}
             disabled={isChecking}
             className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-amber hover:bg-amber-hover text-text-inverse font-semibold text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:opacity-50"
@@ -96,7 +96,7 @@ const Offline = () => {
           </Link>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 
