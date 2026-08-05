@@ -18,7 +18,7 @@ export const sendVerificationEmail = async (to, rawToken) => {
   const verificationUrl = `${env.FRONTEND_URL}/verify-email?token=${rawToken}`;
   const resend = new Resend(env.RESEND_API_KEY);
 
-  await resend.emails.send({
+  const { data, error } = await resend.emails.send({
     from: env.EMAIL_FROM,
     to,
     subject: 'Verify your Link Click email',
@@ -32,6 +32,11 @@ export const sendVerificationEmail = async (to, rawToken) => {
     `,
   });
 
-  logger.info('[Email] Verification email sent');
+  if (error) {
+    logger.error(`[Email Error] Resend API error sending to ${to}: ${error.message || JSON.stringify(error)}`);
+    throw new Error(error.message || 'Email delivery failed via Resend');
+  }
+
+  logger.info(`[Email] Verification email sent successfully to ${to} (ID: ${data?.id})`);
 };
 
