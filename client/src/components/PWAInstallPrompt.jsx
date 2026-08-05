@@ -68,7 +68,7 @@ const PWAInstallPrompt = () => {
       aria-labelledby="pwa-install-title"
       aria-describedby="pwa-install-desc"
     >
-      <div className="bg-surface border border-border p-4 rounded-2xl shadow-2xl flex items-start gap-3 backdrop-blur-lg bg-surface/95">
+      <div className="border border-border p-4 rounded-2xl shadow-2xl flex items-start gap-3 backdrop-blur-lg bg-surface/95">
         <img
           src={logomark}
           alt=""

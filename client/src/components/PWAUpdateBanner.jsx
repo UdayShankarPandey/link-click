@@ -34,7 +34,7 @@ const PWAUpdateBanner = () => {
       aria-live="polite"
       aria-labelledby="pwa-update-title"
     >
-      <div className="bg-surface border border-amber/40 p-4 rounded-2xl shadow-2xl backdrop-blur-lg bg-surface/95 flex items-start gap-3">
+      <div className="border border-amber/40 p-4 rounded-2xl shadow-2xl backdrop-blur-lg bg-surface/95 flex items-start gap-3">
         <div className="p-2 rounded-xl bg-amber-muted text-amber shrink-0 mt-0.5">
           <RefreshCw className="h-5 w-5" aria-hidden="true" />
         </div>
