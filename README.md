@@ -4,6 +4,14 @@
 
 ---
 
+## 🌐 Live Production Deployment
+
+- **Frontend Application (Vercel)**: [https://link-click-six.vercel.app](https://link-click-six.vercel.app)
+- **Backend API Service (Render)**: [https://link-click-api.onrender.com](https://link-click-api.onrender.com)
+- **Interactive Swagger API Docs**: [https://link-click-api.onrender.com/api/docs](https://link-click-api.onrender.com/api/docs)
+
+---
+
 ## 📑 Table of Contents
 
 - [✨ Key Features](#-key-features)
@@ -49,7 +57,7 @@
 
 ### 💬 Social Engagement & Discovery
 - **Unified Reactions System**: 5-emoji reaction set (❤️, 👍, 😂, 😮, 😢). Single active reaction per user per post. Selecting another emoji replaces previous reaction; selecting same emoji removes it. ❤️ syncs to `likes` array for legacy API compatibility.
-- **`PostActions.jsx`**: Shared action bar for reactions, comment counts, bookmarks, and share button.
+- **Zero-Overflow Action Bar (`PostActions.jsx`)**: Clean icon-only action bar (`[ ❤️ 1 ] [ 💬 0 ] [ 🔖 ] [ 🔗 ]`) with hover tooltips ensuring buttons never overflow or clip across any screen width or grid container.
 - **Bookmark System**: `POST /api/posts/:id/bookmark` toggles post saved state. `GET /api/posts/bookmarked` populates "Saved Posts" tab in Profile ordered newest-first. Deleted posts are automatically purged via `User.updateMany({}, { $pull: { bookmarks: postId } })`.
 - **Nested Comment Replies**: 1-level nested comment replies (`parentCommentId`), ordered oldest-first, collapsed after 3 replies with a "Show X more replies" trigger button.
 - **Comment Editing & Deletion**: Inline comment editing with `(edited)` indicator; comment deletion requires `ConfirmDialog.jsx` modal confirmation.
@@ -59,13 +67,16 @@
 
 ### 🔐 Security & Authentication
 - **Secure Auth Pipeline**: JWT-based session security with support for HttpOnly cookies and `Authorization: Bearer` headers.
-- **Email Verification**: User registration triggers email verification tokens delivered via Resend API (`/verify-email`).
+- **Strong Password Enforcement**: Zod backend schema (`auth.validator.js`) enforcing 8+ characters, uppercase, lowercase, numbers, and special characters, complete with a live real-time requirement checklist (`Register.jsx`).
+- **Show/Hide Password Visibility Toggles**: Interactive `Eye` / `EyeOff` visibility controls on Login & Register forms.
+- **Drift-Free Resend Verification Timer**: Timestamp-based (`Date.now()`) countdown timer persisting across page refreshes.
+- **Dual Email Engine**: Supports both Nodemailer SMTP (Gmail App Passwords for unrestricted 100% recipient delivery) and Resend API (`/verify-email`).
 - **Role-Based Access Control (RBAC)**: Role hierarchy (`user`, `founder`) protecting administrative operations.
 - **Hardened Security Middleware**:
   - `helmet`: Secure HTTP headers protection.
   - `express-rate-limit`: Global rate limiting (100 reqs / 15 min) and stricter auth rate limiting (10 reqs / 15 min).
   - `mongoSanitize`: Prevention against NoSQL query injection payloads (`$gt`, `$ne`).
-  - `cors`: Configured origin control with credential pass-through.
+  - `cors`: Configured origin control with credential pass-through and Vercel preview domain wildcards.
   - `requestIdMiddleware`: Assigns unique `UUIDv4` request IDs attached to Morgan HTTP logs for end-to-end audit tracing.
 
 ### 👑 Single-Founder Platform & Governance
@@ -245,7 +256,7 @@ pep-project/
 - **Static Analysis**: Oxlint (0 errors)
 - **Containerization**: Docker (Alpine Linux node:22-alpine)
 - **CI/CD Workflows**: GitHub Actions (`backend-ci.yml`, `main_link-click-frontend.yml`)
-- **Hosting**: Azure Web Apps
+- **Hosting Platforms**: Vercel (Frontend SPA) & Render (Backend API Web Service)
 
 ---
 
@@ -257,16 +268,19 @@ Create a `.env` file in the root directory based on `.env.example`:
 | :--- | :--- | :--- |
 | `PORT` | HTTP server port | `3000` |
 | `NODE_ENV` | Environment mode (`development`, `production`, `test`) | `development` |
-| `MONGODB_URI` | MongoDB connection string | `mongodb://localhost:27017/pep_project` |
+| `MONGODB_URI` | MongoDB connection string | `mongodb+srv://...` |
 | `JWT_SECRET` | Secret key for signing JWT auth tokens | `your_jwt_secret_key` |
 | `JWT_EXPIRES_IN` | Token expiration duration | `7d` |
-| `CORS_ORIGIN` | Allowed origin for CORS client requests | `http://localhost:5173` |
-| `FOUNDER_EMAIL` | Email address promoted to Founder role | `founder@example.com` |
+| `CORS_ORIGIN` | Allowed origin for CORS client requests | `https://link-click-six.vercel.app` |
+| `FRONTEND_URL` | Frontend client application base URL | `https://link-click-six.vercel.app` |
+| `FOUNDER_EMAIL` | Email address promoted to Founder role | `udayshankarpandey.03@gmail.com` |
+| `SMTP_USER` | Gmail address for unrestricted email delivery | `yourname@gmail.com` |
+| `SMTP_PASS` | 16-character Google App Password | `abcd efgh ijkl mnop` |
 | `IMAGEKIT_PUBLIC_KEY` | ImageKit public access key | `public_xxx` |
 | `IMAGEKIT_PRIVATE_KEY` | ImageKit private API key | `private_xxx` |
 | `IMAGEKIT_URL_ENDPOINT` | ImageKit base URL endpoint | `https://ik.imagekit.io/your_id` |
-| `RESEND_API_KEY` | Resend API key for verification emails | `re_xxx` |
-| `EMAIL_FROM` | Sender address for transactional emails | `noreply@yourdomain.com` |
+| `RESEND_API_KEY` | Resend API key for transactional emails | `re_xxx` |
+| `EMAIL_FROM` | Sender address for transactional emails | `Link Click <noreply@yourdomain.com>` |
 
 ---
 
