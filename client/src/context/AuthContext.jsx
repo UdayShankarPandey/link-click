@@ -39,10 +39,12 @@ export const AuthProvider = ({ children }) => {
   const register = async (name, email, password) => {
     try {
       const response = await api.post('/auth/register', { name, email, password });
+      const resData = response.data?.data || response.data;
       return {
         success: true,
         email,
         message: response.data?.message || 'Registration successful. Please check your email.',
+        verificationUrl: resData?.verificationUrl,
       };
     } catch (error) {
       const message = error.response?.data?.message || 'Registration failed';

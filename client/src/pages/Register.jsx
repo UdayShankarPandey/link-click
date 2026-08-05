@@ -66,7 +66,7 @@ const Register = () => {
 
     if (result.success) {
       toast.success(result.message || 'Account created! Please check your email.');
-      navigate('/check-email', { state: { email: result.email || email } });
+      navigate('/check-email', { state: { email: result.email || email, verificationUrl: result.verificationUrl } });
     } else {
       setError(result.message);
     }

@@ -29,16 +29,18 @@ export const sendVerificationEmail = async (to, rawToken) => {
 
   const targetEmail = maskEmail(to);
 
-  // Option 1: SMTP / Gmail App Password (delivers to 100% of recipient email addresses without restrictions)
+  // Option 1: SMTP / Gmail App Password
   if (env.SMTP_USER && env.SMTP_PASS) {
     try {
+      const port = Number(env.SMTP_PORT) || 465;
+      const isSecure = env.SMTP_SECURE === 'true' || port === 465;
       const transporter = nodemailer.createTransport({
         service: env.SMTP_HOST ? undefined : 'gmail',
         host: env.SMTP_HOST || 'smtp.gmail.com',
-        port: Number(env.SMTP_PORT) || 587,
-        secure: env.SMTP_PORT === '465',
-        connectionTimeout: 5000,
-        greetingTimeout: 5000,
+        port,
+        secure: isSecure,
+        connectionTimeout: 6000,
+        greetingTimeout: 6000,
         socketTimeout: 8000,
         auth: {
           user: env.SMTP_USER,
@@ -46,9 +48,9 @@ export const sendVerificationEmail = async (to, rawToken) => {
         },
       });
 
-      const sender = env.EMAIL_FROM?.includes('@resend.dev')
-        ? `Link Click <${env.SMTP_USER}>`
-        : env.EMAIL_FROM;
+      const sender = (env.EMAIL_FROM && !env.EMAIL_FROM.includes('@resend.dev'))
+        ? env.EMAIL_FROM
+        : `Link Click <${env.SMTP_USER}>`;
 
       const info = await transporter.sendMail({
         from: sender,

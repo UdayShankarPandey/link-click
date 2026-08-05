@@ -58,14 +58,16 @@ export const authService = {
       emailVerificationSentAt: sentAt,
     });
 
+    let verificationUrl = null;
     try {
       await sendVerificationEmail(email, rawToken);
     } catch (err) {
+      verificationUrl = `${env.FRONTEND_URL}/verify-email?token=${rawToken}`;
       logger.error(`[Auth Service] Verification email not delivered to ${email}: ${err.message}`);
-      logger.info(`[Auth Fallback Link] Direct URL: ${env.FRONTEND_URL}/verify-email?token=${rawToken}`);
+      logger.info(`[Auth Fallback Link] Direct URL: ${verificationUrl}`);
     }
 
-    return { email };
+    return { email, verificationUrl };
   },
 
   async loginUser({ email: rawEmail, password }) {
@@ -154,14 +156,19 @@ export const authService = {
     user.emailVerificationSentAt = sentAt;
     await user.save();
 
+    let verificationUrl = null;
     try {
       await sendVerificationEmail(email, rawToken);
     } catch (err) {
+      verificationUrl = `${env.FRONTEND_URL}/verify-email?token=${rawToken}`;
       logger.error(`[Auth Service] Resend verification email not delivered to ${email}: ${err.message}`);
-      logger.info(`[Auth Fallback Link] Direct URL: ${env.FRONTEND_URL}/verify-email?token=${rawToken}`);
+      logger.info(`[Auth Fallback Link] Direct URL: ${verificationUrl}`);
     }
 
-    return { message: 'If that email is registered, a verification link has been sent.' };
+    return {
+      message: 'If that email is registered, a verification link has been sent.',
+      verificationUrl,
+    };
   },
 
   async getCurrentUser(userId) {
