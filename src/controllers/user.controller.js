@@ -187,13 +187,14 @@ export const toggleLinkUser = async (req, res) => {
   }
 };
 
-// Get suggested users (Founder first, excluding self/suspended/deleted, max 5, randomized)
+// Get suggested users (Founder first, excluding self/suspended/deleted/unverified, max 5, randomized)
 export const getSuggestedUsers = async (req, res) => {
   try {
     const currentUserId = req.user?._id?.toString();
 
     const activeUsers = await User.find(
       {
+        emailVerified: true,
         status: { $nin: ['suspended', 'deleted'] }
       },
       'name email role profilePicUrl bio coverPicUrl createdAt updatedAt'
@@ -222,11 +223,11 @@ export const getSuggestedUsers = async (req, res) => {
   }
 };
 
-// Get recently joined active users (sorted by createdAt descending)
+// Get recently joined active verified users (sorted by createdAt descending)
 export const getRecentlyJoinedUsers = async (req, res) => {
   try {
     const recentUsers = await User.find(
-      { status: { $nin: ['suspended', 'deleted'] } },
+      { emailVerified: true, status: { $nin: ['suspended', 'deleted'] } },
       'name email role profilePicUrl bio createdAt'
     )
       .sort({ createdAt: -1 })
@@ -244,11 +245,11 @@ export const getRecentlyJoinedUsers = async (req, res) => {
   }
 };
 
-// Get public platform stats (Total Members, Active Members, Posts Today, Total Posts)
+// Get public platform stats (Total Verified Members, Active Verified Members, Posts Today, Total Posts)
 export const getPublicPlatformStats = async (req, res) => {
   try {
-    const totalMembers = await User.countDocuments({});
-    const activeMembers = await User.countDocuments({ status: { $nin: ['suspended', 'deleted'] } });
+    const totalMembers = await User.countDocuments({ emailVerified: true });
+    const activeMembers = await User.countDocuments({ emailVerified: true, status: { $nin: ['suspended', 'deleted'] } });
 
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);

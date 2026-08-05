@@ -7,8 +7,8 @@ import AppError from '../errors/AppError.js';
 
 // GET /api/dashboard/stats
 export const getDashboardStats = asyncHandler(async (req, res) => {
-  const totalMembers = await User.countDocuments({});
-  const activeMembers = await User.countDocuments({ status: { $ne: 'deleted' } });
+  const totalMembers = await User.countDocuments({ emailVerified: true });
+  const activeMembers = await User.countDocuments({ emailVerified: true, status: { $nin: ['suspended', 'deleted'] } });
   
   const startOfDay = new Date();
   startOfDay.setHours(0, 0, 0, 0);
