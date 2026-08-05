@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Home, PlusSquare, User, LogOut, LogIn, UserPlus, Menu, X, Shield, Camera } from 'lucide-react';
+import { Home, PlusSquare, User, LogOut, LogIn, UserPlus, Menu, X, Shield } from 'lucide-react';
 import toast from 'react-hot-toast';
+import logomark from '../assets/branding/logomark.svg';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -33,12 +34,17 @@ const Navbar = () => {
       <div className="max-w-5xl mx-auto px-4 sm:px-6">
         <div className="flex justify-between h-14 items-center">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 group rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber" onClick={closeMobile}>
-            <div className="w-8 h-8 rounded-lg bg-amber flex items-center justify-center transition-transform duration-150 group-hover:scale-105">
-              <Camera className="h-4 w-4 text-text-inverse" strokeWidth={2.5} />
-            </div>
+          <Link to="/" className="flex items-center gap-2 group rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber" onClick={closeMobile} aria-label="Link Click — Home">
+            <img
+              src={logomark}
+              alt=""
+              aria-hidden="true"
+              width="32"
+              height="32"
+              className="h-8 w-8 object-contain transition-transform duration-150 group-hover:scale-105 shrink-0"
+            />
             <span className="text-lg font-extrabold text-text-primary tracking-tight">
-              Link<span className="text-amber"> Click</span>
+              Link<span className="text-amber">Click</span>
             </span>
           </Link>
 
