@@ -13,8 +13,9 @@ const maskEmail = (email) => {
 
 /**
  * Sends the email verification link to a newly registered user.
- * Supports SMTP (e.g. Gmail App Password) for 100% unrestricted recipient delivery,
- * and Resend API.
+ * Priority:
+ *   1. Gmail SMTP (SMTP_USER + SMTP_PASS) — works for ANY recipient worldwide.
+ *   2. Resend API (RESEND_API_KEY)         — works only for account-owner email in sandbox.
  */
 export const sendVerificationEmail = async (to, rawToken) => {
   const verificationUrl = `${env.FRONTEND_URL}/verify-email?token=${rawToken}`;
@@ -29,26 +30,48 @@ export const sendVerificationEmail = async (to, rawToken) => {
 
   const targetEmail = maskEmail(to);
 
-  // Option 1: SMTP / Gmail App Password
+  // ── Option 1: Gmail SMTP (recommended — works for all recipients) ──────────
   if (env.SMTP_USER && env.SMTP_PASS) {
     try {
-      const port = Number(env.SMTP_PORT) || 465;
-      const isSecure = env.SMTP_SECURE === 'true' || port === 465;
+      // When SMTP_HOST is not set, use Gmail's named service shorthand.
+      // Nodemailer resolves the correct host (smtp.gmail.com), port (465), and
+      // secure (true) automatically — no need to set them manually.
+      const useGmailService = !env.SMTP_HOST;
+
+      const transportConfig = useGmailService
+        ? {
+            service: 'gmail',
+            auth: {
+              user: env.SMTP_USER,
+              pass: env.SMTP_PASS,
+            },
+          }
+        : {
+            host: env.SMTP_HOST,
+            port: Number(env.SMTP_PORT) || 465,
+            secure: env.SMTP_SECURE === 'false' ? false : true,
+            auth: {
+              user: env.SMTP_USER,
+              pass: env.SMTP_PASS,
+            },
+          };
+
       const transporter = nodemailer.createTransport({
-        service: env.SMTP_HOST ? undefined : 'gmail',
-        host: env.SMTP_HOST || 'smtp.gmail.com',
-        port,
-        secure: isSecure,
-        connectionTimeout: 6000,
-        greetingTimeout: 6000,
-        socketTimeout: 8000,
-        auth: {
-          user: env.SMTP_USER,
-          pass: env.SMTP_PASS,
-        },
+        ...transportConfig,
+        connectionTimeout: 15000,
+        greetingTimeout: 15000,
+        socketTimeout: 20000,
       });
 
-      const sender = (env.EMAIL_FROM && !env.EMAIL_FROM.includes('@resend.dev'))
+      // Gmail only allows sending FROM the authenticated account address.
+      // If EMAIL_FROM is set and matches the Gmail account, use it for a nice display name.
+      // Otherwise fall back to plain SMTP_USER.
+      const smtpUserLower = env.SMTP_USER.toLowerCase();
+      const emailFromLower = (env.EMAIL_FROM || '').toLowerCase();
+      const isEmailFromGmailAccount =
+        emailFromLower.includes(smtpUserLower) && !emailFromLower.includes('@resend.dev');
+
+      const sender = isEmailFromGmailAccount
         ? env.EMAIL_FROM
         : `Link Click <${env.SMTP_USER}>`;
 
@@ -59,15 +82,21 @@ export const sendVerificationEmail = async (to, rawToken) => {
         html: htmlContent,
       });
 
-      logger.info(`[Email SMTP] Verification email sent successfully to ${targetEmail} (MessageId: ${info.messageId})`);
+      logger.info(
+        `[Email SMTP] Verification email sent successfully to ${targetEmail} (MessageId: ${info.messageId})`
+      );
       return;
     } catch (err) {
-      logger.error(`[Email SMTP Error] Failed to send email via SMTP to ${targetEmail}: ${err.message}`);
+      logger.error(
+        `[Email SMTP Error] Failed to send email via SMTP to ${targetEmail}: ${err.message}`
+      );
+      // Fall through to Resend only if key is available
       if (!env.RESEND_API_KEY) throw err;
+      logger.warn('[Email SMTP] Falling back to Resend API after SMTP failure.');
     }
   }
 
-  // Option 2: Resend API
+  // ── Option 2: Resend API (fallback — sandbox restricts to account-owner email) ──
   if (env.RESEND_API_KEY) {
     const resend = new Resend(env.RESEND_API_KEY);
     const { data, error } = await resend.emails.send({
@@ -78,14 +107,17 @@ export const sendVerificationEmail = async (to, rawToken) => {
     });
 
     if (error) {
-      logger.error(`[Email Error] Resend API error sending to ${targetEmail}: ${error.message || JSON.stringify(error)}`);
+      logger.error(
+        `[Email Error] Resend API error sending to ${targetEmail}: ${error.message || JSON.stringify(error)}`
+      );
       throw new Error(error.message || 'Email delivery failed via Resend');
     }
 
-    logger.info(`[Email Resend] Verification email sent successfully to ${targetEmail} (ID: ${data?.id})`);
+    logger.info(
+      `[Email Resend] Verification email sent successfully to ${targetEmail} (ID: ${data?.id})`
+    );
     return;
   }
 
   throw new Error('Email delivery is not configured. Set SMTP_USER & SMTP_PASS or RESEND_API_KEY.');
 };
-

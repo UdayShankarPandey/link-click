@@ -19,6 +19,7 @@ const envSchema = z.object({
   SMTP_PASS: z.string().optional(),
   SMTP_HOST: z.string().optional(),
   SMTP_PORT: z.string().optional(),
+  SMTP_SECURE: z.string().optional(),
   EMAIL_FROM: z.string().default('Link Click <onboarding@resend.dev>'),
   FRONTEND_URL: z.string().url().default('http://localhost:5173'),
   FOUNDER_EMAIL: z.string().default('udayshankarpandey.03@gmail.com'),
