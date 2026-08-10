@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Mail, ArrowLeft, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
+import { Mail, ArrowLeft, RefreshCw, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../services/api';
 
@@ -68,10 +68,8 @@ const CheckEmail = () => {
     try {
       const response = await api.post('/auth/resend-verification', { email: targetEmail });
       const message = response.data?.message || 'Verification email sent.';
-      const resData = response.data?.data || response.data;
-      const verificationUrl = resData?.verificationUrl;
       toast.success(message);
-      setResendStatus({ success: true, message, verificationUrl });
+      setResendStatus({ success: true, message });
       startCooldown(60);
     } catch (error) {
       const status = error.response?.status;
@@ -89,8 +87,6 @@ const CheckEmail = () => {
       setIsResending(false);
     }
   };
-
-  const activeVerificationUrl = location.state?.verificationUrl || resendStatus?.verificationUrl;
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-8">
@@ -126,25 +122,6 @@ const CheckEmail = () => {
           Click the link inside the email to verify your account and activate your profile.
         </p>
 
-        {/* Fallback Direct Verification Banner (Shown if email transport is restricted or blocked) */}
-        {activeVerificationUrl && (
-          <div className="mt-5 p-4 bg-amber-muted/30 border border-amber/30 rounded-xl text-left animate-slide-up">
-            <div className="flex items-center gap-2 mb-1.5">
-              <CheckCircle className="h-4 w-4 text-amber shrink-0" />
-              <span className="text-xs font-bold text-amber uppercase tracking-wider">Direct Verification Link</span>
-            </div>
-            <p className="text-xs text-text-secondary mb-3 leading-relaxed">
-              Email delivery may be restricted by your provider or server network. You can activate your account directly:
-            </p>
-            <a
-              href={activeVerificationUrl}
-              className="block w-full py-2.5 px-4 bg-amber text-canvas font-semibold text-center rounded-xl text-xs hover:bg-amber-hover transition-colors shadow-sm"
-            >
-              Verify Account Now
-            </a>
-          </div>
-        )}
-
         {/* Status Alert */}
         {resendStatus && (
           <div
@@ -156,7 +133,7 @@ const CheckEmail = () => {
             }`}
           >
             {resendStatus.success ? (
-              <CheckCircle className="h-4 w-4 shrink-0 mt-0.5" />
+              <Mail className="h-4 w-4 shrink-0 mt-0.5" />
             ) : (
               <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
             )}
