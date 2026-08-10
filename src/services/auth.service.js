@@ -60,12 +60,12 @@ export const authService = {
 
     const verificationUrl = `${env.FRONTEND_URL}/verify-email?token=${rawToken}`;
 
-    try {
-      await sendVerificationEmail(email, rawToken);
-    } catch (err) {
+    // Fire-and-forget: don't block the registration response on SMTP.
+    // Email sends in the background; user is redirected to CheckEmail immediately.
+    sendVerificationEmail(email, rawToken).catch((err) => {
       logger.error(`[Auth Service] Verification email not delivered to ${email}: ${err.message}`);
       logger.info(`[Auth Fallback Link] Direct URL: ${verificationUrl}`);
-    }
+    });
 
     return { email, verificationUrl };
   },
@@ -158,12 +158,11 @@ export const authService = {
 
     const verificationUrl = `${env.FRONTEND_URL}/verify-email?token=${rawToken}`;
 
-    try {
-      await sendVerificationEmail(email, rawToken);
-    } catch (err) {
+    // Fire-and-forget: respond immediately, email sends in background.
+    sendVerificationEmail(email, rawToken).catch((err) => {
       logger.error(`[Auth Service] Resend verification email not delivered to ${email}: ${err.message}`);
       logger.info(`[Auth Fallback Link] Direct URL: ${verificationUrl}`);
-    }
+    });
 
     return {
       message: 'If that email is registered, a verification link has been sent.',
