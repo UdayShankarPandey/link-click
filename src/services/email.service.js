@@ -81,18 +81,18 @@ export const sendVerificationEmail = async (to, rawToken) => {
     try {
       await trySMTP({ ...smtpBase, port: 587, secure: false, label: '587/STARTTLS' });
       return;
-    } catch (err587) {
-      logger.warn(`[Email SMTP] Port 587 failed for ${targetEmail}: ${err587.message}`);
+    } catch (error_) {
+      logger.warn(`[Email SMTP] Port 587 failed for ${targetEmail}: ${error_.message}`);
     }
 
     // ── Attempt 2: Port 465 SSL (works locally, may be blocked by cloud) ───────
     try {
       await trySMTP({ ...smtpBase, port: 465, secure: true, label: '465/SSL' });
       return;
-    } catch (err465) {
-      logger.warn(`[Email SMTP] Port 465 failed for ${targetEmail}: ${err465.message}`);
+    } catch (error_) {
+      logger.warn(`[Email SMTP] Port 465 failed for ${targetEmail}: ${error_.message}`);
       if (!env.RESEND_API_KEY) {
-        throw new Error(`SMTP delivery failed on both port 587 and 465: ${err465.message}`);
+        throw new Error(`SMTP delivery failed on both port 587 and 465: ${error_.message}`);
       }
       logger.warn('[Email SMTP] Falling back to Resend API.');
     }

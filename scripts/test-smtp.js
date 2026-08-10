@@ -48,12 +48,12 @@ const send = async (port, secure) => {
 // Try 587 first, then 465
 try {
   await send(587, false);
-} catch (err587) {
-  console.error(`❌ Port 587 failed: ${err587.message}\n`);
+} catch (error_) {
+  console.error(`❌ Port 587 failed: ${error_.message}\n`);
   try {
     await send(465, true);
-  } catch (err465) {
-    console.error(`❌ Port 465 failed: ${err465.message}\n`);
+  } catch (error_) {
+    console.error(`❌ Port 465 failed: ${error_.message}\n`);
     console.error('Both SMTP ports failed. Check App Password and Gmail settings.');
     process.exit(1);
   }
