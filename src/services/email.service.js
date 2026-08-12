@@ -21,25 +21,39 @@ const buildHtml = (verificationUrl) => `
 `;
 
 /**
- * Try sending via a specific SMTP configuration.
- * Returns true on success, throws on failure.
+ * Build the SMTP "from" address.
+ * - If EMAIL_FROM is explicitly set and not the Resend sandbox domain, use it as-is.
+ * - Otherwise fall back to "Link Click <SMTP_USER>".
  */
-const trySMTP = async ({ host, port, secure, user, pass, from, to, subject, html, label }) => {
+const buildSender = () => {
+  const emailFrom = env.EMAIL_FROM || '';
+  if (emailFrom && !emailFrom.includes('@resend.dev')) return emailFrom;
+  return `Link Click <${env.SMTP_USER}>`;
+};
+
+/**
+ * Sends via SMTP using the configured host/port/credentials.
+ * Supports Gmail (smtp.gmail.com) and Brevo (smtp-relay.brevo.com).
+ */
+const trySMTP = async ({ port, secure, to, subject, html, label }) => {
   const transporter = nodemailer.createTransport({
-    host,
+    host: env.SMTP_HOST || 'smtp-relay.brevo.com',
     port,
     secure,
-    auth: { user, pass },
+    auth: { user: env.SMTP_USER, pass: env.SMTP_PASS },
     connectionTimeout: 15000,
     greetingTimeout: 15000,
     socketTimeout: 20000,
-    tls: {
-      // Accept self-signed certs and don't fail on certificate errors
-      rejectUnauthorized: false,
-    },
+    tls: { rejectUnauthorized: false },
   });
 
-  const info = await transporter.sendMail({ from, to, subject, html });
+  const info = await transporter.sendMail({
+    from: buildSender(),
+    to,
+    subject,
+    html,
+  });
+
   logger.info(`[Email SMTP:${label}] Sent to ${maskEmail(to)} (MessageId: ${info.messageId})`);
   return info;
 };
@@ -47,10 +61,10 @@ const trySMTP = async ({ host, port, secure, user, pass, from, to, subject, html
 /**
  * Sends the email verification link to a newly registered user.
  *
- * Strategy (tries each in order, stops on first success):
- *   1. Gmail SMTP port 587  — STARTTLS (works on most cloud platforms)
- *   2. Gmail SMTP port 465  — SSL      (works locally, may be blocked on Render)
- *   3. Resend API           — HTTPS    (always works, but sandbox restricts recipient to account owner)
+ * Delivery priority:
+ *   1. SMTP port 587 STARTTLS — Brevo relay preferred; falls back to Gmail SMTP
+ *   2. SMTP port 465 SSL      — alternate port
+ *   3. Resend API (HTTPS)     — sandbox: only delivers to account-owner email
  */
 export const sendVerificationEmail = async (to, rawToken) => {
   const verificationUrl = `${env.FRONTEND_URL}/verify-email?token=${rawToken}`;
@@ -58,47 +72,32 @@ export const sendVerificationEmail = async (to, rawToken) => {
   const subject = 'Verify your Link Click email';
   const targetEmail = maskEmail(to);
 
+  // ── SMTP (Brevo / Gmail) ───────────────────────────────────────────────────
   if (env.SMTP_USER && env.SMTP_PASS) {
-    const smtpUserLower = env.SMTP_USER.toLowerCase();
-    const emailFromLower = (env.EMAIL_FROM || '').toLowerCase();
-    const isEmailFromGmailAccount =
-      emailFromLower.includes(smtpUserLower) && !emailFromLower.includes('@resend.dev');
-    const from = isEmailFromGmailAccount
-      ? env.EMAIL_FROM
-      : `Link Click <${env.SMTP_USER}>`;
+    const smtpArgs = { to, subject, html: htmlContent };
 
-    const smtpBase = {
-      host: env.SMTP_HOST || 'smtp.gmail.com',
-      user: env.SMTP_USER,
-      pass: env.SMTP_PASS,
-      from,
-      to,
-      subject,
-      html: htmlContent,
-    };
-
-    // ── Attempt 1: Port 587 STARTTLS (preferred on cloud — Render allows this) ─
+    // Attempt 1: port 587 STARTTLS
     try {
-      await trySMTP({ ...smtpBase, port: 587, secure: false, label: '587/STARTTLS' });
+      await trySMTP({ ...smtpArgs, port: 587, secure: false, label: '587/STARTTLS' });
       return;
     } catch (error_) {
       logger.warn(`[Email SMTP] Port 587 failed for ${targetEmail}: ${error_.message}`);
     }
 
-    // ── Attempt 2: Port 465 SSL (works locally, may be blocked by cloud) ───────
+    // Attempt 2: port 465 SSL
     try {
-      await trySMTP({ ...smtpBase, port: 465, secure: true, label: '465/SSL' });
+      await trySMTP({ ...smtpArgs, port: 465, secure: true, label: '465/SSL' });
       return;
     } catch (error_) {
       logger.warn(`[Email SMTP] Port 465 failed for ${targetEmail}: ${error_.message}`);
       if (!env.RESEND_API_KEY) {
         throw new Error(`SMTP delivery failed on both port 587 and 465: ${error_.message}`);
       }
-      logger.warn('[Email SMTP] Falling back to Resend API.');
+      logger.warn('[Email SMTP] Both SMTP ports failed — falling back to Resend API.');
     }
   }
 
-  // ── Attempt 3: Resend API (HTTPS — always reachable, sandbox restrictions apply) ─
+  // ── Resend API (HTTPS — sandbox restricts delivery to account-owner email) ─
   if (env.RESEND_API_KEY) {
     const resend = new Resend(env.RESEND_API_KEY);
     const { data, error } = await resend.emails.send({
