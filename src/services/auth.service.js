@@ -60,12 +60,16 @@ export const authService = {
 
     const verificationUrl = `${env.FRONTEND_URL}/verify-email?token=${rawToken}`;
 
-    // Fire-and-forget: don't block the registration response on SMTP.
-    // Email sends in the background; user is redirected to CheckEmail immediately.
-    sendVerificationEmail(email, rawToken).catch((err) => {
-      logger.error(`[Auth Service] Verification email not delivered to ${email}: ${err.message}`);
+    // Awaited temporarily to capture exact SMTP errors in Render logs.
+    try {
+      logger.info(`[Auth Service] Attempting email delivery to ${email} via ${process.env.SMTP_HOST || 'smtp-relay.brevo.com'}:587`);
+      await sendVerificationEmail(email, rawToken);
+      logger.info(`[Auth Service] Email delivery succeeded for ${email}`);
+    } catch (err) {
+      logger.error(`[Auth Service] EMAIL DELIVERY FAILED for ${email}: ${err.message}`);
+      logger.error(`[Auth Service] SMTP config — HOST:${process.env.SMTP_HOST} USER:${process.env.SMTP_USER} PASS_SET:${!!process.env.SMTP_PASS}`);
       logger.info(`[Auth Fallback Link] Direct URL: ${verificationUrl}`);
-    });
+    }
 
     return { email, verificationUrl };
   },
