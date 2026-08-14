@@ -27,7 +27,7 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
         cleanupOutdatedCaches: true,
         clientsClaim: true,
-        skipWaiting: false, // Manual user confirmation via update prompt banner
+        skipWaiting: true, // Activate new SW immediately on deploy — prevents stale cached JS
         runtimeCaching: [
           // 1. Google Fonts Stylesheets
           {
