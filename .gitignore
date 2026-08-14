@@ -1,7 +1,8 @@
-# Environment variables
+# Environment variables — secret files stay local, production URLs are safe to commit
 .env
 .env.local
 .env.*.local
+!client/.env.production
 
 # Dependency directories
 node_modules/
