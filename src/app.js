@@ -20,6 +20,10 @@ import { swaggerSpec } from './docs/swagger.js';
 
 const app = express();
 
+// Trust Render's load balancer proxy — required for correct IP detection
+// behind a reverse proxy (fixes ERR_ERL_UNEXPECTED_X_FORWARDED_FOR).
+app.set('trust proxy', 1);
+
 // ─── Security Middleware ────────────────────────────────────────────────────
 
 // Request ID assignment
