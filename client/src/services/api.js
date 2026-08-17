@@ -16,13 +16,28 @@ const api = axios.create({
   },
 });
 
+// Attach Authorization Bearer token from localStorage for reliable cross-site authentication
+// (Bypasses third-party cookie restrictions between Vercel and Render)
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 // Handle 401 responses — redirect to login on unauthorized API calls if not already on auth page
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
       const currentPath = window.location.pathname;
-      if (currentPath !== '/login' && currentPath !== '/register') {
+      if (currentPath !== '/login' && currentPath !== '/register' && currentPath !== '/verify-email') {
         window.location.href = '/login';
       }
     }
