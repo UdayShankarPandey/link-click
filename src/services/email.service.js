@@ -1,5 +1,4 @@
 import { Resend } from 'resend';
-import nodemailer from 'nodemailer';
 import env from '../config/env.js';
 import { logger } from '../utils/logger.js';
 
@@ -21,50 +20,41 @@ const buildHtml = (verificationUrl) => `
 `;
 
 /**
- * Build the SMTP "from" address.
- * - If EMAIL_FROM is explicitly set and not the Resend sandbox domain, use it as-is.
- * - Otherwise fall back to "Link Click <SMTP_USER>".
+ * Sends via Brevo Transactional Email HTTP API (HTTPS port 443 — never blocked by cloud providers).
+ * Requires BREVO_API_KEY with no IP restriction and a verified sender in Brevo.
  */
-const buildSender = () => {
-  const emailFrom = env.EMAIL_FROM || '';
-  if (emailFrom && !emailFrom.includes('@resend.dev')) return emailFrom;
-  return `Link Click <${env.SMTP_USER}>`;
-};
-
-/**
- * Sends via SMTP using the configured host/port/credentials.
- * Supports Gmail (smtp.gmail.com) and Brevo (smtp-relay.brevo.com).
- */
-const trySMTP = async ({ port, secure, to, subject, html, label }) => {
-  const transporter = nodemailer.createTransport({
-    host: env.SMTP_HOST || 'smtp-relay.brevo.com',
-    port,
-    secure,
-    auth: { user: env.SMTP_USER, pass: env.SMTP_PASS },
-    connectionTimeout: 15000,
-    greetingTimeout: 15000,
-    socketTimeout: 20000,
-    tls: { rejectUnauthorized: false },
+const tryBrevoAPI = async ({ to, subject, html, senderName, senderEmail }) => {
+  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      'accept': 'application/json',
+      'api-key': env.BREVO_API_KEY,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      sender: { name: senderName, email: senderEmail },
+      to: [{ email: to }],
+      subject,
+      htmlContent: html,
+    }),
   });
 
-  const info = await transporter.sendMail({
-    from: buildSender(),
-    to,
-    subject,
-    html,
-  });
+  const data = await res.json();
 
-  logger.info(`[Email SMTP:${label}] Sent to ${maskEmail(to)} (MessageId: ${info.messageId})`);
-  return info;
+  if (!res.ok) {
+    throw new Error(`Brevo API ${res.status}: ${data?.message || JSON.stringify(data)}`);
+  }
+
+  logger.info(`[Email Brevo API] Sent to ${maskEmail(to)} (ID: ${data?.messageId})`);
+  return data;
 };
 
 /**
  * Sends the email verification link to a newly registered user.
  *
  * Delivery priority:
- *   1. SMTP port 587 STARTTLS — Brevo relay preferred; falls back to Gmail SMTP
- *   2. SMTP port 465 SSL      — alternate port
- *   3. Resend API (HTTPS)     — sandbox: only delivers to account-owner email
+ *   1. Brevo HTTP API  — HTTPS port 443, works from any cloud server (Render, Vercel, etc.)
+ *   2. Resend API      — HTTPS fallback; sandbox only delivers to account-owner email
  */
 export const sendVerificationEmail = async (to, rawToken) => {
   const verificationUrl = `${env.FRONTEND_URL}/verify-email?token=${rawToken}`;
@@ -72,32 +62,26 @@ export const sendVerificationEmail = async (to, rawToken) => {
   const subject = 'Verify your Link Click email';
   const targetEmail = maskEmail(to);
 
-  // ── SMTP (Brevo / Gmail) ───────────────────────────────────────────────────
-  if (env.SMTP_USER && env.SMTP_PASS) {
-    const smtpArgs = { to, subject, html: htmlContent };
+  // Parse sender name and email from EMAIL_FROM (e.g. "Link Click <email@example.com>")
+  const fromMatch = (env.EMAIL_FROM || '').match(/^(.*?)\s*<(.+?)>$/);
+  const senderName = fromMatch?.[1]?.trim() || 'Link Click';
+  const senderEmail = fromMatch?.[2]?.trim() || env.SMTP_USER || 'noreply@example.com';
 
-    // Attempt 1: port 587 STARTTLS
+  // ── Brevo HTTP API (primary — HTTPS, never blocked) ────────────────────────
+  if (env.BREVO_API_KEY) {
     try {
-      await trySMTP({ ...smtpArgs, port: 587, secure: false, label: '587/STARTTLS' });
+      await tryBrevoAPI({ to, subject, html: htmlContent, senderName, senderEmail });
       return;
     } catch (error_) {
-      logger.warn(`[Email SMTP] Port 587 failed for ${targetEmail}: ${error_.message}`);
-    }
-
-    // Attempt 2: port 465 SSL
-    try {
-      await trySMTP({ ...smtpArgs, port: 465, secure: true, label: '465/SSL' });
-      return;
-    } catch (error_) {
-      logger.warn(`[Email SMTP] Port 465 failed for ${targetEmail}: ${error_.message}`);
+      logger.warn(`[Email Brevo API] Failed for ${targetEmail}: ${error_.message}`);
       if (!env.RESEND_API_KEY) {
-        throw new Error(`SMTP delivery failed on both port 587 and 465: ${error_.message}`);
+        throw new Error(`Brevo API delivery failed: ${error_.message}`);
       }
-      logger.warn('[Email SMTP] Both SMTP ports failed — falling back to Resend API.');
+      logger.warn('[Email Brevo API] Falling back to Resend API.');
     }
   }
 
-  // ── Resend API (HTTPS — sandbox restricts delivery to account-owner email) ─
+  // ── Resend API (fallback — sandbox restricts delivery to account-owner email) ─
   if (env.RESEND_API_KEY) {
     const resend = new Resend(env.RESEND_API_KEY);
     const { data, error } = await resend.emails.send({
@@ -118,5 +102,5 @@ export const sendVerificationEmail = async (to, rawToken) => {
     return;
   }
 
-  throw new Error('Email delivery is not configured. Set SMTP_USER & SMTP_PASS or RESEND_API_KEY.');
+  throw new Error('Email delivery is not configured. Set BREVO_API_KEY or RESEND_API_KEY.');
 };
