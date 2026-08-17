@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getHealth, getReadiness, smtpTest } from '../controllers/health.controller.js';
+import { getHealth, getReadiness } from '../controllers/health.controller.js';
 
 const router = Router();
 
@@ -90,8 +90,5 @@ router.get('/', getHealth);
  *         description: System is not ready
  */
 router.get('/ready', getReadiness);
-
-// TEMPORARY: SMTP diagnostic — remove after email delivery is confirmed
-router.get('/smtp-test', smtpTest);
 
 export default router;
