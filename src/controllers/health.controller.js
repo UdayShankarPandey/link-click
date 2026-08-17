@@ -22,6 +22,14 @@ export const smtpTest = asyncHandler(async (req, res) => {
     return res.status(403).json({ success: false, message: 'Forbidden' });
   }
 
+  // Get this server's outbound public IP so we can authorize it in Brevo
+  let serverIp = 'unknown';
+  try {
+    const ipRes = await fetch('https://api.ipify.org?format=json');
+    const ipData = await ipRes.json();
+    serverIp = ipData.ip;
+  } catch (_) { /* ignore */ }
+
   const host = env.SMTP_HOST || 'smtp-relay.brevo.com';
   const results = [];
 
@@ -47,6 +55,7 @@ export const smtpTest = asyncHandler(async (req, res) => {
   }
 
   return res.json({
+    serverIp,
     host, user: env.SMTP_USER,
     passSet: !!env.SMTP_PASS, from: env.EMAIL_FROM,
     to, results,
