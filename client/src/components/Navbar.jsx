@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Home, PlusSquare, User, LogOut, LogIn, UserPlus, Menu, X, Shield } from 'lucide-react';
+import { useNotifications } from '../context/NotificationContext';
+import { Home, PlusSquare, User, LogOut, LogIn, UserPlus, Menu, X, Shield, Bell } from 'lucide-react';
 import toast from 'react-hot-toast';
 import logomark from '../assets/branding/logomark.png';
+import NotificationDropdown from './NotificationDropdown';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
+  const { unreadCount, toggleDropdown } = useNotifications();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -73,6 +76,24 @@ const Navbar = () => {
                     <span>Dashboard</span>
                   </Link>
                 )}
+
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={toggleDropdown}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber text-text-secondary hover:text-text-primary hover:bg-surface-raised`}
+                    aria-label="Notifications"
+                  >
+                    <Bell className="h-4 w-4" />
+                    <span>Notifications</span>
+                    {unreadCount > 0 && (
+                      <span className="absolute top-1.5 left-5 inline-flex items-center justify-center min-w-[16px] h-[16px] text-[10px] font-bold text-white bg-amber rounded-full px-1">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
+                  </button>
+                  <NotificationDropdown />
+                </div>
 
                 <div className="w-px h-6 bg-border mx-1"></div>
 
@@ -150,6 +171,30 @@ const Navbar = () => {
                     <span>Founder Dashboard</span>
                   </Link>
                 )}
+                
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={toggleDropdown}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber text-text-secondary hover:text-text-primary hover:bg-surface-raised"
+                    aria-label="Notifications"
+                  >
+                    <div className="relative flex items-center">
+                      <Bell className="h-4 w-4" />
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-1.5 -right-2.5 inline-flex items-center justify-center min-w-[16px] h-[16px] text-[10px] font-bold text-white bg-amber rounded-full px-1">
+                          {unreadCount > 99 ? '99+' : unreadCount}
+                        </span>
+                      )}
+                    </div>
+                    <span className="ml-1">Notifications</span>
+                  </button>
+                  {/* Reuse the dropdown but positioned correctly for mobile */}
+                  <div className="relative">
+                    <NotificationDropdown />
+                  </div>
+                </div>
+
                 <div className="border-t border-border my-2"></div>
                 <button
                   type="button"

@@ -2,6 +2,7 @@ import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
+import { NotificationProvider } from './context/NotificationContext';
 
 // Components
 import Navbar from './components/Navbar';
@@ -34,8 +35,9 @@ const App = () => {
   return (
     <Router>
       <AuthProvider>
-        <div className="min-h-screen bg-canvas text-text-primary flex flex-col font-sans">
-          <Navbar />
+        <NotificationProvider>
+          <div className="min-h-screen bg-canvas text-text-primary flex flex-col font-sans">
+            <Navbar />
           
           <main className="flex-1">
             <Suspense fallback={<div className="max-w-5xl mx-auto px-4 py-8"><Skeleton variant="post" count={2} /></div>}>
@@ -132,6 +134,7 @@ const App = () => {
             },
           }}
         />
+        </NotificationProvider>
       </AuthProvider>
     </Router>
   );
