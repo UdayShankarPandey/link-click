@@ -164,7 +164,8 @@ export const toggleLinkUser = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const isLinked = currentUser.links.includes(targetUserId);
+    let isLinked = currentUser.links.includes(targetUserId);
+    let shouldNotifyLink = false;
 
     if (isLinked) {
       // Unlink
@@ -174,16 +175,19 @@ export const toggleLinkUser = async (req, res) => {
       // Link
       currentUser.links.push(targetUserId);
       targetUser.linkedBy.push(currentUserId);
-      
+      shouldNotifyLink = true;
+    }
+
+    await currentUser.save();
+    await targetUser.save();
+    
+    if (shouldNotifyLink) {
       await createNotification({
         recipient: targetUserId,
         actor: currentUserId,
         type: 'user_link'
       });
     }
-
-    await currentUser.save();
-    await targetUser.save();
 
     res.status(200).json({ 
       message: isLinked ? 'Unlinked successfully' : 'Linked successfully',

@@ -718,14 +718,15 @@ This project is licensed under the **MIT License**.
 
 ---
 
-## 🔔 Sprint 12 Phase 1: Notification Foundation & Architecture
+## 🔔 Sprint 12: Notification System (Phases 1 & 2)
 
-The backend foundation for the In-App Notifications System is designed for scalability and performance. 
+The backend foundation for the In-App Notifications System is designed for scalability, performance, and transactional safety. 
 It supports multiple notification types (`post_like`, `post_comment`, `post_reaction`, `user_link`) while intelligently deduplicating events to prevent notification spam.
 
-**Key Features & API Contracts:**
-- **Data Model (`Notification.js`)**: Tracks `recipient`, `actor`, `type`, `post`, `commentId`, and `isRead` status.
-- **Service (`notification.service.js`)**: Centralizes creation logic and implements type-aware deduplication. For example, repeated likes from the same user on the same post will not create duplicate unread notifications, whereas separate comments will.
+**Phase 2 Hardening & API Contracts:**
+- **Data Model (`Notification.js`)**: Tracks `recipient`, `actor`, `type`, `post`, `commentId`, `metadata.reactionType`, and `isRead` status.
+- **Service (`notification.service.js`)**: Centralizes creation logic and implements type-aware, reaction-aware atomic deduplication. It utilizes `findOneAndUpdate` with `upsert` to guarantee race-condition safety during concurrent rapid user interactions. For example, changing a reaction (❤️ → 👍) creates a distinct notification context, whereas repeatedly mashing ❤️ safely deduplicates into a single unread notification.
+- **Event Flow Safety**: Notifications are explicitly triggered *after* successful database commits on the originating model (e.g., Post or User). A failure in notification creation will deliberately fail gracefully and return `null`, ensuring the primary interaction (e.g., a like) is never rolled back or corrupted by a notification failure. Self-notifications are strictly blocked.
 - **Protected Endpoints**:
   - `GET /api/notifications` — Fetches paginated, rich notifications.
   - `GET /api/notifications/unread-count` — Returns the user's current unread count.

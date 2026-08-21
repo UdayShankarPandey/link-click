@@ -263,21 +263,26 @@ export const likePost = async (req, res) => {
     const userId = req.user._id;
     const index = post.likes.indexOf(userId);
 
+    let shouldNotifyLike = false;
     if (index === -1) {
       // Like the post
       post.likes.push(userId);
-      await createNotification({
-        recipient: post.user,
-        actor: userId,
-        type: 'post_like',
-        post: post._id
-      });
+      shouldNotifyLike = true;
     } else {
       // Unlike the post
       post.likes.splice(index, 1);
     }
 
     await post.save();
+    
+    if (shouldNotifyLike) {
+      await createNotification({
+        recipient: post.user,
+        actor: userId,
+        type: 'post_like',
+        post: post._id
+      });
+    }
     res.status(200).json({
       message: index === -1 ? 'Post liked successfully.' : 'Post unliked successfully.',
       likesCount: post.likes.length,
@@ -646,6 +651,7 @@ export const reactToPost = async (req, res) => {
     );
 
     let activeReaction = null;
+    let shouldNotifyReaction = false;
 
     if (existingIndex > -1) {
       const existingReaction = post.reactions[existingIndex];
@@ -656,12 +662,18 @@ export const reactToPost = async (req, res) => {
         // Replace with new reaction type
         post.reactions[existingIndex].type = type;
         activeReaction = type;
+        shouldNotifyReaction = true;
       }
     } else {
       // Add new reaction
       post.reactions.push({ user: userId, type });
       activeReaction = type;
-      
+      shouldNotifyReaction = true;
+    }
+
+    await post.save();
+    
+    if (shouldNotifyReaction) {
       await createNotification({
         recipient: post.user,
         actor: userId,
@@ -670,8 +682,6 @@ export const reactToPost = async (req, res) => {
         metadata: { reactionType: type }
       });
     }
-
-    await post.save();
 
     const groupedCounts = {
       heart: 0,

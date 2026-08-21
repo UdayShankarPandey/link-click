@@ -2,16 +2,14 @@ import { jest } from '@jest/globals';
 import request from 'supertest';
 
 // Mock models
-const mockFindOne = jest.fn();
-const mockCreate = jest.fn();
+const mockFindOneAndUpdate = jest.fn();
 const mockFind = jest.fn();
 const mockCountDocuments = jest.fn();
 const mockUpdateMany = jest.fn();
 
 jest.unstable_mockModule('../models/Notification.js', () => ({
   default: {
-    findOne: mockFindOne,
-    create: mockCreate,
+    findOneAndUpdate: mockFindOneAndUpdate,
     find: mockFind,
     countDocuments: mockCountDocuments,
     updateMany: mockUpdateMany
@@ -36,12 +34,21 @@ describe('Notification Service & API', () => {
       });
 
       expect(result).toBeNull();
-      expect(mockCreate).not.toHaveBeenCalled();
+      expect(mockFindOneAndUpdate).not.toHaveBeenCalled();
     });
 
-    it('should create post_like notification if no identical unread exists', async () => {
-      mockFindOne.mockResolvedValue(null);
-      mockCreate.mockResolvedValue({ _id: 'notif-1' });
+    it('should reject missing required fields', async () => {
+      const result = await createNotification({
+        actor: 'user-1',
+        type: 'post_like'
+      });
+
+      expect(result).toBeNull();
+      expect(mockFindOneAndUpdate).not.toHaveBeenCalled();
+    });
+
+    it('should create/upsert post_like notification via findOneAndUpdate', async () => {
+      mockFindOneAndUpdate.mockResolvedValue({ _id: 'notif-1' });
 
       const result = await createNotification({
         recipient: 'user-1',
@@ -50,36 +57,65 @@ describe('Notification Service & API', () => {
         post: 'post-1'
       });
 
-      expect(mockFindOne).toHaveBeenCalledWith({
-        recipient: 'user-1',
-        actor: 'user-2',
-        type: 'post_like',
-        post: 'post-1',
-        isRead: false
-      });
-      expect(mockCreate).toHaveBeenCalled();
+      expect(mockFindOneAndUpdate).toHaveBeenCalledWith(
+        {
+          recipient: 'user-1',
+          actor: 'user-2',
+          type: 'post_like',
+          post: 'post-1',
+          isRead: false
+        },
+        expect.objectContaining({
+          $setOnInsert: expect.objectContaining({ type: 'post_like' })
+        }),
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
       expect(result).not.toBeNull();
     });
 
-    it('should suppress post_like notification if identical unread exists', async () => {
-      mockFindOne.mockResolvedValue({ _id: 'notif-existing' });
+    it('should reject post_reaction with invalid reactionType', async () => {
+      const result = await createNotification({
+        recipient: 'user-1',
+        actor: 'user-2',
+        type: 'post_reaction',
+        post: 'post-1',
+        metadata: { reactionType: 'invalid_type' }
+      });
+
+      expect(result).toBeNull();
+      expect(mockFindOneAndUpdate).not.toHaveBeenCalled();
+    });
+    
+    it('should create post_reaction with valid reactionType', async () => {
+      mockFindOneAndUpdate.mockResolvedValue({ _id: 'notif-reaction' });
 
       const result = await createNotification({
         recipient: 'user-1',
         actor: 'user-2',
-        type: 'post_like',
-        post: 'post-1'
+        type: 'post_reaction',
+        post: 'post-1',
+        metadata: { reactionType: 'heart' }
       });
 
-      expect(mockCreate).not.toHaveBeenCalled();
-      expect(result._id).toBe('notif-existing');
+      expect(mockFindOneAndUpdate).toHaveBeenCalledWith(
+        {
+          recipient: 'user-1',
+          actor: 'user-2',
+          type: 'post_reaction',
+          post: 'post-1',
+          'metadata.reactionType': 'heart',
+          isRead: false
+        },
+        expect.any(Object),
+        expect.any(Object)
+      );
+      expect(result).not.toBeNull();
     });
 
     it('should NOT suppress post_comment if commentId is different', async () => {
-      mockFindOne.mockResolvedValue(null);
-      mockCreate.mockResolvedValue({ _id: 'notif-comment' });
+      mockFindOneAndUpdate.mockResolvedValue({ _id: 'notif-comment' });
 
-      const result = await createNotification({
+      await createNotification({
         recipient: 'user-1',
         actor: 'user-2',
         type: 'post_comment',
@@ -87,19 +123,18 @@ describe('Notification Service & API', () => {
         commentId: 'comment-abc'
       });
 
-      expect(mockFindOne).toHaveBeenCalledWith({
-        recipient: 'user-1',
-        actor: 'user-2',
-        type: 'post_comment',
-        post: 'post-1',
-        commentId: 'comment-abc',
-        isRead: false
-      });
-      expect(mockCreate).toHaveBeenCalled();
+      expect(mockFindOneAndUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'post_comment',
+          commentId: 'comment-abc'
+        }),
+        expect.any(Object),
+        expect.any(Object)
+      );
     });
     
-    it('should suppress user_link notification if identical unread exists', async () => {
-      mockFindOne.mockResolvedValue({ _id: 'notif-link' });
+    it('should handle user_link notification deduplication', async () => {
+      mockFindOneAndUpdate.mockResolvedValue({ _id: 'notif-link' });
 
       await createNotification({
         recipient: 'user-1',
@@ -107,13 +142,16 @@ describe('Notification Service & API', () => {
         type: 'user_link'
       });
 
-      expect(mockFindOne).toHaveBeenCalledWith({
-        recipient: 'user-1',
-        actor: 'user-2',
-        type: 'user_link',
-        isRead: false
-      });
-      expect(mockCreate).not.toHaveBeenCalled();
+      expect(mockFindOneAndUpdate).toHaveBeenCalledWith(
+        {
+          recipient: 'user-1',
+          actor: 'user-2',
+          type: 'user_link',
+          isRead: false
+        },
+        expect.any(Object),
+        expect.any(Object)
+      );
     });
   });
 

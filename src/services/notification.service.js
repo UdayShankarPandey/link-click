@@ -15,6 +15,11 @@ export const createNotification = async (data) => {
   try {
     const { recipient, actor, type, post, commentId, metadata } = data;
 
+    if (!recipient || !actor || !type) {
+      logger.warn('Notification creation failed: missing required fields');
+      return null;
+    }
+
     // Users should not receive notifications for their own actions
     if (recipient.toString() === actor.toString()) {
       return null;
@@ -47,24 +52,29 @@ export const createNotification = async (data) => {
       return null;
     }
 
-    // Check for existing unread notification matching the deduplication criteria
-    const existingUnread = await Notification.findOne(query);
-
-    if (existingUnread) {
-      // Instead of creating a new notification, we could update the createdAt timestamp
-      // to bump it to the top, but for now we simply suppress the duplicate to avoid spam.
-      return existingUnread;
+    if (type === 'post_reaction') {
+      const allowedReactions = ['heart', 'thumbs_up', 'laugh', 'surprised', 'sad'];
+      if (!metadata?.reactionType || !allowedReactions.includes(metadata.reactionType)) {
+        logger.warn(`Notification creation failed: invalid reaction type ${metadata?.reactionType}`);
+        return null;
+      }
     }
 
-    // Create the new notification
-    const notification = await Notification.create({
-      recipient,
-      actor,
-      type,
-      post,
-      commentId,
-      metadata
-    });
+    // Atomic deduplication & creation to avoid concurrency race conditions
+    const notification = await Notification.findOneAndUpdate(
+      query,
+      {
+        $setOnInsert: {
+          recipient,
+          actor,
+          type,
+          post,
+          commentId,
+          metadata
+        }
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
 
     return notification;
   } catch (error) {
