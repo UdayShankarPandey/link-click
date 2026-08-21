@@ -15,17 +15,105 @@ export const NotificationProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-  // Fetch unread count when user authenticates
+  // SSE Connection, Fetch unread count, and Reconnect logic
   useEffect(() => {
-    if (user) {
-      fetchUnreadCount();
-    } else {
+    let isMounted = true;
+    let abortController = new AbortController();
+    let reconnectTimeout = null;
+    let reconnectAttempts = 0;
+
+    if (!user) {
       setUnreadCount(0);
       setNotifications([]);
       setPage(1);
       setHasMore(true);
       setIsOpen(false);
+      return;
     }
+
+    const connectSSE = async () => {
+      if (!isMounted) return;
+
+      try {
+        const token = localStorage.getItem('auth_token');
+        let rawBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+        if (rawBaseUrl.endsWith('/')) rawBaseUrl = rawBaseUrl.slice(0, -1);
+        if (!rawBaseUrl.endsWith('/api')) rawBaseUrl = `${rawBaseUrl}/api`;
+
+        const response = await fetch(`${rawBaseUrl}/notifications/stream`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          signal: abortController.signal
+        });
+
+        if (!response.ok) {
+          throw new Error(`SSE error: ${response.status}`);
+        }
+
+        // Reset backoff on successful connection
+        reconnectAttempts = 0; 
+        
+        // Synchronize state on connect/reconnect to catch missed notifications
+        fetchUnreadCount();
+        if (isOpen) {
+          fetchNotifications(1);
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          
+          buffer += decoder.decode(value, { stream: true });
+          const parts = buffer.split('\n\n');
+          buffer = parts.pop(); // Keep incomplete chunks
+
+          for (const part of parts) {
+            if (part.startsWith('data: ')) {
+              const dataStr = part.slice(6);
+              try {
+                const payload = JSON.parse(dataStr);
+                if (payload.type === 'notification:new') {
+                  const newNotif = payload.notification;
+                  
+                  // Deduplicate and insert
+                  setNotifications(prev => {
+                    if (prev.some(n => n._id === newNotif._id)) return prev;
+                    return [newNotif, ...prev];
+                  });
+                  setUnreadCount(prev => prev + 1);
+                }
+              } catch (e) {
+                console.error('Failed to parse SSE payload', e);
+              }
+            }
+          }
+        }
+      } catch (error) {
+        if (error.name === 'AbortError') return;
+        console.error('SSE connection dropped:', error);
+      }
+
+      // Reconnect with backoff
+      if (isMounted) {
+        const backoff = Math.min(1000 * (2 ** reconnectAttempts), 30000);
+        reconnectAttempts++;
+        reconnectTimeout = setTimeout(connectSSE, backoff);
+      }
+    };
+
+    connectSSE();
+
+    return () => {
+      isMounted = false;
+      abortController.abort();
+      if (reconnectTimeout) clearTimeout(reconnectTimeout);
+    };
   }, [user]);
 
   const fetchUnreadCount = async () => {

@@ -6,13 +6,21 @@ const mockFindOneAndUpdate = jest.fn();
 const mockFind = jest.fn();
 const mockCountDocuments = jest.fn();
 const mockUpdateMany = jest.fn();
+const mockFindById = jest.fn().mockReturnValue({
+  populate: jest.fn().mockReturnValue({
+    populate: jest.fn().mockReturnValue({
+      lean: jest.fn().mockResolvedValue({ _id: 'notif-mocked' })
+    })
+  })
+});
 
 jest.unstable_mockModule('../models/Notification.js', () => ({
   default: {
     findOneAndUpdate: mockFindOneAndUpdate,
     find: mockFind,
     countDocuments: mockCountDocuments,
-    updateMany: mockUpdateMany
+    updateMany: mockUpdateMany,
+    findById: mockFindById
   }
 }));
 
@@ -48,7 +56,7 @@ describe('Notification Service & API', () => {
     });
 
     it('should create/upsert post_like notification via findOneAndUpdate', async () => {
-      mockFindOneAndUpdate.mockResolvedValue({ _id: 'notif-1' });
+      mockFindOneAndUpdate.mockResolvedValue({ value: { _id: 'notif-1' }, lastErrorObject: { updatedExisting: false } });
 
       const result = await createNotification({
         recipient: 'user-1',
@@ -68,7 +76,7 @@ describe('Notification Service & API', () => {
         expect.objectContaining({
           $setOnInsert: expect.objectContaining({ type: 'post_like' })
         }),
-        { upsert: true, new: true, setDefaultsOnInsert: true }
+        { upsert: true, new: true, setDefaultsOnInsert: true, includeResultMetadata: true }
       );
       expect(result).not.toBeNull();
     });
@@ -87,7 +95,7 @@ describe('Notification Service & API', () => {
     });
     
     it('should create post_reaction with valid reactionType', async () => {
-      mockFindOneAndUpdate.mockResolvedValue({ _id: 'notif-reaction' });
+      mockFindOneAndUpdate.mockResolvedValue({ value: { _id: 'notif-reaction' }, lastErrorObject: { updatedExisting: false } });
 
       const result = await createNotification({
         recipient: 'user-1',
@@ -113,7 +121,7 @@ describe('Notification Service & API', () => {
     });
 
     it('should NOT suppress post_comment if commentId is different', async () => {
-      mockFindOneAndUpdate.mockResolvedValue({ _id: 'notif-comment' });
+      mockFindOneAndUpdate.mockResolvedValue({ value: { _id: 'notif-comment' }, lastErrorObject: { updatedExisting: false } });
 
       await createNotification({
         recipient: 'user-1',
@@ -134,7 +142,7 @@ describe('Notification Service & API', () => {
     });
     
     it('should handle user_link notification deduplication', async () => {
-      mockFindOneAndUpdate.mockResolvedValue({ _id: 'notif-link' });
+      mockFindOneAndUpdate.mockResolvedValue({ value: { _id: 'notif-link' }, lastErrorObject: { updatedExisting: false } });
 
       await createNotification({
         recipient: 'user-1',

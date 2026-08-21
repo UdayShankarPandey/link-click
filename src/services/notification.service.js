@@ -1,6 +1,42 @@
 import Notification from '../models/Notification.js';
 import { logger } from '../utils/logger.js';
 
+// Connection manager for SSE
+export const clients = new Map();
+
+export const addClient = (userId, res) => {
+  const idStr = userId.toString();
+  if (!clients.has(idStr)) {
+    clients.set(idStr, new Set());
+  }
+  clients.get(idStr).add(res);
+
+  res.on('close', () => {
+    const userClients = clients.get(idStr);
+    if (userClients) {
+      userClients.delete(res);
+      if (userClients.size === 0) {
+        clients.delete(idStr);
+      }
+    }
+  });
+};
+
+export const emitToUser = (userId, payload) => {
+  const userClients = clients.get(userId.toString());
+  if (userClients) {
+    const data = `data: ${JSON.stringify(payload)}\n\n`;
+    userClients.forEach(res => res.write(data));
+  }
+};
+
+// Lightweight heartbeat/keep-alive to prevent broken connections
+setInterval(() => {
+  clients.forEach((userClients) => {
+    userClients.forEach(res => res.write(':\n\n'));
+  });
+}, 30000).unref();
+
 /**
  * Creates a notification if it passes deduplication rules.
  * @param {Object} data - The notification payload
@@ -61,7 +97,7 @@ export const createNotification = async (data) => {
     }
 
     // Atomic deduplication & creation to avoid concurrency race conditions
-    const notification = await Notification.findOneAndUpdate(
+    const result = await Notification.findOneAndUpdate(
       query,
       {
         $setOnInsert: {
@@ -73,8 +109,24 @@ export const createNotification = async (data) => {
           metadata
         }
       },
-      { upsert: true, new: true, setDefaultsOnInsert: true }
+      { upsert: true, new: true, setDefaultsOnInsert: true, includeResultMetadata: true }
     );
+
+    const notification = result.value;
+    const isNew = !result.lastErrorObject?.updatedExisting;
+
+    if (isNew) {
+      // Must populate to match REST endpoint structure exactly
+      const populatedNotification = await Notification.findById(notification._id)
+        .populate('actor', 'name email role profilePicUrl')
+        .populate('post', 'title imageUrl postType status')
+        .lean();
+        
+      emitToUser(recipient, {
+        type: 'notification:new',
+        notification: populatedNotification
+      });
+    }
 
     return notification;
   } catch (error) {

@@ -1,5 +1,16 @@
 import Notification from '../models/Notification.js';
 import { logger } from '../utils/logger.js';
+import { addClient } from '../services/notification.service.js';
+
+// Setup SSE connection
+export const streamNotifications = (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+
+  addClient(req.user._id, res);
+};
 
 // Get paginated notifications for the authenticated user
 export const getNotifications = async (req, res) => {
