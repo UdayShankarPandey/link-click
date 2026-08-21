@@ -715,3 +715,26 @@ For comprehensive details on postponed features and long-term backlog items, see
 Contributions, bug reports, and feature requests are welcome!
 
 This project is licensed under the **MIT License**.
+
+---
+
+## 🔔 Sprint 12 Phase 1: Notification Foundation & Architecture
+
+The backend foundation for the In-App Notifications System is designed for scalability and performance. 
+It supports multiple notification types (`post_like`, `post_comment`, `post_reaction`, `user_link`) while intelligently deduplicating events to prevent notification spam.
+
+**Key Features & API Contracts:**
+- **Data Model (`Notification.js`)**: Tracks `recipient`, `actor`, `type`, `post`, `commentId`, and `isRead` status.
+- **Service (`notification.service.js`)**: Centralizes creation logic and implements type-aware deduplication. For example, repeated likes from the same user on the same post will not create duplicate unread notifications, whereas separate comments will.
+- **Protected Endpoints**:
+  - `GET /api/notifications` — Fetches paginated, rich notifications.
+  - `GET /api/notifications/unread-count` — Returns the user's current unread count.
+  - `PUT /api/notifications/:id/read` — Marks a specific notification as read.
+  - `PUT /api/notifications/read-all` — Marks all unread notifications as read.
+- **Indexes**: Query patterns are heavily optimized with compound indexes (e.g., `{ recipient: 1, createdAt: -1 }`).
+
+### 🚨 Known Limitations & Technical Debt (Multer OOM Risk)
+During the Sprint 12 Audit, a severe vulnerability was identified in the current upload architecture:
+- **Issue**: `post.routes.js` relies on `multer.memoryStorage()` with a 50MB file limit for image uploads.
+- **Risk**: A small burst of concurrent large uploads will buffer entirely in RAM, leading to immediate Out-Of-Memory (OOM) crashes and server restarts on standard cloud container instances.
+- **Resolution Path**: This must be addressed in a dedicated technical debt task by refactoring `multer` to use `diskStorage` or direct-to-cloud streams prior to scaling production traffic.

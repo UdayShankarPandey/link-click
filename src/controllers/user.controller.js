@@ -1,6 +1,7 @@
 import { logger } from '../utils/logger.js';
 import User from '../models/User.js';
 import Post from '../models/Post.js';
+import { createNotification } from '../services/notification.service.js';
 
 // Create a new user (Founder only)
 export const createUser = async (req, res) => {
@@ -173,6 +174,12 @@ export const toggleLinkUser = async (req, res) => {
       // Link
       currentUser.links.push(targetUserId);
       targetUser.linkedBy.push(currentUserId);
+      
+      await createNotification({
+        recipient: targetUserId,
+        actor: currentUserId,
+        type: 'user_link'
+      });
     }
 
     await currentUser.save();

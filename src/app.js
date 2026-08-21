@@ -10,6 +10,7 @@ import uploadRoutes from './routes/upload.routes.js';
 import postRoutes from './routes/post.routes.js';
 import dashboardRoutes from './routes/dashboard.routes.js';
 import healthRoutes from './routes/health.routes.js';
+import notificationRoutes from './routes/notification.routes.js';
 import errorMiddleware from './middleware/error.middleware.js';
 import morgan from 'morgan';
 import { morganStream } from './utils/logger.js';
@@ -78,6 +79,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Health check routes
 app.use('/health', healthRoutes);

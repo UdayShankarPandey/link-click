@@ -7,6 +7,7 @@ import {
   TRENDING_COMMENT_WEIGHT,
   TRENDING_VIEW_WEIGHT
 } from '../config/constants.js';
+import { createNotification } from '../services/notification.service.js';
 
 // Max pagination limit to prevent abuse
 const MAX_LIMIT = 50;
@@ -265,6 +266,12 @@ export const likePost = async (req, res) => {
     if (index === -1) {
       // Like the post
       post.likes.push(userId);
+      await createNotification({
+        recipient: post.user,
+        actor: userId,
+        type: 'post_like',
+        post: post._id
+      });
     } else {
       // Unlike the post
       post.likes.splice(index, 1);
@@ -307,6 +314,15 @@ export const commentPost = async (req, res) => {
 
     post.comments.push(newComment);
     await post.save();
+
+    const addedComment = post.comments[post.comments.length - 1];
+    await createNotification({
+      recipient: post.user,
+      actor: req.user._id,
+      type: 'post_comment',
+      post: post._id,
+      commentId: addedComment._id
+    });
 
     const updatedPost = await Post.findById(post._id)
       .populate('user', 'name email role')
@@ -645,6 +661,14 @@ export const reactToPost = async (req, res) => {
       // Add new reaction
       post.reactions.push({ user: userId, type });
       activeReaction = type;
+      
+      await createNotification({
+        recipient: post.user,
+        actor: userId,
+        type: 'post_reaction',
+        post: post._id,
+        metadata: { reactionType: type }
+      });
     }
 
     await post.save();
