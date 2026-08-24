@@ -45,7 +45,7 @@ const tryBrevoAPI = async ({ to, subject, html, senderName, senderEmail }) => {
     throw new Error(`Brevo API ${res.status}: ${data?.message || JSON.stringify(data)}`);
   }
 
-  logger.info(`[Email Brevo API] Sent to ${maskEmail(to)} (ID: ${data?.messageId})`);
+  logger.info(`[Email Brevo API] Sent verification email (ID: ${data?.messageId})`);
   return data;
 };
 
@@ -62,10 +62,18 @@ export const sendVerificationEmail = async (to, rawToken) => {
   const subject = 'Verify your Link Click email';
   const targetEmail = maskEmail(to);
 
-  // Parse sender name and email from EMAIL_FROM (e.g. "Link Click <email@example.com>")
-  const fromMatch = (env.EMAIL_FROM || '').match(/^(.*?)\s*<(.+?)>$/);
-  const senderName = fromMatch?.[1]?.trim() || 'Link Click';
-  const senderEmail = fromMatch?.[2]?.trim() || env.SMTP_USER || 'noreply@example.com';
+  let senderName = 'Link Click';
+  let senderEmail = env.SMTP_USER || 'noreply@example.com';
+  const emailFrom = env.EMAIL_FROM || '';
+  const bracketStart = emailFrom.indexOf('<');
+  const bracketEnd = emailFrom.indexOf('>');
+  
+  if (bracketStart > -1 && bracketEnd > bracketStart) {
+    senderName = emailFrom.slice(0, bracketStart).trim() || senderName;
+    senderEmail = emailFrom.slice(bracketStart + 1, bracketEnd).trim() || senderEmail;
+  } else if (emailFrom) {
+    senderEmail = emailFrom.trim();
+  }
 
   // ── Brevo HTTP API (primary — HTTPS, never blocked) ────────────────────────
   if (env.BREVO_API_KEY) {
@@ -73,7 +81,7 @@ export const sendVerificationEmail = async (to, rawToken) => {
       await tryBrevoAPI({ to, subject, html: htmlContent, senderName, senderEmail });
       return;
     } catch (error_) {
-      logger.warn(`[Email Brevo API] Failed for ${targetEmail}: ${error_.message}`);
+      logger.warn(`[Email Brevo API] Failed delivery attempt: ${error_.message}`);
       if (!env.RESEND_API_KEY) {
         throw new Error(`Brevo API delivery failed: ${error_.message}`);
       }
@@ -98,7 +106,7 @@ export const sendVerificationEmail = async (to, rawToken) => {
       throw new Error(error.message || 'Email delivery failed via Resend');
     }
 
-    logger.info(`[Email Resend] Sent to ${targetEmail} (ID: ${data?.id})`);
+    logger.info(`[Email Resend] Sent verification email (ID: ${data?.id})`);
     return;
   }
 

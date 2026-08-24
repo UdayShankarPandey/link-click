@@ -1,9 +1,25 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext, useMemo, useCallback, useRef } from 'react';
 import { getUnreadCount, getNotifications, markAsRead, markAllAsRead } from '../services/notificationApi';
 import { useAuth } from './AuthContext';
 import toast from 'react-hot-toast';
 
 const NotificationContext = createContext(null);
+
+const processSSEChunk = (dataStr, setNotifications, setUnreadCount) => {
+  try {
+    const payload = JSON.parse(dataStr);
+    if (payload.type === 'notification:new') {
+      const newNotif = payload.notification;
+      setNotifications(prev => {
+        if (prev.some(n => n._id === newNotif._id)) return prev;
+        return [newNotif, ...prev];
+      });
+      setUnreadCount(prev => prev + 1);
+    }
+  } catch (e) {
+    console.error('Failed to parse SSE payload', e);
+  }
+};
 
 export const NotificationProvider = ({ children }) => {
   const { user } = useAuth();
@@ -15,7 +31,46 @@ export const NotificationProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-  // SSE Connection, Fetch unread count, and Reconnect logic
+  const isOpenRef = useRef(isOpen);
+  useEffect(() => {
+    isOpenRef.current = isOpen;
+  }, [isOpen]);
+
+  const fetchUnreadCount = useCallback(async () => {
+    try {
+      const data = await getUnreadCount();
+      if (data?.success) {
+        setUnreadCount(data.count || 0);
+      }
+    } catch (error) {
+      console.error('Failed to fetch unread count:', error);
+    }
+  }, []);
+
+  const fetchNotifications = useCallback(async (pageNum = 1) => {
+    try {
+      setLoading(true);
+      const data = await getNotifications(pageNum, 10);
+      
+      if (data?.success) {
+        if (pageNum === 1) {
+          setNotifications(data.notifications || []);
+        } else {
+          setNotifications(prev => [...prev, ...(data.notifications || [])]);
+        }
+        
+        setPage(data.page || pageNum);
+        setHasMore(data.page < (data.totalPages || 1));
+      }
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error);
+      toast.error('Failed to load notifications');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // SSE Connection and Reconnect logic
   useEffect(() => {
     let isMounted = true;
     let abortController = new AbortController();
@@ -57,7 +112,7 @@ export const NotificationProvider = ({ children }) => {
         
         // Synchronize state on connect/reconnect to catch missed notifications
         fetchUnreadCount();
-        if (isOpen) {
+        if (isOpenRef.current) {
           fetchNotifications(1);
         }
 
@@ -75,22 +130,7 @@ export const NotificationProvider = ({ children }) => {
 
           for (const part of parts) {
             if (part.startsWith('data: ')) {
-              const dataStr = part.slice(6);
-              try {
-                const payload = JSON.parse(dataStr);
-                if (payload.type === 'notification:new') {
-                  const newNotif = payload.notification;
-                  
-                  // Deduplicate and insert
-                  setNotifications(prev => {
-                    if (prev.some(n => n._id === newNotif._id)) return prev;
-                    return [newNotif, ...prev];
-                  });
-                  setUnreadCount(prev => prev + 1);
-                }
-              } catch (e) {
-                console.error('Failed to parse SSE payload', e);
-              }
+              processSSEChunk(part.slice(6), setNotifications, setUnreadCount);
             }
           }
         }
@@ -114,49 +154,15 @@ export const NotificationProvider = ({ children }) => {
       abortController.abort();
       if (reconnectTimeout) clearTimeout(reconnectTimeout);
     };
-  }, [user]);
+  }, [user, fetchUnreadCount, fetchNotifications]);
 
-  const fetchUnreadCount = async () => {
-    try {
-      const data = await getUnreadCount();
-      if (data && data.success) {
-        setUnreadCount(data.count || 0);
-      }
-    } catch (error) {
-      console.error('Failed to fetch unread count:', error);
-    }
-  };
-
-  const fetchNotifications = async (pageNum = 1) => {
-    try {
-      setLoading(true);
-      const data = await getNotifications(pageNum, 10);
-      
-      if (data && data.success) {
-        if (pageNum === 1) {
-          setNotifications(data.notifications || []);
-        } else {
-          setNotifications(prev => [...prev, ...(data.notifications || [])]);
-        }
-        
-        setPage(data.page || pageNum);
-        setHasMore(data.page < (data.totalPages || 1));
-      }
-    } catch (error) {
-      console.error('Failed to fetch notifications:', error);
-      toast.error('Failed to load notifications');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadMore = () => {
+  const loadMore = useCallback(() => {
     if (!loading && hasMore) {
       fetchNotifications(page + 1);
     }
-  };
+  }, [loading, hasMore, page, fetchNotifications]);
 
-  const toggleDropdown = () => {
+  const toggleDropdown = useCallback(() => {
     setIsOpen(prev => {
       const next = !prev;
       // Fetch initial notifications when opening
@@ -165,11 +171,11 @@ export const NotificationProvider = ({ children }) => {
       }
       return next;
     });
-  };
+  }, [page, notifications.length, fetchNotifications]);
 
-  const closeDropdown = () => setIsOpen(false);
+  const closeDropdown = useCallback(() => setIsOpen(false), []);
 
-  const handleMarkAsRead = async (id) => {
+  const handleMarkAsRead = useCallback(async (id) => {
     try {
       // Optimistic update
       setNotifications(prev => 
@@ -184,9 +190,9 @@ export const NotificationProvider = ({ children }) => {
       fetchUnreadCount();
       fetchNotifications(1); 
     }
-  };
+  }, [fetchUnreadCount, fetchNotifications]);
 
-  const handleMarkAllAsRead = async () => {
+  const handleMarkAllAsRead = useCallback(async () => {
     try {
       // Optimistic update
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
@@ -199,9 +205,9 @@ export const NotificationProvider = ({ children }) => {
       fetchUnreadCount();
       fetchNotifications(1);
     }
-  };
+  }, [fetchUnreadCount, fetchNotifications]);
 
-  const value = {
+  const value = useMemo(() => ({
     unreadCount,
     notifications,
     loading,
@@ -214,7 +220,20 @@ export const NotificationProvider = ({ children }) => {
     handleMarkAsRead,
     handleMarkAllAsRead,
     fetchUnreadCount
-  };
+  }), [
+    unreadCount,
+    notifications,
+    loading,
+    hasMore,
+    isOpen,
+    toggleDropdown,
+    closeDropdown,
+    loadMore,
+    fetchNotifications,
+    handleMarkAsRead,
+    handleMarkAllAsRead,
+    fetchUnreadCount
+  ]);
 
   return (
     <NotificationContext.Provider value={value}>

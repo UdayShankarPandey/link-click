@@ -22,7 +22,11 @@ const envSchema = z.object({
   SMTP_PORT: z.string().optional(),
   SMTP_SECURE: z.string().optional(),
   EMAIL_FROM: z.string().default('Link Click <onboarding@resend.dev>'),
-  FRONTEND_URL: z.string().url().default('http://localhost:5173').transform((url) => url.replace(/\/+$/, '')),
+  FRONTEND_URL: z.string().url().default('http://localhost:5173').transform((url) => {
+    let stripped = url;
+    while (stripped.endsWith('/')) stripped = stripped.slice(0, -1);
+    return stripped;
+  }),
   FOUNDER_EMAIL: z.string().default('udayshankarpandey.03@gmail.com'),
 });
 

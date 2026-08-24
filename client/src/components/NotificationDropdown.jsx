@@ -179,6 +179,7 @@ const NotificationDropdown = () => {
         <h3 className="font-bold text-text-primary text-lg">Notifications</h3>
         {unreadCount > 0 && (
           <button
+            type="button"
             onClick={handleMarkAllAsRead}
             className="text-xs font-medium text-amber hover:text-amber-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber rounded px-2 py-1 transition-colors"
           >
@@ -217,6 +218,7 @@ const NotificationDropdown = () => {
         {hasMore && !loading && notifications.length > 0 && (
           <div className="p-3 text-center">
             <button
+              type="button"
               onClick={loadMore}
               className="text-sm font-medium text-amber hover:text-amber-hover focus-visible:outline-none focus-visible:underline"
             >

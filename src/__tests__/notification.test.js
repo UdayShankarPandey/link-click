@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals';
 import request from 'supertest';
+import mongoose from 'mongoose';
 
 // Mock models
 const mockFindOneAndUpdate = jest.fn();
@@ -9,7 +10,7 @@ const mockUpdateMany = jest.fn();
 const mockFindById = jest.fn().mockReturnValue({
   populate: jest.fn().mockReturnValue({
     populate: jest.fn().mockReturnValue({
-      lean: jest.fn().mockResolvedValue({ _id: 'notif-mocked' })
+      lean: jest.fn().mockResolvedValue({ _id: '507f1f77bcf86cd799439010' })
     })
   })
 });
@@ -27,6 +28,11 @@ jest.unstable_mockModule('../models/Notification.js', () => ({
 const { createNotification } = await import('../services/notification.service.js');
 const { default: app } = await import('../app.js');
 
+const USER_1 = '507f1f77bcf86cd799439011';
+const USER_2 = '507f1f77bcf86cd799439012';
+const POST_1 = '507f1f77bcf86cd799439013';
+const COMMENT_ABC = '507f1f77bcf86cd799439014';
+
 describe('Notification Service & API', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -35,10 +41,10 @@ describe('Notification Service & API', () => {
   describe('1. Notification Service (Deduplication Logic)', () => {
     it('should not create notification if actor and recipient are the same', async () => {
       const result = await createNotification({
-        recipient: 'user-1',
-        actor: 'user-1',
+        recipient: USER_1,
+        actor: USER_1,
         type: 'post_like',
-        post: 'post-1'
+        post: POST_1
       });
 
       expect(result).toBeNull();
@@ -47,7 +53,7 @@ describe('Notification Service & API', () => {
 
     it('should reject missing required fields', async () => {
       const result = await createNotification({
-        actor: 'user-1',
+        actor: USER_1,
         type: 'post_like'
       });
 
@@ -56,21 +62,21 @@ describe('Notification Service & API', () => {
     });
 
     it('should create/upsert post_like notification via findOneAndUpdate', async () => {
-      mockFindOneAndUpdate.mockResolvedValue({ value: { _id: 'notif-1' }, lastErrorObject: { updatedExisting: false } });
+      mockFindOneAndUpdate.mockResolvedValue({ value: { _id: '507f1f77bcf86cd799439010' }, lastErrorObject: { updatedExisting: false } });
 
       const result = await createNotification({
-        recipient: 'user-1',
-        actor: 'user-2',
+        recipient: USER_1,
+        actor: USER_2,
         type: 'post_like',
-        post: 'post-1'
+        post: POST_1
       });
 
       expect(mockFindOneAndUpdate).toHaveBeenCalledWith(
         {
-          recipient: 'user-1',
-          actor: 'user-2',
+          recipient: USER_1,
+          actor: USER_2,
           type: 'post_like',
-          post: 'post-1',
+          post: POST_1,
           isRead: false
         },
         expect.objectContaining({
@@ -83,10 +89,10 @@ describe('Notification Service & API', () => {
 
     it('should reject post_reaction with invalid reactionType', async () => {
       const result = await createNotification({
-        recipient: 'user-1',
-        actor: 'user-2',
+        recipient: USER_1,
+        actor: USER_2,
         type: 'post_reaction',
-        post: 'post-1',
+        post: POST_1,
         metadata: { reactionType: 'invalid_type' }
       });
 
@@ -95,22 +101,22 @@ describe('Notification Service & API', () => {
     });
     
     it('should create post_reaction with valid reactionType', async () => {
-      mockFindOneAndUpdate.mockResolvedValue({ value: { _id: 'notif-reaction' }, lastErrorObject: { updatedExisting: false } });
+      mockFindOneAndUpdate.mockResolvedValue({ value: { _id: '507f1f77bcf86cd799439010' }, lastErrorObject: { updatedExisting: false } });
 
       const result = await createNotification({
-        recipient: 'user-1',
-        actor: 'user-2',
+        recipient: USER_1,
+        actor: USER_2,
         type: 'post_reaction',
-        post: 'post-1',
+        post: POST_1,
         metadata: { reactionType: 'heart' }
       });
 
       expect(mockFindOneAndUpdate).toHaveBeenCalledWith(
         {
-          recipient: 'user-1',
-          actor: 'user-2',
+          recipient: USER_1,
+          actor: USER_2,
           type: 'post_reaction',
-          post: 'post-1',
+          post: POST_1,
           'metadata.reactionType': 'heart',
           isRead: false
         },
@@ -121,20 +127,20 @@ describe('Notification Service & API', () => {
     });
 
     it('should NOT suppress post_comment if commentId is different', async () => {
-      mockFindOneAndUpdate.mockResolvedValue({ value: { _id: 'notif-comment' }, lastErrorObject: { updatedExisting: false } });
+      mockFindOneAndUpdate.mockResolvedValue({ value: { _id: '507f1f77bcf86cd799439010' }, lastErrorObject: { updatedExisting: false } });
 
       await createNotification({
-        recipient: 'user-1',
-        actor: 'user-2',
+        recipient: USER_1,
+        actor: USER_2,
         type: 'post_comment',
-        post: 'post-1',
-        commentId: 'comment-abc'
+        post: POST_1,
+        commentId: COMMENT_ABC
       });
 
       expect(mockFindOneAndUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'post_comment',
-          commentId: 'comment-abc'
+          commentId: COMMENT_ABC
         }),
         expect.any(Object),
         expect.any(Object)
@@ -142,18 +148,18 @@ describe('Notification Service & API', () => {
     });
     
     it('should handle user_link notification deduplication', async () => {
-      mockFindOneAndUpdate.mockResolvedValue({ value: { _id: 'notif-link' }, lastErrorObject: { updatedExisting: false } });
+      mockFindOneAndUpdate.mockResolvedValue({ value: { _id: '507f1f77bcf86cd799439010' }, lastErrorObject: { updatedExisting: false } });
 
       await createNotification({
-        recipient: 'user-1',
-        actor: 'user-2',
+        recipient: USER_1,
+        actor: USER_2,
         type: 'user_link'
       });
 
       expect(mockFindOneAndUpdate).toHaveBeenCalledWith(
         {
-          recipient: 'user-1',
-          actor: 'user-2',
+          recipient: USER_1,
+          actor: USER_2,
           type: 'user_link',
           isRead: false
         },

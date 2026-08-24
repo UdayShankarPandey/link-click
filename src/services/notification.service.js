@@ -1,5 +1,6 @@
 import Notification from '../models/Notification.js';
 import { logger } from '../utils/logger.js';
+import mongoose from 'mongoose';
 
 // Connection manager for SSE
 export const clients = new Map();
@@ -47,6 +48,75 @@ setInterval(() => {
   });
 }, 30000).unref();
 
+const VALID_TYPES = ['post_like', 'post_reaction', 'post_comment', 'user_link'];
+const VALID_REACTIONS = ['heart', 'thumbs_up', 'laugh', 'surprised', 'sad'];
+
+const validateNotificationData = (data) => {
+  const { recipient, actor, type, post, commentId, metadata } = data;
+  
+  if (!recipient || !mongoose.Types.ObjectId.isValid(recipient)) return null;
+  if (!actor || !mongoose.Types.ObjectId.isValid(actor)) return null;
+  if (!type || !VALID_TYPES.includes(type)) return null;
+  
+  if (recipient.toString() === actor.toString()) return null;
+
+  const validData = {
+    recipient: recipient.toString(),
+    actor: actor.toString(),
+    type,
+    isRead: false
+  };
+
+  if (type === 'post_like' || type === 'post_reaction' || type === 'post_comment') {
+    if (!post || !mongoose.Types.ObjectId.isValid(post)) return null;
+    validData.post = post.toString();
+  }
+
+  if (type === 'post_reaction') {
+    const reactionType = metadata?.reactionType;
+    if (!reactionType || typeof reactionType !== 'string' || !VALID_REACTIONS.includes(reactionType)) return null;
+    validData.metadata = { reactionType };
+  }
+
+  if (type === 'post_comment') {
+    if (!commentId || !mongoose.Types.ObjectId.isValid(commentId)) return null;
+    validData.commentId = commentId.toString();
+  }
+
+  return validData;
+};
+
+const buildDeduplicationQuery = (validData) => {
+  const query = { 
+    recipient: validData.recipient, 
+    actor: validData.actor, 
+    type: validData.type, 
+    isRead: false 
+  };
+
+  if (validData.post) query.post = validData.post;
+  if (validData.commentId) query.commentId = validData.commentId;
+  if (validData.metadata?.reactionType) query['metadata.reactionType'] = validData.metadata.reactionType;
+
+  return query;
+};
+
+const emitNotification = async (notificationId, recipient) => {
+  try {
+    const populatedNotification = await Notification.findById(notificationId)
+      .populate('actor', 'name email role profilePicUrl')
+      .populate('post', 'title imageUrl postType status')
+      .lean();
+      
+    emitToUser(recipient, {
+      type: 'notification:new',
+      notification: populatedNotification
+    });
+  } catch (err) {
+    logger.error(`Notification Emission Error: ${err.message}`);
+  }
+};
+
 /**
  * Creates a notification if it passes deduplication rules.
  * @param {Object} data - The notification payload
@@ -59,66 +129,17 @@ setInterval(() => {
  */
 export const createNotification = async (data) => {
   try {
-    const { recipient, actor, type, post, commentId, metadata } = data;
-
-    if (!recipient || !actor || !type) {
-      logger.warn('Notification creation failed: missing required fields');
+    const validData = validateNotificationData(data);
+    if (!validData) {
+      logger.warn('Notification creation failed: invalid or self-referential data');
       return null;
     }
 
-    // Users should not receive notifications for their own actions
-    if (recipient.toString() === actor.toString()) {
-      return null;
-    }
+    const query = buildDeduplicationQuery(validData);
 
-    // Type-aware deduplication strategy
-    let query = { recipient, actor, type, isRead: false };
-
-    if (type === 'post_like') {
-      // Prevent duplicate unread like notifications for the same actor + post
-      if (!post) return null; // Post is required
-      query.post = post;
-    } else if (type === 'post_reaction') {
-      // Prevent duplicate unread reaction notifications for the same reaction type + actor + post
-      if (!post) return null;
-      query.post = post;
-      if (metadata?.reactionType) {
-        query['metadata.reactionType'] = metadata.reactionType;
-      }
-    } else if (type === 'post_comment') {
-      // DO NOT suppress separate comments. Only deduplicate the exact same comment ID.
-      if (!post || !commentId) return null;
-      query.post = post;
-      query.commentId = commentId;
-    } else if (type === 'user_link') {
-      // Prevent duplicate notifications for the same actor/recipient link relationship
-      // No extra query fields needed, actor + recipient + type is enough
-    } else {
-      logger.warn(`Unknown notification type: ${type}`);
-      return null;
-    }
-
-    if (type === 'post_reaction') {
-      const allowedReactions = ['heart', 'thumbs_up', 'laugh', 'surprised', 'sad'];
-      if (!metadata?.reactionType || !allowedReactions.includes(metadata.reactionType)) {
-        logger.warn(`Notification creation failed: invalid reaction type ${metadata?.reactionType}`);
-        return null;
-      }
-    }
-
-    // Atomic deduplication & creation to avoid concurrency race conditions
     const result = await Notification.findOneAndUpdate(
       query,
-      {
-        $setOnInsert: {
-          recipient,
-          actor,
-          type,
-          post,
-          commentId,
-          metadata
-        }
-      },
+      { $setOnInsert: validData },
       { upsert: true, new: true, setDefaultsOnInsert: true, includeResultMetadata: true }
     );
 
@@ -127,15 +148,7 @@ export const createNotification = async (data) => {
 
     if (isNew) {
       // Must populate to match REST endpoint structure exactly
-      const populatedNotification = await Notification.findById(notification._id)
-        .populate('actor', 'name email role profilePicUrl')
-        .populate('post', 'title imageUrl postType status')
-        .lean();
-        
-      emitToUser(recipient, {
-        type: 'notification:new',
-        notification: populatedNotification
-      });
+      await emitNotification(notification._id, validData.recipient);
     }
 
     return notification;
