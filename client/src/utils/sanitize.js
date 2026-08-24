@@ -4,7 +4,8 @@ const ALLOWED_TAGS = ['b', 'strong', 'i', 'em', 'a'];
 const ALLOWED_ATTR = ['href', 'target', 'rel'];
 
 // Ensure hyperlinks always include target="_blank" and rel="noopener noreferrer"
-DOMPurify.addHook('afterSanitizeAttributes', (node) => {
+if (DOMPurify.isSupported) {
+  DOMPurify.addHook('afterSanitizeAttributes', (node) => {
   if (node.tagName === 'A') {
     node.setAttribute('target', '_blank');
     node.setAttribute('rel', 'noopener noreferrer');
@@ -15,10 +16,12 @@ DOMPurify.addHook('afterSanitizeAttributes', (node) => {
       node.removeAttribute('href');
     }
   }
-});
+  });
+}
 
 export const sanitizePostContent = (dirtyContent) => {
   if (!dirtyContent) return '';
+  if (!DOMPurify.isSupported) return ''; // Fail closed if environment (e.g. Node without JSDOM) cannot sanitize
   return DOMPurify.sanitize(dirtyContent, {
     ALLOWED_TAGS,
     ALLOWED_ATTR,

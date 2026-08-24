@@ -171,7 +171,7 @@ const NotificationDropdown = () => {
   return (
     <div 
       ref={dropdownRef}
-      className="absolute top-14 right-0 md:right-4 w-full md:w-96 bg-canvas border border-border md:rounded-xl shadow-xl z-50 flex flex-col overflow-hidden max-h-[80vh] md:max-h-[600px] animate-fade-in"
+      className="absolute top-14 right-0 md:right-4 w-full md:w-96 bg-canvas border border-border md:rounded-xl shadow-xl z-50 flex flex-col overflow-hidden max-h-[80vh] md:max-h-150 animate-fade-in"
       role="menu"
       aria-label="Notifications"
     >

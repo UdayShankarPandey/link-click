@@ -7,6 +7,7 @@ import {
   streamNotifications
 } from '../controllers/notification.controller.js';
 import { protect } from '../middleware/auth.middleware.js';
+import { validateObjectId } from '../middleware/validateObjectId.middleware.js';
 
 const router = Router();
 
@@ -17,6 +18,6 @@ router.get('/', getNotifications);
 router.get('/stream', streamNotifications);
 router.get('/unread-count', getUnreadCount);
 router.put('/read-all', markAllAsRead);
-router.put('/:id/read', markAsRead);
+router.put('/:id/read', validateObjectId('id'), markAsRead);
 
 export default router;

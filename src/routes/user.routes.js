@@ -12,6 +12,7 @@ import {
   getRecentlyJoinedUsers,
   getPublicPlatformStats
 } from '../controllers/user.controller.js';
+import { validateObjectId } from '../middleware/validateObjectId.middleware.js';
 
 const router = Router();
 
@@ -19,12 +20,12 @@ const router = Router();
 router.get('/suggested', optionalAuth, getSuggestedUsers);
 router.get('/recently-joined', getRecentlyJoinedUsers);
 router.get('/public-stats', getPublicPlatformStats);
-router.get('/:id/profile', getUserProfile);
+router.get('/:id/profile', validateObjectId('id'), getUserProfile);
 
 // Protect remaining user routes requiring auth
 router.use(protect);
 
-router.post('/:id/link', toggleLinkUser);
+router.post('/:id/link', validateObjectId('id'), toggleLinkUser);
 
 // Founder only management routes
 router.use(checkFounder);
@@ -36,6 +37,7 @@ router.route('/')
 
 // Routes for /api/users/:id
 router.route('/:id')
+  .all(validateObjectId('id'))
   .get(getUserById)
   .put(updateUser)
   .delete(deleteUser);

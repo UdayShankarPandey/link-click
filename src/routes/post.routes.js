@@ -22,6 +22,7 @@ import {
   updateComment
 } from '../controllers/post.controller.js';
 import { protect } from '../middleware/auth.middleware.js';
+import { validateObjectId } from '../middleware/validateObjectId.middleware.js';
 
 const router = Router();
 
@@ -51,27 +52,29 @@ router.post('/', protect, upload.single('image'), createPost);
 router.get('/', getPosts);
 
 // Get posts by a specific user (must be before /:id to avoid 'user' matching as an ID)
-router.get('/user/:userId', getPostsByUser);
-router.get('/user/:userId/liked', getLikedPostsByUser);
+// Get posts by a specific user (must be before /:id to avoid 'user' matching as an ID)
+router.get('/user/:userId', validateObjectId('userId'), getPostsByUser);
+router.get('/user/:userId/liked', validateObjectId('userId'), getLikedPostsByUser);
 
-router.get('/:id', getPostById);
-router.put('/:id', protect, upload.single('image'), updatePost);
-router.delete('/:id', protect, deletePost);
+router.get('/:id', validateObjectId('id'), getPostById);
+router.put('/:id', protect, validateObjectId('id'), upload.single('image'), updatePost);
+router.delete('/:id', protect, validateObjectId('id'), deletePost);
 
 // Reactions & Bookmarks
-router.post('/:id/react', protect, reactToPost);
-router.post('/:id/bookmark', protect, toggleBookmark);
+// Reactions & Bookmarks
+router.post('/:id/react', protect, validateObjectId('id'), reactToPost);
+router.post('/:id/bookmark', protect, validateObjectId('id'), toggleBookmark);
 
 // Poll voting & view increment routes
-router.post('/:id/vote', protect, votePoll);
-router.post('/:id/view', protect, incrementPostViews);
+router.post('/:id/vote', protect, validateObjectId('id'), votePoll);
+router.post('/:id/view', protect, validateObjectId('id'), incrementPostViews);
 
 // Legacy Like route for backward compatibility
-router.post('/:id/like', protect, likePost);
+router.post('/:id/like', protect, validateObjectId('id'), likePost);
 
 // Comment routes
-router.post('/:id/comments', protect, commentPost);
-router.put('/:id/comments/:commentId', protect, updateComment);
-router.delete('/:id/comments/:commentId', protect, deleteComment);
+router.post('/:id/comments', protect, validateObjectId('id'), commentPost);
+router.put('/:id/comments/:commentId', protect, validateObjectId('id'), validateObjectId('commentId'), updateComment);
+router.delete('/:id/comments/:commentId', protect, validateObjectId('id'), validateObjectId('commentId'), deleteComment);
 
 export default router;

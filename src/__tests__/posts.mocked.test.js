@@ -95,7 +95,7 @@ describe('Posts API with mocked database', () => {
   describe('GET /api/posts/:id', () => {
     it('should return a post by ID', async () => {
       const fakePost = {
-        _id: 'post-123',
+        _id: '507f1f77bcf86cd799439011',
         title: 'Test Post',
         content: 'Test content',
         imageUrl: 'https://example.com/image.jpg',
@@ -104,12 +104,12 @@ describe('Posts API with mocked database', () => {
       mockFindByIdPopulateComments.mockResolvedValue(fakePost);
 
       const response = await request(app)
-        .get('/api/posts/post-123');
+        .get('/api/posts/507f1f77bcf86cd799439011');
 
       expect(response.statusCode).toBe(200);
       expect(response.body).toEqual(fakePost);
 
-      expect(mockFindById).toHaveBeenCalledWith('post-123');
+      expect(mockFindById).toHaveBeenCalledWith('507f1f77bcf86cd799439011');
       expect(mockFindByIdPopulateUser).toHaveBeenCalledWith(
         'user',
         'name email role'
@@ -124,7 +124,7 @@ describe('Posts API with mocked database', () => {
       mockFindByIdPopulateComments.mockResolvedValue(null);
 
       const response = await request(app)
-        .get('/api/posts/missing-post');
+        .get('/api/posts/507f1f77bcf86cd799439012');
 
       expect(response.statusCode).toBe(404);
       expect(response.body.message).toBe('Post not found.');

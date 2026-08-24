@@ -1,9 +1,12 @@
 import { sanitizePostContent } from './sanitize.js';
+import DOMPurify from 'dompurify';
 
 // Note: This test file is provided for when a frontend test runner (like Vitest or Jest) is configured.
 // It verifies that the shared sanitization utility correctly neutralizes XSS payloads while preserving safe HTML.
 
-describe('XSS Sanitization', () => {
+const testRunner = DOMPurify.isSupported ? describe : describe.skip;
+
+testRunner('XSS Sanitization', () => {
   it('neutralizes basic script tags', () => {
     const malicious = '<script>alert(1)</script>';
     expect(sanitizePostContent(malicious)).toBe('');

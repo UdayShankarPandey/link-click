@@ -59,7 +59,7 @@ export const createUser = async (req, res) => {
 // Get all verified users for roster & management
 export const getUsers = async (req, res) => {
   try {
-    const users = await User.find({ emailVerified: true }, '-password'); // Exclude password from the returned docs
+    const users = await User.find({ emailVerified: true }, '-password').limit(1000); // Exclude password and cap at 1000 to prevent resource exhaustion
     res.status(200).json(users);
   } catch (error) {
     logger.error(`Get Users Error: ${error.message}`);

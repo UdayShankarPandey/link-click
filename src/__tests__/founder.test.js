@@ -92,7 +92,7 @@ describe('Founder Platform & Security Architecture', () => {
   describe('2. Dashboard Middleware Protection (checkFounder)', () => {
     it('should block a non-founder user from accessing dashboard stats with 403 Forbidden', async () => {
       const normalUser = {
-        _id: 'user-100',
+        _id: '507f1f77bcf86cd799439011',
         name: 'Regular User',
         email: 'user@example.com',
         role: 'user',
@@ -115,7 +115,7 @@ describe('Founder Platform & Security Architecture', () => {
 
     it('should allow founder account to access dashboard stats with 200 OK', async () => {
       const founderUser = {
-        _id: 'founder-100',
+        _id: '507f1f77bcf86cd799439012',
         name: 'Platform Founder',
         email: process.env.FOUNDER_EMAIL || 'udayshankarpandey.03@gmail.com',
         role: 'founder',
@@ -143,7 +143,7 @@ describe('Founder Platform & Security Architecture', () => {
   describe('3. Founder Immutability Safeguards', () => {
     it('should block attempts to suspend the Founder account with 403 Forbidden', async () => {
       const founderUser = {
-        _id: 'founder-100',
+        _id: '507f1f77bcf86cd799439012',
         name: 'Platform Founder',
         email: process.env.FOUNDER_EMAIL || 'udayshankarpandey.03@gmail.com',
         role: 'founder',
@@ -160,7 +160,7 @@ describe('Founder Platform & Security Architecture', () => {
       const token = jwt.sign({ id: founderUser._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
       const response = await request(app)
-        .put('/api/dashboard/users/founder-100/suspend')
+        .put('/api/dashboard/users/507f1f77bcf86cd799439012/suspend')
         .set('Authorization', `Bearer ${token}`)
         .send({ reason: 'Malicious attempt' });
 
@@ -170,7 +170,7 @@ describe('Founder Platform & Security Architecture', () => {
 
     it('should block attempts to soft delete the Founder account with 403 Forbidden', async () => {
       const founderUser = {
-        _id: 'founder-100',
+        _id: '507f1f77bcf86cd799439012',
         name: 'Platform Founder',
         email: process.env.FOUNDER_EMAIL || 'udayshankarpandey.03@gmail.com',
         role: 'founder',
@@ -187,7 +187,7 @@ describe('Founder Platform & Security Architecture', () => {
       const token = jwt.sign({ id: founderUser._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
       const response = await request(app)
-        .delete('/api/dashboard/users/founder-100/soft-delete')
+        .delete('/api/dashboard/users/507f1f77bcf86cd799439012/soft-delete')
         .set('Authorization', `Bearer ${token}`);
 
       expect(response.statusCode).toBe(403);
@@ -196,12 +196,12 @@ describe('Founder Platform & Security Architecture', () => {
 
     it('should allow Founder to suspend a normal user account', async () => {
       const founderUser = {
-        _id: 'founder-100',
+        _id: '507f1f77bcf86cd799439012',
         role: 'founder',
         status: 'active',
       };
       const normalUser = {
-        _id: 'user-200',
+        _id: '507f1f77bcf86cd799439013',
         name: 'Normal User',
         role: 'user',
         status: 'active',
@@ -209,7 +209,7 @@ describe('Founder Platform & Security Architecture', () => {
       };
 
       mockFindById.mockImplementation((id) => {
-        if (id === 'founder-100') {
+        if (id === '507f1f77bcf86cd799439012') {
           const queryObj = Promise.resolve(founderUser);
           queryObj.select = jest.fn().mockResolvedValue(founderUser);
           return queryObj;
@@ -220,7 +220,7 @@ describe('Founder Platform & Security Architecture', () => {
       const token = jwt.sign({ id: founderUser._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
       const response = await request(app)
-        .put('/api/dashboard/users/user-200/suspend')
+        .put('/api/dashboard/users/507f1f77bcf86cd799439013/suspend')
         .set('Authorization', `Bearer ${token}`)
         .send({ reason: 'Spamming' });
 

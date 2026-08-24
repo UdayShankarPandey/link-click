@@ -7,6 +7,7 @@ import {
   restoreUser,
   softDeleteUser,
 } from '../controllers/dashboard.controller.js';
+import { validateObjectId } from '../middleware/validateObjectId.middleware.js';
 
 const router = Router();
 
@@ -16,8 +17,8 @@ router.use(checkFounder);
 
 router.get('/stats', getDashboardStats);
 router.get('/logs', getAuditLogs);
-router.put('/users/:id/suspend', suspendUser);
-router.put('/users/:id/restore', restoreUser);
-router.delete('/users/:id/soft-delete', softDeleteUser);
+router.put('/users/:id/suspend', validateObjectId('id'), suspendUser);
+router.put('/users/:id/restore', validateObjectId('id'), restoreUser);
+router.delete('/users/:id/soft-delete', validateObjectId('id'), softDeleteUser);
 
 export default router;
