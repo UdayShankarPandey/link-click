@@ -11,6 +11,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import ImageCarousel from '../components/ImageCarousel';
 import PollCard from '../components/PollCard';
 import PostActions from '../components/PostActions';
+import { sanitizePostContent } from '../utils/sanitize';
 
 const PostDetail = () => {
   const { id } = useParams();
@@ -183,7 +184,7 @@ const PostDetail = () => {
         {post.content && (
           <div
             className="text-sm text-text-secondary leading-relaxed prose prose-invert max-w-none"
-            dangerouslySetInnerHTML={{ __html: post.content }}
+            dangerouslySetInnerHTML={{ __html: sanitizePostContent(post.content) }}
           />
         )}
 

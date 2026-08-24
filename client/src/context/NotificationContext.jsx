@@ -139,8 +139,8 @@ export const NotificationProvider = ({ children }) => {
           setNotifications(prev => [...prev, ...(data.notifications || [])]);
         }
         
-        setPage(data.pagination.page);
-        setHasMore(data.pagination.page < data.pagination.pages);
+        setPage(data.page || pageNum);
+        setHasMore(data.page < (data.totalPages || 1));
       }
     } catch (error) {
       console.error('Failed to fetch notifications:', error);

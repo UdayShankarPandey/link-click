@@ -8,6 +8,7 @@ import FounderBadge from './FounderBadge';
 import ImageCarousel from './ImageCarousel';
 import PollCard from './PollCard';
 import PostActions from './PostActions';
+import { sanitizePostContent } from '../utils/sanitize';
 
 const PostCard = ({ post: initialPost, onLikeUpdate }) => {
   const { user } = useAuth();
@@ -175,7 +176,7 @@ const PostCard = ({ post: initialPost, onLikeUpdate }) => {
           {post.content && (
             <div
               className="text-sm text-text-secondary leading-relaxed line-clamp-3 mb-2 prose prose-invert max-w-none"
-              dangerouslySetInnerHTML={{ __html: post.content }}
+              dangerouslySetInnerHTML={{ __html: sanitizePostContent(post.content) }}
             />
           )}
         </div>
