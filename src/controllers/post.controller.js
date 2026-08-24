@@ -807,8 +807,15 @@ export const updateComment = async (req, res) => {
       return res.status(404).json({ message: 'Comment not found.' });
     }
 
-    if (comment.user.toString() !== req.user._id.toString() && req.user.role !== 'founder') {
-      return res.status(403).json({ message: 'Not authorized to edit this comment.' });
+    if (comment.user.toString() !== req.user._id.toString()) {
+      if (req.user.role !== 'founder') {
+        return res.status(403).json({ message: 'Not authorized to edit this comment.' });
+      }
+      
+      const targetUser = await User.findById(comment.user).select('role');
+      if (targetUser && targetUser.role === 'founder') {
+        return res.status(403).json({ message: 'Not authorized to edit another founder\'s comment.' });
+      }
     }
 
     comment.text = text.trim();
