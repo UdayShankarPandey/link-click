@@ -312,6 +312,13 @@ export const commentPost = async (req, res) => {
       return res.status(404).json({ message: 'Post not found.' });
     }
 
+    // Limit maximum comments per post to prevent MongoDB 16MB document overflow
+    if (post.comments.length >= 1000) {
+      return res.status(400).json({ message: 'Maximum comment limit reached for this post.' });
+    }
+
+
+
     const newComment = {
       user: req.user._id,
       text
