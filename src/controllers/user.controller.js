@@ -98,6 +98,11 @@ export const updateUser = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    // Mandatory Safeguard: Founder account is immutable by other founders, or even themselves via this route
+    if (user.role === 'founder') {
+      return res.status(403).json({ message: 'Founder account cannot be altered.' });
+    }
+
     // Apply allowed updates
     Object.assign(user, updates);
 
@@ -122,10 +127,17 @@ export const updateUser = async (req, res) => {
 // Delete a user
 export const deleteUser = async (req, res) => {
   try {
-    const user = await User.findByIdAndDelete(req.params.id);
+    const user = await User.findById(req.params.id);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
+
+    // Mandatory Safeguard: Founder account cannot be deleted
+    if (user.role === 'founder') {
+      return res.status(403).json({ message: 'Founder account cannot be deleted.' });
+    }
+    
+    await User.findByIdAndDelete(req.params.id);
     res.status(200).json({ message: 'User deleted successfully' });
   } catch (error) {
     logger.error(`Delete User Error: ${error.message}`);

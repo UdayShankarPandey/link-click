@@ -9,17 +9,27 @@ export const addClient = (userId, res) => {
   if (!clients.has(idStr)) {
     clients.set(idStr, new Set());
   }
-  clients.get(idStr).add(res);
+  
+  const userClients = clients.get(idStr);
+  
+  // Abuse Resistance: Enforce a strict limit on concurrent SSE connections per user
+  if (userClients.size >= 5) {
+    return false;
+  }
+  
+  userClients.add(res);
 
   res.on('close', () => {
-    const userClients = clients.get(idStr);
-    if (userClients) {
-      userClients.delete(res);
-      if (userClients.size === 0) {
+    const activeClients = clients.get(idStr);
+    if (activeClients) {
+      activeClients.delete(res);
+      if (activeClients.size === 0) {
         clients.delete(idStr);
       }
     }
   });
+  
+  return true;
 };
 
 export const emitToUser = (userId, payload) => {

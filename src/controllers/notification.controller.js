@@ -4,12 +4,15 @@ import { addClient } from '../services/notification.service.js';
 
 // Setup SSE connection
 export const streamNotifications = (req, res) => {
+  // Prevent SSE connection exhaustion
+  if (!addClient(req.user._id, res)) {
+    return res.status(429).json({ message: 'Too many active connection streams.' });
+  }
+
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
   res.flushHeaders();
-
-  addClient(req.user._id, res);
 };
 
 // Get paginated notifications for the authenticated user
