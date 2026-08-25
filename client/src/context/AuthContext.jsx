@@ -1,8 +1,21 @@
 import React, { createContext, useState, useEffect, useContext, useMemo } from 'react';
 import api from '../services/api';
+import DOMPurify from 'dompurify';
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
+  const sanitizeUser = (user) => {
+    if (!user || typeof user !== 'object') return user;
+    const sanitized = { ...user };
+    if (user.id) sanitized.id = DOMPurify.sanitize(String(user.id));
+    if (user._id) sanitized._id = DOMPurify.sanitize(String(user._id));
+    if (user.name) sanitized.name = DOMPurify.sanitize(String(user.name));
+    if (user.email) sanitized.email = DOMPurify.sanitize(String(user.email));
+    if (user.role) sanitized.role = DOMPurify.sanitize(String(user.role));
+    if (user.avatar) sanitized.avatar = DOMPurify.sanitize(String(user.avatar));
+    return sanitized;
+  };
+
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -26,7 +39,7 @@ export const AuthProvider = ({ children }) => {
           const response = await api.get('/auth/me');
           const userData = response.data.data || response.data;
           setUser(userData);
-          const safeUserData = JSON.stringify(userData).replace(/[<>]/g, '');
+          const safeUserData = JSON.stringify(sanitizeUser(userData));
           localStorage.setItem('auth_user', safeUserData);
         } catch (error) {
           if (error.response?.status === 401) {
@@ -43,7 +56,7 @@ export const AuthProvider = ({ children }) => {
           const response = await api.get('/auth/me');
           const userData = response.data.data || response.data;
           setUser(userData);
-          const safeUserData = JSON.stringify(userData).replace(/[<>]/g, '');
+          const safeUserData = JSON.stringify(sanitizeUser(userData));
           localStorage.setItem('auth_user', safeUserData);
         } catch {
           setUser(null);
@@ -63,11 +76,11 @@ export const AuthProvider = ({ children }) => {
       const userData = response.data.data?.user || response.data.user || response.data;
 
       if (token) {
-        const cleanToken = String(token).replace(/[^A-Za-z0-9\-._~+/=]/g, '');
+        const cleanToken = DOMPurify.sanitize(String(token));
         localStorage.setItem('auth_token', cleanToken);
       }
       if (userData) {
-        const safeUserData = JSON.stringify(userData).replace(/[<>]/g, '');
+        const safeUserData = JSON.stringify(sanitizeUser(userData));
         localStorage.setItem('auth_user', safeUserData);
       }
 
