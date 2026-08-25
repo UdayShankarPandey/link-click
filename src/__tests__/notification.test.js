@@ -73,11 +73,11 @@ describe('Notification Service & API', () => {
 
       expect(mockFindOneAndUpdate).toHaveBeenCalledWith(
         {
-          recipient: { $eq: USER_1 },
-          actor: { $eq: USER_2 },
-          type: { $eq: 'post_like' },
-          post: { $eq: POST_1 },
-          isRead: { $eq: false }
+          recipient: USER_1,
+          actor: USER_2,
+          type: 'post_like',
+          post: POST_1,
+          isRead: false
         },
         expect.objectContaining({
           $setOnInsert: expect.objectContaining({ type: 'post_like' })
@@ -113,12 +113,12 @@ describe('Notification Service & API', () => {
 
       expect(mockFindOneAndUpdate).toHaveBeenCalledWith(
         {
-          recipient: { $eq: USER_1 },
-          actor: { $eq: USER_2 },
-          type: { $eq: 'post_reaction' },
-          post: { $eq: POST_1 },
-          'metadata.reactionType': { $eq: 'heart' },
-          isRead: { $eq: false }
+          recipient: USER_1,
+          actor: USER_2,
+          type: 'post_reaction',
+          post: POST_1,
+          'metadata.reactionType': 'heart',
+          isRead: false
         },
         expect.any(Object),
         expect.any(Object)
@@ -139,8 +139,8 @@ describe('Notification Service & API', () => {
 
       expect(mockFindOneAndUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
-          type: { $eq: 'post_comment' },
-          commentId: { $eq: COMMENT_ABC }
+          type: 'post_comment',
+          commentId: COMMENT_ABC
         }),
         expect.any(Object),
         expect.any(Object)
@@ -158,10 +158,10 @@ describe('Notification Service & API', () => {
 
       expect(mockFindOneAndUpdate).toHaveBeenCalledWith(
         {
-          recipient: { $eq: USER_1 },
-          actor: { $eq: USER_2 },
-          type: { $eq: 'user_link' },
-          isRead: { $eq: false }
+          recipient: USER_1,
+          actor: USER_2,
+          type: 'user_link',
+          isRead: false
         },
         expect.any(Object),
         expect.any(Object)

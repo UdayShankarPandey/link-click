@@ -88,15 +88,15 @@ const validateNotificationData = (data) => {
 
 const buildDeduplicationQuery = (validData) => {
   const query = { 
-    recipient: { $eq: validData.recipient }, 
-    actor: { $eq: validData.actor }, 
-    type: { $eq: validData.type }, 
-    isRead: { $eq: false } 
+    recipient: String(validData.recipient), 
+    actor: String(validData.actor), 
+    type: String(validData.type), 
+    isRead: false 
   };
 
-  if (validData.post) query.post = { $eq: validData.post };
-  if (validData.commentId) query.commentId = { $eq: validData.commentId };
-  if (validData.metadata?.reactionType) query['metadata.reactionType'] = { $eq: validData.metadata.reactionType };
+  if (validData.post) query.post = String(validData.post);
+  if (validData.commentId) query.commentId = String(validData.commentId);
+  if (validData.metadata?.reactionType) query['metadata.reactionType'] = String(validData.metadata.reactionType);
 
   return query;
 };

@@ -83,7 +83,7 @@ export const sendVerificationEmail = async (to, rawToken) => {
     } catch (error_) {
       logger.warn(`[Email Brevo API] Failed delivery attempt for ${targetEmail}`);
       if (!env.RESEND_API_KEY) {
-        throw new Error('Brevo API delivery failed');
+        throw new Error('Brevo API delivery failed', { cause: error_ });
       }
       logger.warn('[Email Brevo API] Falling back to Resend API.');
     }
@@ -92,7 +92,7 @@ export const sendVerificationEmail = async (to, rawToken) => {
   // ── Resend API (fallback — sandbox restricts delivery to account-owner email) ─
   if (env.RESEND_API_KEY) {
     const resend = new Resend(env.RESEND_API_KEY);
-    const { data, error } = await resend.emails.send({
+    const { error } = await resend.emails.send({
       from: env.EMAIL_FROM,
       to,
       subject,
