@@ -813,7 +813,7 @@ export const updateComment = async (req, res) => {
       }
       
       const targetUser = await User.findById(comment.user).select('role');
-      if (targetUser && targetUser.role === 'founder') {
+      if (targetUser?.role === 'founder') {
         return res.status(403).json({ message: 'Not authorized to edit another founder\'s comment.' });
       }
     }

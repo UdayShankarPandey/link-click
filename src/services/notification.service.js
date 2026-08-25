@@ -48,15 +48,15 @@ setInterval(() => {
   });
 }, 30000).unref();
 
-const VALID_TYPES = ['post_like', 'post_reaction', 'post_comment', 'user_link'];
-const VALID_REACTIONS = ['heart', 'thumbs_up', 'laugh', 'surprised', 'sad'];
+const VALID_TYPES = new Set(['post_like', 'post_reaction', 'post_comment', 'user_link']);
+const VALID_REACTIONS = new Set(['heart', 'thumbs_up', 'laugh', 'surprised', 'sad']);
 
 const validateNotificationData = (data) => {
   const { recipient, actor, type, post, commentId, metadata } = data;
   
   if (!recipient || !mongoose.Types.ObjectId.isValid(recipient)) return null;
   if (!actor || !mongoose.Types.ObjectId.isValid(actor)) return null;
-  if (!type || !VALID_TYPES.includes(type)) return null;
+  if (!type || !VALID_TYPES.has(type)) return null;
   
   if (recipient.toString() === actor.toString()) return null;
 
@@ -74,7 +74,7 @@ const validateNotificationData = (data) => {
 
   if (type === 'post_reaction') {
     const reactionType = metadata?.reactionType;
-    if (!reactionType || typeof reactionType !== 'string' || !VALID_REACTIONS.includes(reactionType)) return null;
+    if (!reactionType || typeof reactionType !== 'string' || !VALID_REACTIONS.has(reactionType)) return null;
     validData.metadata = { reactionType };
   }
 
@@ -88,15 +88,15 @@ const validateNotificationData = (data) => {
 
 const buildDeduplicationQuery = (validData) => {
   const query = { 
-    recipient: validData.recipient, 
-    actor: validData.actor, 
-    type: validData.type, 
-    isRead: false 
+    recipient: { $eq: validData.recipient }, 
+    actor: { $eq: validData.actor }, 
+    type: { $eq: validData.type }, 
+    isRead: { $eq: false } 
   };
 
-  if (validData.post) query.post = validData.post;
-  if (validData.commentId) query.commentId = validData.commentId;
-  if (validData.metadata?.reactionType) query['metadata.reactionType'] = validData.metadata.reactionType;
+  if (validData.post) query.post = { $eq: validData.post };
+  if (validData.commentId) query.commentId = { $eq: validData.commentId };
+  if (validData.metadata?.reactionType) query['metadata.reactionType'] = { $eq: validData.metadata.reactionType };
 
   return query;
 };

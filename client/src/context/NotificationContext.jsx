@@ -21,6 +21,27 @@ const processSSEChunk = (dataStr, setNotifications, setUnreadCount) => {
   }
 };
 
+const readSSEStream = async (response, setNotifications, setUnreadCount) => {
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    
+    buffer += decoder.decode(value, { stream: true });
+    const parts = buffer.split('\n\n');
+    buffer = parts.pop(); // Keep incomplete chunks
+
+    for (const part of parts) {
+      if (part.startsWith('data: ')) {
+        processSSEChunk(part.slice(6), setNotifications, setUnreadCount);
+      }
+    }
+  }
+};
+
 export const NotificationProvider = ({ children }) => {
   const { user } = useAuth();
   
@@ -116,24 +137,7 @@ export const NotificationProvider = ({ children }) => {
           fetchNotifications(1);
         }
 
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = '';
-
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done) break;
-          
-          buffer += decoder.decode(value, { stream: true });
-          const parts = buffer.split('\n\n');
-          buffer = parts.pop(); // Keep incomplete chunks
-
-          for (const part of parts) {
-            if (part.startsWith('data: ')) {
-              processSSEChunk(part.slice(6), setNotifications, setUnreadCount);
-            }
-          }
-        }
+        await readSSEStream(response, setNotifications, setUnreadCount);
       } catch (error) {
         if (error.name === 'AbortError') return;
         console.error('SSE connection dropped:', error);

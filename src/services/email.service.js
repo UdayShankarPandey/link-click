@@ -42,10 +42,10 @@ const tryBrevoAPI = async ({ to, subject, html, senderName, senderEmail }) => {
   const data = await res.json();
 
   if (!res.ok) {
-    throw new Error(`Brevo API ${res.status}: ${data?.message || JSON.stringify(data)}`);
+    throw new Error(`Brevo API ${res.status}: Failed to send email`);
   }
 
-  logger.info(`[Email Brevo API] Sent verification email (ID: ${data?.messageId})`);
+  logger.info('[Email Brevo API] Sent verification email');
   return data;
 };
 
@@ -81,9 +81,9 @@ export const sendVerificationEmail = async (to, rawToken) => {
       await tryBrevoAPI({ to, subject, html: htmlContent, senderName, senderEmail });
       return;
     } catch (error_) {
-      logger.warn(`[Email Brevo API] Failed delivery attempt: ${error_.message}`);
+      logger.warn(`[Email Brevo API] Failed delivery attempt for ${targetEmail}`);
       if (!env.RESEND_API_KEY) {
-        throw new Error(`Brevo API delivery failed: ${error_.message}`);
+        throw new Error('Brevo API delivery failed');
       }
       logger.warn('[Email Brevo API] Falling back to Resend API.');
     }
@@ -100,13 +100,11 @@ export const sendVerificationEmail = async (to, rawToken) => {
     });
 
     if (error) {
-      logger.error(
-        `[Email Resend] API error sending to ${targetEmail}: ${error.message || JSON.stringify(error)}`
-      );
-      throw new Error(error.message || 'Email delivery failed via Resend');
+      logger.error(`[Email Resend] API error sending to ${targetEmail}`);
+      throw new Error('Email delivery failed via Resend');
     }
 
-    logger.info(`[Email Resend] Sent verification email (ID: ${data?.id})`);
+    logger.info('[Email Resend] Sent verification email');
     return;
   }
 
