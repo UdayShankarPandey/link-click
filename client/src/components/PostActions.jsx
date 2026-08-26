@@ -13,7 +13,7 @@ const REACTION_EMOJIS = [
 ];
 
 const PostActions = ({ post, onPostUpdate, onCommentClick, showLabels = false }) => {
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   const [showPicker, setShowPicker] = useState(false);
   const [isBookmarking, setIsBookmarking] = useState(false);
   const [isReacting, setIsReacting] = useState(false);
@@ -93,12 +93,14 @@ const PostActions = ({ post, onPostUpdate, onCommentClick, showLabels = false })
       const newBookmarked = response.data.isBookmarked;
       toast.success(newBookmarked ? '✓ Post saved to bookmarks' : '✓ Bookmark removed');
 
-      // Update user bookmarks in context if available or update UI
-      if (user.bookmarks) {
+      // Update user bookmarks in context immutably
+      if (user && setUser) {
         if (newBookmarked) {
-          if (!user.bookmarks.includes(post._id)) user.bookmarks.push(post._id);
+          if (!user.bookmarks?.includes(post._id)) {
+            setUser({ ...user, bookmarks: [...(user.bookmarks || []), post._id] });
+          }
         } else {
-          user.bookmarks = user.bookmarks.filter(b => b.toString() !== post._id.toString());
+          setUser({ ...user, bookmarks: (user.bookmarks || []).filter(b => b.toString() !== post._id.toString()) });
         }
       }
 

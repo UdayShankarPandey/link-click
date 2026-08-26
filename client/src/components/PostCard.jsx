@@ -43,6 +43,7 @@ const PostCard = ({ post: initialPost, onLikeUpdate }) => {
 
   // View Counter IntersectionObserver (50% visibility for 2.5 seconds)
   useEffect(() => {
+    let isMounted = true;
     if (!post._id) return;
 
     if (currentUserId && authorId && currentUserId === authorId) return;
@@ -58,7 +59,9 @@ const PostCard = ({ post: initialPost, onLikeUpdate }) => {
             try {
               sessionStorage.setItem(storageKey, 'true');
               const res = await api.post(`/posts/${post._id}/view`);
-              setViewsCount(res.data.views);
+              if (isMounted) {
+                setViewsCount(res.data.views);
+              }
             } catch {
               // Ignore silent view error
             }
@@ -80,6 +83,7 @@ const PostCard = ({ post: initialPost, onLikeUpdate }) => {
     }
 
     return () => {
+      isMounted = false;
       if (timerRef.current) clearTimeout(timerRef.current);
       if (currentCard) observer.unobserve(currentCard);
     };
