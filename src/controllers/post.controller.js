@@ -103,7 +103,8 @@ export const getPosts = async (req, res) => {
         .populate('comments.user', 'name email')
         .sort({ createdAt: -1 })
         .skip(skip)
-        .limit(limit),
+        .limit(limit)
+        .lean(),
       Post.countDocuments()
     ]);
 
@@ -150,7 +151,8 @@ export const getPostsByUser = async (req, res) => {
         .populate('comments.user', 'name email')
         .sort({ createdAt: -1 })
         .skip(skip)
-        .limit(limit),
+        .limit(limit)
+        .lean(),
       Post.countDocuments({ user: req.params.userId })
     ]);
 
@@ -254,28 +256,35 @@ export const deletePost = async (req, res) => {
 // Toggle like/unlike on a post
 export const likePost = async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id);
+    const userId = req.user._id;
+    const postId = req.params.id;
+
+    // Attempt to add like atomically
+    let post = await Post.findOneAndUpdate(
+      { _id: postId, likes: { $ne: userId } },
+      { $addToSet: { likes: userId } },
+      { new: true }
+    );
+
+    let isAdded = true;
 
     if (!post) {
-      return res.status(404).json({ message: 'Post not found.' });
+      // If not added, it was already liked. Attempt to remove it.
+      post = await Post.findOneAndUpdate(
+        { _id: postId, likes: userId },
+        { $pull: { likes: userId } },
+        { new: true }
+      );
+      
+      isAdded = false;
+
+      // If still null, the post doesn't exist.
+      if (!post) {
+        return res.status(404).json({ message: 'Post not found.' });
+      }
     }
-
-    const userId = req.user._id;
-    const index = post.likes.indexOf(userId);
-
-    let shouldNotifyLike = false;
-    if (index === -1) {
-      // Like the post
-      post.likes.push(userId);
-      shouldNotifyLike = true;
-    } else {
-      // Unlike the post
-      post.likes.splice(index, 1);
-    }
-
-    await post.save();
     
-    if (shouldNotifyLike) {
+    if (isAdded) {
       await createNotification({
         recipient: post.user,
         actor: userId,
@@ -284,7 +293,7 @@ export const likePost = async (req, res) => {
       });
     }
     res.status(200).json({
-      message: index === -1 ? 'Post liked successfully.' : 'Post unliked successfully.',
+      message: isAdded ? 'Post liked successfully.' : 'Post unliked successfully.',
       likesCount: post.likes.length,
       likes: post.likes
     });
@@ -307,38 +316,35 @@ export const commentPost = async (req, res) => {
       return res.status(400).json({ message: 'Comment must be 2000 characters or less.' });
     }
 
-    const post = await Post.findById(req.params.id);
-    if (!post) {
-      return res.status(404).json({ message: 'Post not found.' });
-    }
-
-    // Limit maximum comments per post to prevent MongoDB 16MB document overflow
-    if (post.comments.length >= 1000) {
-      return res.status(400).json({ message: 'Maximum comment limit reached for this post.' });
-    }
-
-
-
     const newComment = {
       user: req.user._id,
       text
     };
 
-    post.comments.push(newComment);
-    await post.save();
+    const updatedPost = await Post.findOneAndUpdate(
+      { _id: req.params.id, 'comments.999': { $exists: false } },
+      { $push: { comments: newComment } },
+      { new: true }
+    ).populate('user', 'name email role')
+     .populate('comments.user', 'name email');
 
-    const addedComment = post.comments[post.comments.length - 1];
+    if (!updatedPost) {
+      const postExists = await Post.exists({ _id: req.params.id });
+      if (!postExists) {
+        return res.status(404).json({ message: 'Post not found.' });
+      }
+      return res.status(400).json({ message: 'Maximum comment limit reached for this post.' });
+    }
+
+    const addedComment = updatedPost.comments[updatedPost.comments.length - 1];
+    
     await createNotification({
-      recipient: post.user,
+      recipient: updatedPost.user,
       actor: req.user._id,
       type: 'post_comment',
-      post: post._id,
+      post: updatedPost._id,
       commentId: addedComment._id
     });
-
-    const updatedPost = await Post.findById(post._id)
-      .populate('user', 'name email role')
-      .populate('comments.user', 'name email');
 
     res.status(201).json({
       message: 'Comment added successfully.',
@@ -570,18 +576,6 @@ export const votePoll = async (req, res) => {
       return res.status(400).json({ message: 'This poll has expired.' });
     }
 
-    // Single vote check across all options
-    let alreadyVoted = false;
-    post.poll.options.forEach(opt => {
-      if (opt.votes.some(v => v.toString() === userId.toString())) {
-        alreadyVoted = true;
-      }
-    });
-
-    if (alreadyVoted) {
-      return res.status(400).json({ message: 'You have already voted in this poll.' });
-    }
-
     const targetOption = post.poll.options.find(
       opt => opt.optionId === optionId || opt._id.toString() === optionId
     );
@@ -589,19 +583,28 @@ export const votePoll = async (req, res) => {
       return res.status(404).json({ message: 'Poll option not found.' });
     }
 
-    targetOption.votes.push(userId);
+    const updatedPost = await Post.findOneAndUpdate(
+      { 
+        _id: postId, 
+        'poll.options.votes': { $ne: userId } 
+      },
+      {
+        $addToSet: { 'poll.options.$[elem].votes': userId },
+        $inc: { 'poll.totalVotes': 1 }
+      },
+      { 
+        arrayFilters: [{ 'elem._id': targetOption._id }], 
+        new: true 
+      }
+    );
 
-    let total = 0;
-    post.poll.options.forEach(opt => {
-      total += opt.votes.length;
-    });
-    post.poll.totalVotes = total;
-
-    await post.save();
+    if (!updatedPost) {
+      return res.status(400).json({ message: 'You have already voted in this poll.' });
+    }
 
     res.status(200).json({
       message: 'Vote recorded successfully.',
-      poll: post.poll
+      poll: updatedPost.poll
     });
   } catch (error) {
     logger.error(`Vote Poll Error: ${error.message}`);

@@ -41,6 +41,16 @@ export const emitToUser = (userId, payload) => {
   }
 };
 
+export const closeAllConnections = () => {
+  logger.info('Closing all active SSE connections...');
+  for (const userClients of clients.values()) {
+    for (const res of userClients) {
+      try { res.end(); } catch (e) { /* ignore */ }
+    }
+  }
+  clients.clear();
+};
+
 // Lightweight heartbeat/keep-alive to prevent broken connections
 setInterval(() => {
   clients.forEach((userClients) => {

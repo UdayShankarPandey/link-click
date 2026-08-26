@@ -1,7 +1,10 @@
 import { jest } from '@jest/globals';
 import request from 'supertest';
 
-const mockLimit = jest.fn();
+const mockLean = jest.fn();
+const mockLimit = jest.fn(() => ({
+  lean: mockLean,
+}));
 const mockSkip = jest.fn(() => ({
   limit: mockLimit,
 }));
@@ -56,7 +59,7 @@ describe('Posts API with mocked database', () => {
         },
       ];
 
-      mockLimit.mockResolvedValue(fakePosts);
+      mockLean.mockResolvedValue(fakePosts);
       mockCountDocuments.mockResolvedValue(1);
 
       const response = await request(app)
@@ -75,7 +78,7 @@ describe('Posts API with mocked database', () => {
     });
 
     it('should cap the pagination limit at 50', async () => {
-      mockLimit.mockResolvedValue([]);
+      mockLean.mockResolvedValue([]);
       mockCountDocuments.mockResolvedValue(0);
 
       const response = await request(app)

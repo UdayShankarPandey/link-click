@@ -8,7 +8,7 @@ export const uploadImage = async (req, res) => {
     }
 
     const result = await imagekit.files.upload({
-      file: req.file.buffer.toString('base64'),
+      file: req.file.buffer,
       fileName: `image-${Date.now()}-${req.file.originalname}`,
       folder: '/uploads'
     });
@@ -43,7 +43,7 @@ export const uploadMultipleImages = async (req, res) => {
 
     const uploadPromises = files.map(file =>
       imagekit.files.upload({
-        file: file.buffer.toString('base64'),
+        file: file.buffer,
         fileName: `image-${Date.now()}-${file.originalname}`,
         folder: '/uploads'
       })

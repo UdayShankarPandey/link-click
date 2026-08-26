@@ -2,6 +2,7 @@ import { logger } from './utils/logger.js';
 import env from './config/env.js';
 import { connectDB, disconnectDB } from './db.js';
 import app from './app.js';
+import { closeAllConnections } from './services/notification.service.js';
 
 const PORT = env.PORT;
 
@@ -32,6 +33,9 @@ const gracefulShutdown = (signal) => {
   isShuttingDown = true;
 
   logger.info(`${signal} received. Starting graceful shutdown...`);
+
+  // Close active SSE connections immediately
+  closeAllConnections();
 
   const forceShutdownTimer = setTimeout(() => {
     logger.error('Graceful shutdown timed out. Forcing process exit.');

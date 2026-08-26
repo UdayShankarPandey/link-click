@@ -28,7 +28,8 @@ export const getNotifications = async (req, res) => {
         .populate('post', 'title imageUrl postType status')
         .sort({ createdAt: -1 })
         .skip(skip)
-        .limit(limit),
+        .limit(limit)
+        .lean(),
       Notification.countDocuments({ recipient: req.user._id })
     ]);
 
