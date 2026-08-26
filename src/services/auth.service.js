@@ -188,13 +188,20 @@ export const authService = {
     }
 
     const result = await imagekit.files.upload({
-      file: file?.buffer?.toString('base64'),
+      file: file?.buffer,
       fileName: `avatar-${Date.now()}-${file?.originalname}`,
       folder: '/avatars'
     });
 
     user.profilePicUrl = result.url;
-    await user.save();
+    
+    try {
+      await user.save();
+    } catch (saveError) {
+      try { await imagekit.files.deleteFile(result.fileId); }
+      catch (ikError) { logger.error(`Failed to cleanup new ImageKit avatar on user save failure: ${ikError.message}`); }
+      throw saveError;
+    }
 
     return {
       profilePicUrl: user?.profilePicUrl
@@ -212,13 +219,20 @@ export const authService = {
     }
 
     const result = await imagekit.files.upload({
-      file: file?.buffer?.toString('base64'),
+      file: file?.buffer,
       fileName: `cover-${Date.now()}-${file?.originalname}`,
       folder: '/covers'
     });
 
     user.coverPicUrl = result.url;
-    await user.save();
+    
+    try {
+      await user.save();
+    } catch (saveError) {
+      try { await imagekit.files.deleteFile(result.fileId); }
+      catch (ikError) { logger.error(`Failed to cleanup new ImageKit cover on user save failure: ${ikError.message}`); }
+      throw saveError;
+    }
 
     return {
       coverPicUrl: user?.coverPicUrl

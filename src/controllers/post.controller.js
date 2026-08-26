@@ -29,7 +29,7 @@ export const createPost = async (req, res) => {
 
     if (req.file) {
       const result = await imagekit.files.upload({
-        file: req.file.buffer.toString('base64'),
+        file: req.file.buffer,
         fileName: `post-${Date.now()}-${req.file.originalname}`,
         folder: '/posts'
       });
@@ -68,17 +68,26 @@ export const createPost = async (req, res) => {
       };
     }
 
-    const post = await Post.create({
-      user: req.user._id,
-      title,
-      content,
-      postType,
-      images,
-      imageUrl: images[0]?.url || imageUrl || '',
-      imageThumbnailUrl: images[0]?.thumbnailUrl || imageThumbnailUrl || '',
-      imageFileId: images[0]?.fileId || imageFileId || '',
-      poll: pollData
-    });
+    let post;
+    try {
+      post = await Post.create({
+        user: req.user._id,
+        title,
+        content,
+        postType,
+        images,
+        imageUrl: images[0]?.url || imageUrl || '',
+        imageThumbnailUrl: images[0]?.thumbnailUrl || imageThumbnailUrl || '',
+        imageFileId: images[0]?.fileId || imageFileId || '',
+        poll: pollData
+      });
+    } catch (saveError) {
+      if (images[0]?.fileId || imageFileId) {
+        try { await imagekit.files.deleteFile(images[0]?.fileId || imageFileId); } 
+        catch (ikError) { logger.error(`Failed to cleanup ImageKit file on post save failure: ${ikError.message}`); }
+      }
+      throw saveError;
+    }
 
     res.status(201).json({
       message: 'Post created successfully.',
@@ -199,7 +208,7 @@ export const updatePost = async (req, res) => {
       }
 
       const result = await imagekit.files.upload({
-        file: req.file.buffer.toString('base64'),
+        file: req.file.buffer,
         fileName: `post-${Date.now()}-${req.file.originalname}`,
         folder: '/posts'
       });
@@ -208,7 +217,18 @@ export const updatePost = async (req, res) => {
       post.imageFileId = result.fileId;
     }
 
-    const updatedPost = await post.save();
+    let updatedPost;
+    try {
+      updatedPost = await post.save();
+    } catch (saveError) {
+      // Rollback only the newly uploaded image from ImageKit
+      if (req.file && post.imageFileId) {
+        try { await imagekit.files.deleteFile(post.imageFileId); }
+        catch (ikError) { logger.error(`Failed to cleanup new ImageKit file on post update failure: ${ikError.message}`); }
+      }
+      throw saveError;
+    }
+
     res.status(200).json({
       message: 'Post updated successfully.',
       post: updatedPost
@@ -395,7 +415,7 @@ export const deleteComment = async (req, res) => {
 export const getLikedPostsByUser = async (req, res) => {
   try {
     const page = Number.parseInt(req.query.page, 10) || 1;
-    const limit = Number.parseInt(req.query.limit, 10) || 10;
+    const limit = Math.min(MAX_LIMIT, Math.max(1, Number.parseInt(req.query.limit, 10) || 10));
     const startIndex = (page - 1) * limit;
     const userId = req.params.userId;
 
@@ -440,7 +460,8 @@ export const getTrendingPosts = async (req, res) => {
         select: 'name email role profilePicUrl bio status',
         match: { status: { $ne: 'deleted' } }
       })
-      .populate('comments.user', 'name email role');
+      .populate('comments.user', 'name email role')
+      .limit(1000);
 
     posts = posts.filter(post => post.user && post.user.status !== 'deleted');
 
@@ -452,7 +473,8 @@ export const getTrendingPosts = async (req, res) => {
           select: 'name email role profilePicUrl bio status',
           match: { status: { $ne: 'deleted' } }
         })
-        .populate('comments.user', 'name email role');
+        .populate('comments.user', 'name email role')
+        .limit(1000);
 
       posts = fallbackPosts.filter(post => post.user && post.user.status !== 'deleted');
     }
@@ -495,7 +517,8 @@ export const getPopularPosts = async (req, res) => {
         select: 'name email role profilePicUrl bio status',
         match: { status: { $ne: 'deleted' } }
       })
-      .populate('comments.user', 'name email role');
+      .populate('comments.user', 'name email role')
+      .limit(1000);
 
     posts = posts.filter(post => post.user && post.user.status !== 'deleted');
 
@@ -522,7 +545,10 @@ export const getPopularPosts = async (req, res) => {
 export const getPopularHashtags = async (req, res) => {
   try {
     const limit = Math.min(20, Math.max(1, Number.parseInt(req.query.limit) || 10));
-    const posts = await Post.find({}, 'title content');
+    const posts = await Post.find({}, 'title content')
+      .sort({ createdAt: -1 })
+      .limit(1000)
+      .lean();
 
     const tagCounts = {};
     for (const post of posts) {
@@ -757,6 +783,10 @@ export const toggleBookmark = async (req, res) => {
 // Get bookmarked posts for authenticated user
 export const getBookmarkedPosts = async (req, res) => {
   try {
+    const page = Math.max(1, Number.parseInt(req.query.page) || 1);
+    const limit = Math.min(MAX_LIMIT, Math.max(1, Number.parseInt(req.query.limit) || 20));
+    const skip = (page - 1) * limit;
+
     const user = await User.findById(req.user._id);
     const bookmarkedIds = user?.bookmarks || [];
 
@@ -764,25 +794,39 @@ export const getBookmarkedPosts = async (req, res) => {
       return res.status(200).json({
         success: true,
         count: 0,
-        posts: []
+        posts: [],
+        page,
+        limit,
+        totalPages: 0,
+        totalPosts: 0
       });
     }
 
-    let posts = await Post.find({ _id: { $in: bookmarkedIds } })
-      .populate({
-        path: 'user',
-        select: 'name email role profilePicUrl bio status',
-        match: { status: { $ne: 'deleted' } }
-      })
-      .populate('comments.user', 'name email role')
-      .sort({ createdAt: -1 });
+    const [posts, total] = await Promise.all([
+      Post.find({ _id: { $in: bookmarkedIds } })
+        .populate({
+          path: 'user',
+          select: 'name email role profilePicUrl bio status',
+          match: { status: { $ne: 'deleted' } }
+        })
+        .populate('comments.user', 'name email role')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Post.countDocuments({ _id: { $in: bookmarkedIds } })
+    ]);
 
-    posts = posts.filter(post => post.user && post.user.status !== 'deleted');
+    const filteredPosts = posts.filter(post => post.user && post.user.status !== 'deleted');
 
     res.status(200).json({
       success: true,
-      count: posts.length,
-      posts
+      count: filteredPosts.length,
+      posts: filteredPosts,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+      totalPosts: total
     });
   } catch (error) {
     logger.error(`Get Bookmarked Posts Error: ${error.message}`);

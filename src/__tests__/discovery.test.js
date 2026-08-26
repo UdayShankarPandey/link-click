@@ -1,12 +1,20 @@
 import { jest } from '@jest/globals';
 import request from 'supertest';
 
-const mockPopulateCommentsTrending = jest.fn();
+const mockLimitTrending = jest.fn();
+const mockPopulateCommentsTrending = jest.fn(() => ({
+  limit: mockLimitTrending,
+}));
 const mockPopulateUserTrending = jest.fn(() => ({
   populate: mockPopulateCommentsTrending,
 }));
+const mockLeanHashtags = jest.fn();
+const mockLimitHashtags = jest.fn(() => ({ lean: mockLeanHashtags }));
+const mockSortHashtags = jest.fn(() => ({ limit: mockLimitHashtags }));
+
 const mockPostFind = jest.fn(() => ({
   populate: mockPopulateUserTrending,
+  sort: mockSortHashtags,
 }));
 
 const mockUserFind = jest.fn();
@@ -55,7 +63,7 @@ describe('Community Discovery APIs', () => {
         }
       ];
 
-      mockPopulateCommentsTrending.mockResolvedValue(fakePosts);
+      mockLimitTrending.mockResolvedValue(fakePosts);
 
       const response = await request(app).get('/api/posts/trending?limit=5');
 
@@ -83,7 +91,7 @@ describe('Community Discovery APIs', () => {
         }
       ];
 
-      mockPopulateCommentsTrending.mockResolvedValue(fakePosts);
+      mockLimitTrending.mockResolvedValue(fakePosts);
 
       const response = await request(app).get('/api/posts/popular');
 
@@ -100,9 +108,11 @@ describe('Community Discovery APIs', () => {
         { title: 'Another #Tech post', content: 'More #TECH stuff' }
       ];
 
+      mockLeanHashtags.mockResolvedValue(fakePosts);
+
       mockPostFind.mockImplementation((filter, select) => {
         if (select === 'title content') {
-          return Promise.resolve(fakePosts);
+          return { sort: mockSortHashtags };
         }
         return { populate: mockPopulateUserTrending };
       });

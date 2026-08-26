@@ -41,27 +41,41 @@ export const uploadMultipleImages = async (req, res) => {
       return res.status(400).json({ message: 'Maximum 4 images allowed per post.' });
     }
 
-    const uploadPromises = files.map(file =>
-      imagekit.files.upload({
-        file: file.buffer,
-        fileName: `image-${Date.now()}-${file.originalname}`,
-        folder: '/uploads'
-      })
-    );
+    const uploadedImages = [];
+    try {
+      for (const file of files) {
+        const result = await imagekit.files.upload({
+          file: file.buffer,
+          fileName: `image-${Date.now()}-${file.originalname}`,
+          folder: '/uploads'
+        });
+        
+        uploadedImages.push({
+          url: result.url,
+          thumbnailUrl: result.thumbnailUrl || result.url,
+          fileId: result.fileId,
+          name: result.name,
+          size: result.size
+        });
+      }
 
-    const results = await Promise.all(uploadPromises);
-    const uploadedImages = results.map(r => ({
-      url: r.url,
-      thumbnailUrl: r.thumbnailUrl || r.url,
-      fileId: r.fileId,
-      name: r.name,
-      size: r.size
-    }));
-
-    res.status(200).json({
-      message: 'Images uploaded successfully.',
-      images: uploadedImages
-    });
+      res.status(200).json({
+        message: 'Images uploaded successfully.',
+        images: uploadedImages
+      });
+    } catch (error) {
+      // Best-effort cleanup of orphaned files from ImageKit
+      for (const img of uploadedImages) {
+        if (img.fileId) {
+          try {
+            await imagekit.files.deleteFile(img.fileId);
+          } catch (cleanupError) {
+            logger.error("Failed to clean up orphaned ImageKit file during multi-upload failure:", { cleanupError });
+          }
+        }
+      }
+      throw error;
+    }
   } catch (error) {
     logger.error("Multiple ImageKit Upload Error:", { error });
     res.status(500).json({

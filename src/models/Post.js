@@ -200,6 +200,7 @@ postSchema.pre('save', function (next) {
 // Indexes for query performance
 postSchema.index({ user: 1 });
 postSchema.index({ createdAt: -1 });
+postSchema.index({ user: 1, createdAt: -1 });
 postSchema.index({ createdAt: -1, views: -1 });
 postSchema.index({ postType: 1, status: 1 });
 

@@ -24,29 +24,37 @@ const buildHtml = (verificationUrl) => `
  * Requires BREVO_API_KEY with no IP restriction and a verified sender in Brevo.
  */
 const tryBrevoAPI = async ({ to, subject, html, senderName, senderEmail }) => {
-  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-    method: 'POST',
-    headers: {
-      'accept': 'application/json',
-      'api-key': env.BREVO_API_KEY,
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({
-      sender: { name: senderName, email: senderEmail },
-      to: [{ email: to }],
-      subject,
-      htmlContent: html,
-    }),
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-  const data = await res.json();
+  try {
+    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'api-key': env.BREVO_API_KEY,
+        'content-type': 'application/json',
+      },
+      signal: controller.signal,
+      body: JSON.stringify({
+        sender: { name: senderName, email: senderEmail },
+        to: [{ email: to }],
+        subject,
+        htmlContent: html,
+      }),
+    });
+    
+    const data = await res.json();
 
-  if (!res.ok) {
-    throw new Error(`Brevo API ${res.status}: Failed to send email`);
+    if (!res.ok) {
+      throw new Error(`Brevo API ${res.status}: Failed to send email`);
+    }
+
+    logger.info('[Email Brevo API] Sent verification email');
+    return data;
+  } finally {
+    clearTimeout(timeoutId);
   }
-
-  logger.info('[Email Brevo API] Sent verification email');
-  return data;
 };
 
 /**
