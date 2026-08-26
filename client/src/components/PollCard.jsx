@@ -85,7 +85,7 @@ const PollCard = ({ postId, poll, onVoteUpdate }) => {
             <button
               key={optId}
               type="button"
-              disabled={hasVoted || submittingOption === optId}
+              disabled={hasVoted || submittingOption !== null}
               onClick={() => handleVote(optId)}
               className={`w-full relative overflow-hidden rounded-xl border p-3 text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber ${getOptionButtonClass(
                 isUserChoice,
