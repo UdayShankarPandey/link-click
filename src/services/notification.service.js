@@ -100,7 +100,7 @@ const buildDeduplicationQuery = (validData) => {
   return query;
 };
 
-const emitNotification = async (notificationId, recipient) => {
+const emitNotification = async (notificationId, recipient, eventType = 'notification:new') => {
   try {
     const populatedNotification = await Notification.findById(notificationId)
       .populate('actor', 'name email role profilePicUrl')
@@ -108,7 +108,7 @@ const emitNotification = async (notificationId, recipient) => {
       .lean();
       
     emitToUser(recipient, {
-      type: 'notification:new',
+      type: eventType,
       notification: populatedNotification
     });
   } catch (err) {
@@ -155,8 +155,11 @@ export const createNotification = async (data) => {
 
   if (isNew) {
       // Must populate to match REST endpoint structure exactly
-      await emitNotification(notification._id, validData.recipient);
-    }
+      await emitNotification(notification._id, validData.recipient, 'notification:new');
+  } else if (validData.metadata?.reactionType) {
+      // Emit an update event for existing unread notifications when reaction type changes
+      await emitNotification(notification._id, validData.recipient, 'notification:update');
+  }
 
     return notification;
   } catch (error) {

@@ -15,6 +15,9 @@ const processSSEChunk = (dataStr, setNotifications, setUnreadCount) => {
         return [newNotif, ...prev];
       });
       setUnreadCount(prev => prev + 1);
+    } else if (payload.type === 'notification:update') {
+      const updatedNotif = payload.notification;
+      setNotifications(prev => prev.map(n => n._id === updatedNotif._id ? updatedNotif : n));
     }
   } catch (e) {
     console.error('Failed to parse SSE payload', e);
