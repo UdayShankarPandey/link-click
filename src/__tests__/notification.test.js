@@ -117,13 +117,36 @@ describe('Notification Service & API', () => {
           actor: USER_2,
           type: 'post_reaction',
           post: POST_1,
-          'metadata.reactionType': 'heart',
           isRead: false
         },
-        expect.any(Object),
+        {
+          $setOnInsert: {
+            recipient: USER_1,
+            actor: USER_2,
+            type: 'post_reaction',
+            post: POST_1,
+            isRead: false
+          },
+          $set: {
+            'metadata.reactionType': 'heart'
+          }
+        },
         expect.any(Object)
       );
       expect(result).not.toBeNull();
+    });
+
+    it('should reject NoSQL injection attempts in reactionType', async () => {
+      const result = await createNotification({
+        recipient: USER_1,
+        actor: USER_2,
+        type: 'post_reaction',
+        post: POST_1,
+        metadata: { reactionType: { $ne: null } }
+      });
+
+      expect(result).toBeNull();
+      expect(mockFindOneAndUpdate).not.toHaveBeenCalled();
     });
 
     it('should NOT suppress post_comment if commentId is different', async () => {

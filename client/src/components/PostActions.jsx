@@ -16,6 +16,7 @@ const PostActions = ({ post, onPostUpdate, onCommentClick, showLabels = false })
   const { user } = useAuth();
   const [showPicker, setShowPicker] = useState(false);
   const [isBookmarking, setIsBookmarking] = useState(false);
+  const [isReacting, setIsReacting] = useState(false);
 
   const currentUserId = user?._id?.toString() || user?.id?.toString();
 
@@ -57,6 +58,9 @@ const PostActions = ({ post, onPostUpdate, onCommentClick, showLabels = false })
       toast.error('Please sign in to react to posts');
       return;
     }
+    if (isReacting) return;
+    
+    setIsReacting(true);
     setShowPicker(false);
 
     try {
@@ -70,6 +74,8 @@ const PostActions = ({ post, onPostUpdate, onCommentClick, showLabels = false })
       }
     } catch {
       toast.error('Failed to update reaction');
+    } finally {
+      setIsReacting(false);
     }
   };
 

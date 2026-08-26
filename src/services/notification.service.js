@@ -96,7 +96,6 @@ const buildDeduplicationQuery = (validData) => {
 
   if (validData.post) query.post = String(validData.post);
   if (validData.commentId) query.commentId = String(validData.commentId);
-  if (validData.metadata?.reactionType) query['metadata.reactionType'] = String(validData.metadata.reactionType);
 
   return query;
 };
@@ -135,18 +134,26 @@ export const createNotification = async (data) => {
       return null;
     }
 
-    const query = buildDeduplicationQuery(validData);
+  const query = buildDeduplicationQuery(validData);
+  const updatePayload = { $setOnInsert: { ...validData } };
 
-    const result = await Notification.findOneAndUpdate(
-      query,
-      { $setOnInsert: validData },
-      { upsert: true, new: true, setDefaultsOnInsert: true, includeResultMetadata: true }
-    );
+  // If this is a reaction notification, we update the reaction type if it exists,
+  // instead of creating a new notification for a changed reaction.
+  if (validData.metadata?.reactionType) {
+    updatePayload.$set = { 'metadata.reactionType': validData.metadata.reactionType };
+    delete updatePayload.$setOnInsert.metadata;
+  }
 
-    const notification = result.value;
-    const isNew = !result.lastErrorObject?.updatedExisting;
+  const result = await Notification.findOneAndUpdate(
+    query,
+    updatePayload,
+    { upsert: true, new: true, setDefaultsOnInsert: true, includeResultMetadata: true }
+  );
 
-    if (isNew) {
+  const notification = result.value;
+  const isNew = !result.lastErrorObject?.updatedExisting;
+
+  if (isNew) {
       // Must populate to match REST endpoint structure exactly
       await emitNotification(notification._id, validData.recipient);
     }
