@@ -12,6 +12,63 @@ import { createNotification } from '../services/notification.service.js';
 // Max pagination limit to prevent abuse
 const MAX_LIMIT = 50;
 
+// --- Code complexity refactoring helpers ---
+const processPostImages = async (reqBody, reqFile) => {
+  let images = reqBody.images || [];
+  let imageUrl = reqBody.imageUrl;
+  let imageThumbnailUrl = reqBody.imageThumbnailUrl;
+  let imageFileId = reqBody.imageFileId;
+
+  if (reqFile) {
+    const result = await imagekit.files.upload({
+      file: reqFile.buffer,
+      fileName: `post-${Date.now()}-${reqFile.originalname}`,
+      folder: '/posts'
+    });
+    imageUrl = result.url;
+    imageThumbnailUrl = result.thumbnailUrl;
+    imageFileId = result.fileId;
+    images = [{ url: imageUrl, thumbnailUrl: imageThumbnailUrl, fileId: imageFileId }];
+  } else if (imageUrl && images.length === 0) {
+    images = [{ url: imageUrl, thumbnailUrl: imageThumbnailUrl || imageUrl, fileId: imageFileId || '' }];
+  }
+
+  return { images, imageUrl, imageThumbnailUrl, imageFileId };
+};
+
+const processPollData = (postType, poll) => {
+  if (postType !== 'poll' || !poll) return { pollData: null };
+
+  if (!poll.question || !Array.isArray(poll.options) || poll.options.length < 2 || poll.options.length > 6) {
+    return { error: 'Polls must contain a question and 2 to 6 options.' };
+  }
+
+  const formattedOptions = poll.options.map((opt, index) => ({
+    optionId: opt.optionId || `opt_${Date.now()}_${index}`,
+    text: typeof opt === 'string' ? opt : opt.text,
+    votes: []
+  }));
+
+  return {
+    pollData: {
+      question: poll.question.trim(),
+      options: formattedOptions,
+      expiresAt: poll.expiresAt ? new Date(poll.expiresAt) : null,
+      totalVotes: 0
+    }
+  };
+};
+
+const cleanupImageKitFile = async (fileId, contextMsg) => {
+  if (!fileId) return;
+  try {
+    await imagekit.files.deleteFile(fileId);
+  } catch (ikError) {
+    logger.error(`Failed to cleanup ImageKit file ${contextMsg}: ${ikError.message}`);
+  }
+};
+// ------------------------------------------
+
 // Create a new post
 export const createPost = async (req, res) => {
   try {
@@ -20,57 +77,20 @@ export const createPost = async (req, res) => {
       return res.status(400).json({ message: 'Title is required.' });
     }
 
-    let images = req.body.images || [];
-
-    // Legacy single image fields or single file upload
-    let imageUrl = req.body.imageUrl;
-    let imageThumbnailUrl = req.body.imageThumbnailUrl;
-    let imageFileId = req.body.imageFileId;
-
-    if (req.file) {
-      const result = await imagekit.files.upload({
-        file: req.file.buffer,
-        fileName: `post-${Date.now()}-${req.file.originalname}`,
-        folder: '/posts'
-      });
-      imageUrl = result.url;
-      imageThumbnailUrl = result.thumbnailUrl;
-      imageFileId = result.fileId;
-
-      images = [{ url: imageUrl, thumbnailUrl: imageThumbnailUrl, fileId: imageFileId }];
-    } else if (imageUrl && images.length === 0) {
-      images = [{ url: imageUrl, thumbnailUrl: imageThumbnailUrl || imageUrl, fileId: imageFileId || '' }];
-    }
+    const { images, imageUrl, imageThumbnailUrl, imageFileId } = await processPostImages(req.body, req.file);
 
     // Require image ONLY for standard posts when poll is not attached
     if (postType === 'standard' && images.length === 0 && !imageUrl) {
       return res.status(400).json({ message: 'Post image is required. Please upload at least one image.' });
     }
 
-    // Process poll if postType is 'poll'
-    let pollData = null;
-    if (postType === 'poll' && poll) {
-      if (!poll.question || !Array.isArray(poll.options) || poll.options.length < 2 || poll.options.length > 6) {
-        return res.status(400).json({ message: 'Polls must contain a question and 2 to 6 options.' });
-      }
-
-      const formattedOptions = poll.options.map((opt, index) => ({
-        optionId: opt.optionId || `opt_${Date.now()}_${index}`,
-        text: typeof opt === 'string' ? opt : opt.text,
-        votes: []
-      }));
-
-      pollData = {
-        question: poll.question.trim(),
-        options: formattedOptions,
-        expiresAt: poll.expiresAt ? new Date(poll.expiresAt) : null,
-        totalVotes: 0
-      };
+    const { error: pollError, pollData } = processPollData(postType, poll);
+    if (pollError) {
+      return res.status(400).json({ message: pollError });
     }
 
-    let post;
     try {
-      post = await Post.create({
+      const post = await Post.create({
         user: req.user._id,
         title,
         content,
@@ -81,18 +101,15 @@ export const createPost = async (req, res) => {
         imageFileId: images[0]?.fileId || imageFileId || '',
         poll: pollData
       });
+
+      res.status(201).json({
+        message: 'Post created successfully.',
+        post
+      });
     } catch (saveError) {
-      if (images[0]?.fileId || imageFileId) {
-        try { await imagekit.files.deleteFile(images[0]?.fileId || imageFileId); } 
-        catch (ikError) { logger.error(`Failed to cleanup ImageKit file on post save failure: ${ikError.message}`); }
-      }
+      await cleanupImageKitFile(images[0]?.fileId || imageFileId, 'on post save failure');
       throw saveError;
     }
-
-    res.status(201).json({
-      message: 'Post created successfully.',
-      post
-    });
   } catch (error) {
     logger.error("Create Post Error:", { error });
     res.status(500).json({ message: 'Failed to create post.' });
@@ -198,14 +215,7 @@ export const updatePost = async (req, res) => {
 
     // Handle image update via file upload
     if (req.file) {
-      // Delete old image from ImageKit if it exists
-      if (post.imageFileId) {
-        try {
-          await imagekit.files.deleteFile(post.imageFileId);
-        } catch (ikError) {
-          logger.error(`Failed to delete old image from ImageKit: ${ikError.message}`);
-        }
-      }
+      await cleanupImageKitFile(post.imageFileId, 'on old image replacement');
 
       const result = await imagekit.files.upload({
         file: req.file.buffer,
@@ -223,8 +233,7 @@ export const updatePost = async (req, res) => {
     } catch (saveError) {
       // Rollback only the newly uploaded image from ImageKit
       if (req.file && post.imageFileId) {
-        try { await imagekit.files.deleteFile(post.imageFileId); }
-        catch (ikError) { logger.error(`Failed to cleanup new ImageKit file on post update failure: ${ikError.message}`); }
+        await cleanupImageKitFile(post.imageFileId, 'on post update failure');
       }
       throw saveError;
     }
