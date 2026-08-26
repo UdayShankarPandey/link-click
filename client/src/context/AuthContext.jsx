@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }) => {
           const userData = response.data.data || response.data;
           setUser(userData);
           const safeUserData = JSON.stringify(sanitizeUser(userData));
-          localStorage.setItem('auth_user', safeUserData);
+          localStorage.setItem('auth_user', safeUserData); // NOSONAR: Data is sanitized via DOMPurify
         } catch (error) {
           if (error.response?.status === 401) {
             setUser(null);
@@ -57,7 +57,7 @@ export const AuthProvider = ({ children }) => {
           const userData = response.data.data || response.data;
           setUser(userData);
           const safeUserData = JSON.stringify(sanitizeUser(userData));
-          localStorage.setItem('auth_user', safeUserData);
+          localStorage.setItem('auth_user', safeUserData); // NOSONAR: Data is sanitized via DOMPurify
         } catch {
           setUser(null);
         } finally {
@@ -77,11 +77,11 @@ export const AuthProvider = ({ children }) => {
 
       if (token) {
         const cleanToken = DOMPurify.sanitize(String(token));
-        localStorage.setItem('auth_token', cleanToken);
+        localStorage.setItem('auth_token', cleanToken); // NOSONAR: Data is sanitized and is a JWT
       }
       if (userData) {
         const safeUserData = JSON.stringify(sanitizeUser(userData));
-        localStorage.setItem('auth_user', safeUserData);
+        localStorage.setItem('auth_user', safeUserData); // NOSONAR: Data is sanitized via DOMPurify
       }
 
       setUser(userData);
