@@ -128,9 +128,9 @@ const Home = () => {
     setPage(1);
   };
 
-  const handleLikeUpdate = (postId, newLikes) => {
+  const handlePostUpdate = (updatedPost) => {
     setPosts((prev) =>
-      prev.map((p) => (p._id === postId ? { ...p, likes: newLikes } : p))
+      prev.map((p) => (p._id === updatedPost._id ? updatedPost : p))
     );
   };
 
@@ -171,7 +171,7 @@ const Home = () => {
       <>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 stagger-children">
           {posts.map((post) => (
-            <PostCard key={post._id} post={post} onLikeUpdate={handleLikeUpdate} />
+            <PostCard key={post._id} post={post} onPostUpdate={handlePostUpdate} />
           ))}
         </div>
         {activeTab === 'latest' && totalPages > 1 && (

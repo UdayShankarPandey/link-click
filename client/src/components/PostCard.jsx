@@ -10,7 +10,7 @@ import PollCard from './PollCard';
 import PostActions from './PostActions';
 import { sanitizePostContent } from '../utils/sanitize';
 
-const PostCard = ({ post: initialPost, onLikeUpdate }) => {
+const PostCard = ({ post: initialPost, onPostUpdate }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [post, setPost] = useState(initialPost);
@@ -91,8 +91,8 @@ const PostCard = ({ post: initialPost, onLikeUpdate }) => {
 
   const handlePostActionUpdate = (updatedPost) => {
     setPost(updatedPost);
-    if (onLikeUpdate) {
-      onLikeUpdate(updatedPost._id, updatedPost.likes);
+    if (onPostUpdate) {
+      onPostUpdate(updatedPost);
     }
   };
 

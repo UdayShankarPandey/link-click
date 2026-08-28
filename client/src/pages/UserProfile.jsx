@@ -84,9 +84,9 @@ const UserProfile = () => {
     }
   };
 
-  const handleLikeUpdate = (postId, newLikes) => {
+  const handlePostUpdate = (updatedPost) => {
     setPosts((prev) =>
-      prev.map((p) => (p._id === postId ? { ...p, likes: newLikes } : p))
+      prev.map((p) => (p._id === updatedPost._id ? updatedPost : p))
     );
   };
 
@@ -134,7 +134,7 @@ const UserProfile = () => {
                   <span>Pinned Post</span>
                 </div>
               )}
-              <PostCard post={post} onLikeUpdate={handleLikeUpdate} />
+              <PostCard post={post} onPostUpdate={handlePostUpdate} />
             </div>
           ))}
         </div>
