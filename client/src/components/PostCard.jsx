@@ -96,6 +96,44 @@ const PostCard = ({ post: initialPost, onPostUpdate }) => {
     }
   };
 
+  const handleDoubleTap = async () => {
+    if (!user) return;
+    
+    // Check if already liked
+    const isLiked = post.likes?.some(
+      (id) => (id._id ? id._id.toString() : id.toString()) === currentUserId
+    ) || post.reactions?.some(
+      (r) => r.type === 'heart' && (r.user?._id ? r.user._id.toString() : r.user?.toString()) === currentUserId
+    );
+    
+    // On double tap, we usually only "like", we don't unlike if already liked
+    if (isLiked) return; 
+
+    // Optimistic UI update
+    const optimisticPost = { ...post };
+    optimisticPost.likes = [...(optimisticPost.likes || []), currentUserId];
+    
+    if (onPostUpdate) {
+      onPostUpdate(optimisticPost);
+    }
+
+    try {
+      const response = await api.post(`/posts/${post._id}/react`, { type: 'heart' });
+      if (onPostUpdate) {
+        onPostUpdate({
+          ...optimisticPost,
+          reactions: response.data.reactions,
+          likes: response.data.likes
+        });
+      }
+    } catch {
+      // Revert on error
+      if (onPostUpdate) {
+        onPostUpdate(post);
+      }
+    }
+  };
+
   const timeAgo = (dateString) => {
     const now = new Date();
     const date = new Date(dateString);
@@ -125,7 +163,8 @@ const PostCard = ({ post: initialPost, onPostUpdate }) => {
   return (
     <article
       ref={cardRef}
-      className="bg-surface rounded-2xl overflow-hidden border border-border hover:border-surface-overlay transition-colors duration-200 group flex flex-col justify-between"
+      onDoubleClick={handleDoubleTap}
+      className="bg-surface rounded-2xl overflow-hidden border border-border hover:border-surface-overlay transition-colors duration-200 group flex flex-col justify-between select-none"
     >
       <div>
         {/* Author Header */}

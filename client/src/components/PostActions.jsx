@@ -1,20 +1,11 @@
 import React, { useState } from 'react';
-import { MessageSquare, Bookmark, Share2 } from 'lucide-react';
+import { MessageSquare, Bookmark, Share2, Heart } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 
-const REACTION_EMOJIS = [
-  { type: 'heart', emoji: '❤️', label: 'Heart' },
-  { type: 'thumbs_up', emoji: '👍', label: 'Thumbs Up' },
-  { type: 'laugh', emoji: '😂', label: 'Laugh' },
-  { type: 'surprised', emoji: '😮', label: 'Surprised' },
-  { type: 'sad', emoji: '😢', label: 'Sad' },
-];
-
 const PostActions = ({ post, onPostUpdate, onCommentClick, showLabels = false }) => {
   const { user, setUser } = useAuth();
-  const [showPicker, setShowPicker] = useState(false);
   const [isBookmarking, setIsBookmarking] = useState(false);
   const [isReacting, setIsReacting] = useState(false);
 
@@ -52,8 +43,8 @@ const PostActions = ({ post, onPostUpdate, onCommentClick, showLabels = false })
     (bId) => (bId._id ? bId._id.toString() : bId.toString()) === post._id.toString()
   );
 
-  // Handle reaction selection
-  const handleReactionSelect = async (type) => {
+  // Handle reaction toggle
+  const handleReactionToggle = async () => {
     if (!user) {
       toast.error('Please sign in to react to posts');
       return;
@@ -61,10 +52,25 @@ const PostActions = ({ post, onPostUpdate, onCommentClick, showLabels = false })
     if (isReacting) return;
     
     setIsReacting(true);
-    setShowPicker(false);
+    // Optimistic UI update
+    const previousReaction = activeReactionType;
+    const newReaction = activeReactionType ? null : 'heart';
+    
+    const optimisticPost = { ...post };
+    if (newReaction) {
+      optimisticPost.likes = [...(optimisticPost.likes || []), currentUserId];
+    } else {
+      optimisticPost.likes = (optimisticPost.likes || []).filter(
+        id => (id._id ? id._id.toString() : id.toString()) !== currentUserId
+      );
+    }
+    
+    if (onPostUpdate) {
+      onPostUpdate(optimisticPost);
+    }
 
     try {
-      const response = await api.post(`/posts/${post._id}/react`, { type });
+      const response = await api.post(`/posts/${post._id}/react`, { type: 'heart' });
       if (onPostUpdate) {
         onPostUpdate({
           ...post,
@@ -144,43 +150,26 @@ const PostActions = ({ post, onPostUpdate, onCommentClick, showLabels = false })
 
   return (
     <div className="flex items-center justify-between gap-1 sm:gap-2 py-2 border-t border-border/40 min-w-0">
-      {/* Reaction Picker Button & Popover */}
-      <div className="relative shrink-0">
-        <button
-          type="button"
-          onClick={() => setShowPicker((prev) => !prev)}
-          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber ${
-            activeReactionType
-              ? 'bg-amber/10 text-amber border border-amber/30'
-              : 'text-text-tertiary hover:text-text-primary hover:bg-surface-raised'
-          }`}
-          aria-label="React to post"
-          title="React to post"
-        >
-          <span>{activeReactionType ? REACTION_EMOJIS.find(r => r.type === activeReactionType)?.emoji || '❤️' : '❤️'}</span>
-          <span>{totalReactions > 0 ? totalReactions : 'React'}</span>
-        </button>
-
-        {/* Reaction Popover */}
-        {showPicker && (
-          <div className="absolute bottom-full left-0 mb-2 p-1.5 bg-surface border border-border rounded-2xl shadow-xl flex items-center gap-1 z-30 animate-fade-in">
-            {REACTION_EMOJIS.map((r) => (
-              <button
-                key={r.type}
-                type="button"
-                onClick={() => handleReactionSelect(r.type)}
-                className={`p-2 rounded-xl text-lg hover:scale-125 transition-transform duration-150 cursor-pointer ${
-                  activeReactionType === r.type ? 'bg-amber/20' : 'hover:bg-surface-raised'
-                }`}
-                title={r.label}
-                aria-label={r.label}
-              >
-                {r.emoji}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      {/* Reaction Button */}
+      <button
+        type="button"
+        onClick={handleReactionToggle}
+        disabled={isReacting}
+        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 ${
+          activeReactionType === 'heart'
+            ? 'text-pink-600 bg-pink-50 hover:bg-pink-100'
+            : 'text-text-tertiary hover:text-pink-600 hover:bg-surface-raised'
+        }`}
+        aria-label={activeReactionType === 'heart' ? 'Unlike post' : 'Like post'}
+        title={activeReactionType === 'heart' ? 'Unlike post' : 'Like post'}
+      >
+        <Heart 
+          className={`h-4 w-4 shrink-0 transition-transform ${isReacting ? 'scale-90' : 'hover:scale-110'} ${
+            activeReactionType === 'heart' ? 'fill-pink-600 text-pink-600' : ''
+          }`} 
+        />
+        <span>{totalReactions > 0 ? totalReactions : 'Like'}</span>
+      </button>
 
       {/* Comment Button */}
       <button
