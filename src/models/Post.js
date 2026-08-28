@@ -163,7 +163,7 @@ const postSchema = new mongoose.Schema(
 );
 
 // Backward compatibility & multi-image synchronization pre-save hook
-postSchema.pre('save', function (next) {
+postSchema.pre('save', function () {
   if (this.images && this.images.length > 0) {
     this.imageUrl = this.images[0].url;
     this.imageThumbnailUrl = this.images[0].thumbnailUrl || this.images[0].url;
@@ -193,8 +193,6 @@ postSchema.pre('save', function (next) {
       .filter(r => r.type === 'heart')
       .map(r => r.user);
   }
-
-  next();
 });
 
 // Indexes for query performance
